@@ -1,0 +1,19 @@
+# `<repo-name>` — onboarding 進度
+
+> Agent 維護。首次 **加入專案** 時由 Agent 建立；之後每完成一項就更新 ✅/⬜。  
+> 使用者問 **「`<repo>` 進度為何」** 時，Agent 讀此檔回答。
+
+| 項目 | 狀態 | 備註 |
+|------|------|------|
+| TIA Portal V21 本機確認 | ⬜ | |
+| Siemens.Engineering.dll 路徑 | ⬜ | 見 doc/REFERENCE_PATHS.md |
+| host/ 骨架 | ⬜ | copy 自 openness-standard templates/host |
+| Cursor rules（.cursor/rules/） | ⬜ | 見 cursor_rules_trim_sop |
+| doc/REFERENCE_PATHS.md | ⬜ | 已解析 V21 / CPU / 專案檔 |
+| project-local.mdc 人工確認 | ⬜ | 使用者檢查定位/CPU/DLL |
+| .ap21 本機位置已知 | ⬜ | 不強制進 Git |
+| Openness compile 曾 PASS | ⬜ | |
+
+## 下一步（Agent / 人類）
+
+- 請打開 `.cursor/rules/project-local.mdc` 確認專案定位、TIA V21、CPU、station、DLL；有誤請 Agent 修改（確認後將上表「人工確認」改 ✅）

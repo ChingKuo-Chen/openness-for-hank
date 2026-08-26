@@ -1,0 +1,51 @@
+# `<repo-name>` — 已解析參考路徑
+
+> Agent 在 **加入專案** 依 [cursor_rules_trim_sop.md](../plans/cursor_rules_trim_sop.md) 產出並維護。
+
+**最後更新**：YYYY-MM-DD
+
+---
+
+## 身份
+
+| 項目 | 值 |
+|------|-----|
+| repo | `<repo-name>` |
+| TIA | V21 |
+| CPU / MLFB | （填實際，例如 6ES7…） |
+| Station | （填實際） |
+| 專案檔 | （本機 `.ap21` 路徑） |
+
+---
+
+## Openness
+
+| 項目 | 路徑 |
+|------|------|
+| Siemens.Engineering.dll | `C:\Program Files\Siemens\Automation\Portal V21\PublicAPI\…` |
+| skip-vendor globs | 見 `.cursor/rules/skip-vendor-tree.mdc` |
+
+---
+
+## 本專案 doc
+
+| 項目 | 路徑 |
+|------|------|
+| onboarding | `doc/ONBOARDING.md` |
+| Openness 手冊（central） | `../openness-standard/doc/OPENNESS.md`（Agent）；人類交付以本 repo `doc/` 為準 |
+
+---
+
+## Automation 規範（central，勿 copy 全文）
+
+| 項目 | 路徑 |
+|------|------|
+| 規範索引 | `../openness-standard/rules/README.md` |
+| Openness P0 | `../openness-standard/rules/tia-openness-rules.md` |
+
+---
+
+## 備註
+
+- Workspace 假設：本 repo 與 `openness-standard` 同層於 `~/automation/`。
+- 變更 DLL 或 CPU 時，**同步**本檔與 `project-local.mdc`。

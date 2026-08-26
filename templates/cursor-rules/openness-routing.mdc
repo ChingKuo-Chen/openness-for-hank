@@ -1,0 +1,27 @@
+---
+description: >-
+  TIA V21 Openness 路由：DLL、開啟專案、編譯、匯出。
+  改 host 或 Portal 專案時讀取。
+alwaysApply: true
+---
+
+# Openness 路由
+
+**DLL、CPU、專案檔的真實路徑只寫在 [`project-local.mdc`](project-local.mdc)。** 本檔只定入口，不寫死 repo 名。
+
+## 做什麼用哪裡
+
+| 意圖 | 入口 |
+|------|------|
+| 開啟／attach Portal | 專案 `host/`（見 project-local 的驗證命令） |
+| Compile | host compile 目標；0 error |
+| Export SCL／清單 | host 或 Portal 匯出到 `export/` 或 `doc/`（專案約定） |
+| 出貨 archive | `../openness-standard/rules/release-sop.md` |
+
+## 禁止
+
+- 使用 V15/V16 `Siemens.Engineering.dll`
+- 把 DLL 推進 Git
+- MCU：isptool、pyocd、`make install`
+
+找不到 DLL → 停，讀 `../openness-standard/reference/tia_v21.md` 的查詢命令，請使用者確認安裝。
