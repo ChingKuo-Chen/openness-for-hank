@@ -1,0 +1,60 @@
+// =============================================================================
+// 區塊：Get_Finish_Length（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Get_Finish_Length.txt
+// =============================================================================
+
+FUNCTION "Get_Finish_Length" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    ramped_ref : Real;
+    ramp_dec : Real;
+    ramp_NStop : Real;
+    finishing_ref : Real;
+    linespeed : Real;
+    finish_length : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    Slow_at : Real;
+    Stop_at : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    Max_Speed : Real;
+    Finishing_Speed : Real;
+    Current_To_Finishing_Distance : Real;
+    Finishing_To_Stop_Distance : Real;
+END_VAR
+VAR CONSTANT
+    Finishing_Speed_Distance : Real := 0.05;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Get_Finish_Length.txt
+BEGIN
+    IF ramped_ref <> 0.0 THEN
+        Max_Speed := linespeed * 100.0 / ramped_ref;
+    ELSE
+        Max_Speed := 0.0;
+    END_IF;
+
+    IF ramped_ref < finishing_ref THEN
+        Finishing_Speed := linespeed;
+        Finishing_To_Stop_Distance := (ramp_NStop / 60.0 * ramped_ref / 100.0) * Finishing_Speed / 2.0;
+    ELSIF ramped_ref <> 0.0 THEN
+        Finishing_Speed := linespeed * finishing_ref / ramped_ref;
+        Finishing_To_Stop_Distance := (ramp_NStop / 60.0 * finishing_ref / 100.0) * Finishing_Speed / 2.0;
+    ELSE
+        Finishing_Speed := 0.0;
+        Finishing_To_Stop_Distance := 0.0;
+    END_IF;
+
+    Current_To_Finishing_Distance := (ramp_dec / 60.0 * (ramped_ref - finishing_ref) / 100.0) * (linespeed + Finishing_Speed) / 2.0;
+    Stop_at := finish_length - Finishing_To_Stop_Distance;
+    IF ramped_ref > finishing_ref THEN
+        Slow_at := finish_length - Current_To_Finishing_Distance - Finishing_Speed_Distance;
+    ELSE
+        Slow_at := Stop_at;
+    END_IF;
+END_FUNCTION

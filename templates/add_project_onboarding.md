@@ -1,8 +1,8 @@
 # 加入專案 — Agent onboarding 清單
 
 > **人類入門** → [doc/ADD_PROJECT.md](../doc/ADD_PROJECT.md)。  
-> 使用者已完成：create repo → clone 到與 `openness-standard` 同層 → **加入 Cursor workspace** → 說 **「加入專案 `<repo>`」**。  
-> Agent **只改該 repo**。
+> 使用者已：create repo → clone 到與 `openness-standard` **同層**（建議）→ 對 Agent 說 **「加入專案 `<repo>`」**。  
+> 不必先 Add Folder `openness-standard`。Agent **只改該機台 repo**。
 
 ---
 
@@ -10,7 +10,7 @@
 
 | 使用者說 | Agent 理解 |
 |----------|------------|
-| **加入專案 `<name>`** | 對 workspace 內 `<name>/` 放 rules、ONBOARDING、host 骨架 |
+| **加入專案 `<name>`** | 對 `<name>/` 放找路規則、ONBOARDING、project-local |
 | **`<name>` 進度為何** | 讀 `<name>/doc/ONBOARDING.md` 回報 ✅/⬜ |
 | 同義 | `新增一個專案 <name>` · `<name> onboarding 進度` |
 
@@ -18,33 +18,35 @@
 
 ## Agent 執行順序
 
-### Step 0 — 確認 repo 在 workspace
+### Step 0 — 找到機台 repo 與 standard
 
-- 路徑：`<workspace>/<name>/`
-- 若不在 workspace → 請使用者先 **File → Add Folder to Workspace**
+- 機台路徑：workspace 內 `<name>/`，或與 standard 同層的該資料夾。機台不在 workspace → **建議** Add Folder（機台）；仍可用磁碟絕對路徑改檔。
+- **standard** 依 [find-standard.mdc](cursor-rules/find-standard.mdc) 搜尋：workspace → `../openness-standard` → `pioneerm-automation\openness-standard` → `gh repo clone pioneerm-automation/openness-standard` 到機台**同層**。
+- 找到就讀、就用 `host/`。**不要**因為 standard 沒進 workspace 而停工。
+- 建議使用者把 `openness-standard` 加進 workspace（autoload），僅建議。
 
 ### Step 1 — 身份
 
 - TIA：**V21**（[reference/tia_v21.md](../reference/tia_v21.md)）
-- 查本機 `Siemens.Engineering.dll`
+- 查本機 Openness DLL（`PublicAPI\V21\net48\`）
 - 記錄 CPU / station（未知則在 project-local 寫「待填」並在 ONBOARDING ⬜，**不要編造 MLFB**）
+- 若是寫機台：確認 HANDOFF 已列 **2～3 個參考程式**；沒有就先問。見 [doc/WRITE_PROJECT.md](../doc/WRITE_PROJECT.md)
 
-### Step 2 — host 骨架
+### Step 2 — 不要 copy 實戰 host
 
-若無 `host/`：
+日常工具用 **standard** 的 `host/`。  
+**不要**把 [templates/host/](host/) copy 進機台當預設步驟。  
+（出貨、對方沒有 standard 時才考慮最小骨架，另說。）
 
-- 複製 [templates/host/](host/) 進 `<name>/host/`
-- 依 [repo-dependencies.md](../rules/repo-dependencies.md) **copy-not-include**
-- `.csproj` HintPath 改為 Phase 1 的真實 DLL 路徑
-
-### Step 3 — Cursor rules
+### Step 3 — Cursor rules（薄層）
 
 依 [cursor_rules_trim_sop.md](../plans/cursor_rules_trim_sop.md)：
 
-1. 複製 `templates/cursor-rules/` → `<name>/.cursor/rules/`
-2. 修剪為已解析路徑
-3. 建立 `doc/REFERENCE_PATHS.md`
-4. 請使用者檢查 `project-local.mdc`
+1. 複製 `templates/cursor-rules/` → `<name>/.cursor/rules/`（**必含** `find-standard.mdc`，不要刪）
+2. `templates/AGENTS.md.example` → `<name>/AGENTS.md`（若尚無）
+3. 修剪為已解析路徑；`project-local.mdc` 寫上 **standard 根目錄**、`.ap21`、PLC
+4. 建立 `doc/REFERENCE_PATHS.md`
+5. 請使用者檢查 `project-local.mdc`
 
 ### Step 4 — ONBOARDING.md
 
@@ -52,6 +54,6 @@
 
 ### Step 5 — 回報
 
-摘要表格 + 請使用者打開 `project-local.mdc`。
+摘要表格 + 請使用者打開 `project-local.mdc`。建議加 standard 進 workspace。
 
-**不要**在第一波實作完整產 DB／建硬體的 Openness 功能碼，只放骨架與路徑。
+**不要**在第一波實作完整產 DB／建硬體的 Openness 功能碼。

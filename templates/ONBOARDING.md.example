@@ -6,14 +6,16 @@
 | 項目 | 狀態 | 備註 |
 |------|------|------|
 | TIA Portal V21 本機確認 | ⬜ | |
-| Siemens.Engineering.dll 路徑 | ⬜ | 見 doc/REFERENCE_PATHS.md |
-| host/ 骨架 | ⬜ | copy 自 openness-standard templates/host |
-| Cursor rules（.cursor/rules/） | ⬜ | 見 cursor_rules_trim_sop |
-| doc/REFERENCE_PATHS.md | ⬜ | 已解析 V21 / CPU / 專案檔 |
-| project-local.mdc 人工確認 | ⬜ | 使用者檢查定位/CPU/DLL |
+| Openness DLL 路徑 | ⬜ | 見 doc/REFERENCE_PATHS.md |
+| 找到 openness-standard | ⬜ | 路徑寫在 project-local；可尚未加入 workspace |
+| find-standard.mdc | ⬜ | 機台 `.cursor/rules/` 必留 |
+| Cursor rules（其餘路由） | ⬜ | 見 cursor_rules_trim_sop |
+| doc/REFERENCE_PATHS.md | ⬜ | 含 standard 根目錄 |
+| project-local.mdc 人工確認 | ⬜ | 使用者檢查定位/CPU/DLL/standard |
 | .ap21 本機位置已知 | ⬜ | 不強制進 Git |
-| Openness compile 曾 PASS | ⬜ | |
+| Openness compile 曾 PASS | ⬜ | 跑 **standard** `host/TiaOpennessCheck.exe` |
 
 ## 下一步（Agent / 人類）
 
-- 請打開 `.cursor/rules/project-local.mdc` 確認專案定位、TIA V21、CPU、station、DLL；有誤請 Agent 修改（確認後將上表「人工確認」改 ✅）
+- 請打開 `.cursor/rules/project-local.mdc` 確認專案定位、TIA V21、CPU、station、DLL、**standard 路徑**
+- 建議：File → Add Folder to Workspace → `openness-standard`

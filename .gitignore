@@ -17,5 +17,9 @@ obj/
 Siemens.Engineering*.dll
 Siemens.Engineering*.xml
 *.pdb
+*.exe
+Practice/**/*.lad.generated.xml
+Practice/**/*.exported.xml
 .env
 .env.*
+.local/

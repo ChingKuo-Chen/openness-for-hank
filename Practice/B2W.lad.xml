@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pack 8 bits into a word via slice access x0..x7. -->
+<Lad kind="FB" name="B2W" number="63" comment="Pack 8 bits into a word via slice access x0..x7.">
+  <Interface>
+    <Section name="Input">
+      <Member name="b0" type="Bool" start="false"  comment="輸出：b0（Bool）" />
+      <Member name="b1" type="Bool" start="false"  comment="輸出：b1（Bool）" />
+      <Member name="b2" type="Bool" start="false"  comment="輸出：b2（Bool）" />
+      <Member name="b3" type="Bool" start="false"  comment="輸出：b3（Bool）" />
+      <Member name="b4" type="Bool" start="false"  comment="輸出：b4（Bool）" />
+      <Member name="b5" type="Bool" start="false"  comment="輸出：b5（Bool）" />
+      <Member name="b6" type="Bool" start="false"  comment="輸出：b6（Bool）" />
+      <Member name="b7" type="Bool" start="false"  comment="輸出：b7（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="w" type="Word"  comment="輸出：w（Word）" />
+    </Section>
+  </Interface>
+  <Network title="Bits to word" comment="1. Bits to word">
+    <Fork>
+      <Series>
+        <Contact var="b0" />
+        <Coil var="w:x0" />
+      </Series>
+      <Series>
+        <Contact var="b1" />
+        <Coil var="w:x1" />
+      </Series>
+      <Series>
+        <Contact var="b2" />
+        <Coil var="w:x2" />
+      </Series>
+      <Series>
+        <Contact var="b3" />
+        <Coil var="w:x3" />
+      </Series>
+      <Series>
+        <Contact var="b4" />
+        <Coil var="w:x4" />
+      </Series>
+      <Series>
+        <Contact var="b5" />
+        <Coil var="w:x5" />
+      </Series>
+      <Series>
+        <Contact var="b6" />
+        <Coil var="w:x6" />
+      </Series>
+      <Series>
+        <Contact var="b7" />
+        <Coil var="w:x7" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 1600-1B sync: Rotor_Angle + feed-forward calc + enable coil.
+     Plant DBs become pins; PID_Rotor_Sync left as enable output. -->
+<Lad kind="FB" name="1600_1B_Sync_Ctrl" number="100" comment="1600-1B sync: Rotor_Angle + feed-forward calc + enable coil. Plant DBs become pins; PID_Rotor_Sync left as enable output.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enc_strander" type="DInt"  comment="靜態：enc_strander（DInt）" />
+      <Member name="enc_1600" type="DInt"  comment="靜態：enc_1600（DInt）" />
+      <Member name="ramped_ref" type="Real"  comment="斜坡後參考（%）" />
+      <Member name="ratio_strander" type="Real"  comment="靜態：ratio_strander（Real）" />
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+      <Member name="is_jog_fwd" type="Bool"  comment="靜態：is_jog_fwd（Bool）" />
+      <Member name="enable_1600" type="Bool"  comment="靜態：enable_1600（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="pid_enable" type="Bool"  comment="靜態：pid_enable（Bool）" />
+      <Member name="cur_ramped_norm" type="Real"  comment="靜態：cur_ramped_norm（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="Angle_Strander" type="Rotor_Angle"  comment="靜態：Angle_Strander（Rotor_Angle）" />
+      <Member name="Angle_1600" type="Rotor_Angle"  comment="靜態：Angle_1600（Rotor_Angle）" />
+    </Section>
+  </Interface>
+
+  <Network title="rotor angles" comment="1. rotor angles">
+    <Fork>
+      <Series>
+        <Call name="Rotor_Angle" type="FB" instance="Angle_Strander" scope="LocalVariable">
+          <Param name="enc" section="Input" type="DInt" var="enc_strander" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Rotor_Angle" type="FB" instance="Angle_1600" scope="LocalVariable">
+          <Param name="enc" section="Input" type="DInt" var="enc_1600" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="feed-forward speed" comment="2. feed-forward speed">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2/IN3" eno="false">
+        <In port="in1" var="ramped_ref" />
+        <In port="in2" var="ratio_strander" />
+        <In port="in3" const="100.0" type="Real" />
+        <Out port="out" var="cur_ramped_norm" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="enable PID" comment="3. enable PID">
+    <Series>
+      <Parallel>
+        <Contact var="is_run" />
+        <Contact var="is_jog_fwd" />
+      </Parallel>
+      <Contact var="enable_1600" />
+      <Coil var="pid_enable" />
+    </Series>
+  </Network>
+</Lad>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rising edge of start_step arms a simple step. -->
+<Lad kind="FC" name="Step_Start" number="34" comment="Rising edge of start_step arms a simple step.">
+  <Interface>
+    <Section name="Input">
+      <Member name="start_step" type="Bool"  comment="InOut：start_step（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="new_step" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="start and initialize step" comment="1. start and initialize step">
+    <Series>
+      <PContact var="start_step" mem="new_step.exec_edge" />
+      <Fork>
+        <Series>
+          <SCoil var="new_step.exec" />
+        </Series>
+        <Series>
+          <SCoil var="new_step.busy" />
+        </Series>
+        <Series>
+          <RCoil var="new_step.done" />
+        </Series>
+        <Series>
+          <RCoil var="new_step.error" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

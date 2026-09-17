@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Traverser home, position, limits, direction, run/jog. No CTRL_HSC on 1215. -->
+<Lad kind="FB" name="Traverser_Control_TF" number="130" comment="Traverser home, position, limits, direction, run/jog. No CTRL_HSC on 1215.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="first_scan" type="Bool"  comment="暫存：first_scan（Bool）" />
+      <Member name="snr_home" type="Bool"  comment="暫存：snr_home（Bool）" />
+      <Member name="q_dir_fb" type="Bool"  comment="暫存：q_dir_fb（Bool）" />
+      <Member name="pb_limit_a" type="Bool"  comment="暫存：pb_limit_a（Bool）" />
+      <Member name="pb_limit_b" type="Bool"  comment="暫存：pb_limit_b（Bool）" />
+      <Member name="pb_change_dir" type="Bool"  comment="暫存：pb_change_dir（Bool）" />
+      <Member name="pb_jog_to_a" type="Bool"  comment="暫存：pb_jog_to_a（Bool）" />
+      <Member name="pb_jog_to_b" type="Bool"  comment="暫存：pb_jog_to_b（Bool）" />
+      <Member name="snr_rail_a" type="Bool"  comment="暫存：snr_rail_a（Bool）" />
+      <Member name="snr_rail_b" type="Bool"  comment="暫存：snr_rail_b（Bool）" />
+      <Member name="pitch" type="Real"  comment="暫存：pitch（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="enc_trv" type="DInt"  comment="暫存：enc_trv（DInt）" />
+      <Member name="limit_a" type="Real"  comment="暫存：limit_a（Real）" />
+      <Member name="limit_b" type="Real"  comment="暫存：limit_b（Real）" />
+      <Member name="q_run" type="Bool"  comment="暫存：q_run（Bool）" />
+      <Member name="q_fwd_jog" type="Bool"  comment="暫存：q_fwd_jog（Bool）" />
+      <Member name="q_rev_jog" type="Bool"  comment="暫存：q_rev_jog（Bool）" />
+      <Member name="q_dir" type="Bool"  comment="暫存：q_dir（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="lamp_to_a" type="Bool"  comment="暫存：lamp_to_a（Bool）" />
+      <Member name="lamp_to_b" type="Bool"  comment="暫存：lamp_to_b（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="edge_home" type="Bool"  comment="暫存：edge_home（Bool）" />
+      <Member name="home_pulse" type="Bool"  comment="暫存：home_pulse（Bool）" />
+      <Member name="change_dir" type="Bool"  comment="暫存：change_dir（Bool）" />
+      <Member name="edge_change_dir" type="Bool"  comment="暫存：edge_change_dir（Bool）" />
+      <Member name="edge_pause" type="Bool"  comment="暫存：edge_pause（Bool）" />
+      <Member name="A" type="Struct">
+        <Member name="reached_guide_roll" type="Bool"  comment="暫存：reached_guide_roll（Bool）" />
+        <Member name="to_guide_roll" type="Bool"  comment="暫存：to_guide_roll（Bool）" />
+        <Member name="fast_to_guide_roll" type="Bool"  comment="暫存：fast_to_guide_roll（Bool）" />
+      </Member>
+      <Member name="B" type="Struct">
+        <Member name="reached_guide_roll" type="Bool"  comment="暫存：reached_guide_roll（Bool）" />
+        <Member name="to_guide_roll" type="Bool"  comment="暫存：to_guide_roll（Bool）" />
+        <Member name="fast_to_guide_roll" type="Bool"  comment="暫存：fast_to_guide_roll（Bool）" />
+      </Member>
+      <Member name="Trv" type="Struct">
+        <Member name="Dir" type="Bool"  comment="暫存：Dir（Bool）" />
+        <Member name="cur_pos" type="Real"  comment="暫存：cur_pos（Real）" />
+        <Member name="target_pos" type="Real"  comment="暫存：target_pos（Real）" />
+      </Member>
+      <Member name="config" type="Struct">
+        <Member name="pulses_per_mm" type="Real" start="100.0"  comment="暫存：pulses_per_mm（Real）" />
+      </Member>
+      <Member name="limit_set_key" type="Struct">
+        <Member name="A" type="Struct">
+          <Member name="btn" type="Bool"  comment="暫存：btn（Bool）" />
+          <Member name="busy" type="Bool"  comment="暫存：busy（Bool）" />
+          <Member name="done" type="Bool"  comment="暫存：done（Bool）" />
+          <Member name="wait_timer" type="IEC_TIMER"  comment="暫存：wait_timer（IEC_TIMER）" />
+        </Member>
+        <Member name="B" type="Struct">
+          <Member name="btn" type="Bool"  comment="暫存：btn（Bool）" />
+          <Member name="busy" type="Bool"  comment="暫存：busy（Bool）" />
+          <Member name="done" type="Bool"  comment="暫存：done（Bool）" />
+          <Member name="wait_timer" type="IEC_TIMER"  comment="暫存：wait_timer（IEC_TIMER）" />
+        </Member>
+      </Member>
+      <Member name="SoftGear" type="Delta_SoftGear_TrvPitch"  comment="暫存：SoftGear（Delta_SoftGear_TrvPitch）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="trv_pos_raw" type="Real"  comment="暫存：trv_pos_raw（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="touching home sensor" comment="1. touching home sensor">
+    <Fork>
+      <Series>
+        <Contact var="q_dir_fb" />
+        <PContact var="snr_home" mem="edge_home" />
+        <Coil var="home_pulse" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="home_pulse" />
+          <Contact var="first_scan" />
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="DInt" />
+          <Out port="out1" var="enc_trv" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="current traverse position" comment="2. current traverse position">
+    <Series>
+      <Box name="Convert" SrcType="DInt" DestType="Real">
+        <In port="in" var="enc_trv" />
+        <Out port="out" var="trv_pos_raw" />
+      </Box>
+      <Box name="Div" SrcType="Real" eno="false">
+        <In port="in1" var="trv_pos_raw" />
+        <In port="in2" var="config.pulses_per_mm" />
+        <Out port="out" var="Trv.cur_pos" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="L R limit setting" comment="3. L R limit setting">
+    <Fork>
+      <Series>
+        <Call name="Hold_Key" type="FC">
+          <Param name="wait" section="Input" type="Time" time="T#2s" />
+          <Param name="ext_btn" section="Input" type="Bool" var="pb_limit_a" />
+          <Param name="key" section="InOut" type="Struct" var="limit_set_key.A" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="limit_set_key.A.done" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Trv.cur_pos" />
+          <Out port="out1" var="limit_a" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="Hold_Key" type="FC">
+          <Param name="wait" section="Input" type="Time" time="T#2s" />
+          <Param name="ext_btn" section="Input" type="Bool" var="pb_limit_b" />
+          <Param name="key" section="InOut" type="Struct" var="limit_set_key.B" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="limit_set_key.B.done" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Trv.cur_pos" />
+          <Out port="out1" var="limit_b" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="limit A greater than B" comment="4. limit A greater than B">
+    <Series>
+      <Box name="Ge" SrcType="Real">
+        <In port="in1" var="limit_b" />
+        <In port="in2" var="limit_a" />
+      </Box>
+      <Box name="Sub" SrcType="Real" eno="false">
+        <In port="in1" var="limit_a" />
+        <In port="in2" const="10.0" type="Real" />
+        <Out port="out" var="limit_b" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="reached guide roll" comment="5. reached guide roll">
+    <Fork>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="Trv.cur_pos" />
+          <In port="in2" var="limit_a" />
+        </Box>
+        <Coil var="A.reached_guide_roll" />
+      </Series>
+      <Series>
+        <Box name="Le" SrcType="Real">
+          <In port="in1" var="Trv.cur_pos" />
+          <In port="in2" var="limit_b" />
+        </Box>
+        <Coil var="B.reached_guide_roll" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="switch direction" comment="6. switch direction">
+    <Fork>
+      <Series>
+        <Contact var="pb_change_dir" />
+        <PCoil var="change_dir" mem="edge_change_dir" />
+      </Series>
+      <Series>
+        <Contact var="change_dir" />
+        <Contact var="Trv.Dir" negated="true" />
+        <Parallel>
+          <Contact var="snr_rail_b" />
+          <Contact var="snr_rail_b" negated="true" />
+          <Contact var="B.reached_guide_roll" />
+        </Parallel>
+        <Contact var="A.to_guide_roll" negated="true" />
+        <Coil var="B.to_guide_roll" />
+      </Series>
+      <Series>
+        <Contact var="change_dir" />
+        <Contact var="Trv.Dir" />
+        <Parallel>
+          <Contact var="snr_rail_a" />
+          <Contact var="snr_rail_a" negated="true" />
+          <Contact var="A.reached_guide_roll" />
+        </Parallel>
+        <Contact var="B.to_guide_roll" negated="true" />
+        <Coil var="A.to_guide_roll" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="fast to guide roll" comment="7. fast to guide roll">
+    <Fork>
+      <Series>
+        <Contact var="pb_jog_to_b" />
+        <Contact var="snr_rail_b" />
+        <Contact var="B.fast_to_guide_roll" negated="true" />
+        <Coil var="A.fast_to_guide_roll" />
+      </Series>
+      <Series>
+        <Contact var="pb_jog_to_a" />
+        <Contact var="snr_rail_a" />
+        <Contact var="A.fast_to_guide_roll" negated="true" />
+        <Coil var="B.fast_to_guide_roll" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="traverser run jog" comment="8. traverser run jog">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="enable" />
+            <Contact var="edge_pause" negated="true" />
+          </Series>
+          <Contact var="A.fast_to_guide_roll" />
+          <Contact var="B.fast_to_guide_roll" />
+        </Parallel>
+        <Coil var="q_run" />
+      </Series>
+      <Series>
+        <Contact var="A.fast_to_guide_roll" />
+        <Coil var="q_fwd_jog" />
+      </Series>
+      <Series>
+        <Contact var="B.fast_to_guide_roll" />
+        <Coil var="q_rev_jog" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="traverser direction" comment="9. traverser direction">
+    <Fork>
+      <Series>
+        <Contact var="A.to_guide_roll" />
+        <RCoil var="Trv.Dir" />
+      </Series>
+      <Series>
+        <Contact var="B.to_guide_roll" />
+        <SCoil var="Trv.Dir" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="Trv.Dir" />
+          <Contact var="B.fast_to_guide_roll" />
+        </Parallel>
+        <Contact var="A.fast_to_guide_roll" negated="true" />
+        <Coil var="q_dir" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="target position" comment="10. target position">
+    <Fork>
+      <Series>
+        <Contact var="Trv.Dir" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="limit_b" />
+          <Out port="out1" var="Trv.target_pos" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="Trv.Dir" />
+        <Box name="Move" eno="false">
+          <In port="in" var="limit_a" />
+          <Out port="out1" var="Trv.target_pos" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="update pitch" comment="11. update pitch">
+    <Series>
+      <Call name="Delta_SoftGear_TrvPitch" type="FB" instance="SoftGear" scope="LocalVariable">
+        <Param name="enable" section="Input" type="Bool" const="true" />
+        <Param name="pitch" section="Input" type="Real" var="pitch" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="lamps" comment="12. lamps">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="q_dir" negated="true" />
+            <Contact var="A.fast_to_guide_roll" negated="true" />
+          </Series>
+          <Contact var="B.fast_to_guide_roll" />
+        </Parallel>
+        <Coil var="lamp_to_a" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="q_dir" />
+            <Contact var="B.fast_to_guide_roll" negated="true" />
+          </Series>
+          <Contact var="A.fast_to_guide_roll" />
+        </Parallel>
+        <Coil var="lamp_to_b" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

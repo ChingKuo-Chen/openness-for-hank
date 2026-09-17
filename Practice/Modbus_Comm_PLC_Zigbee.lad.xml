@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PLC Zigbee comm load handshake + watchdog increment (no FirstScan tag). -->
+<Lad kind="FB" name="Modbus_Comm_PLC_Zigbee" number="120" comment="PLC Zigbee comm load handshake + watchdog increment (no FirstScan tag).">
+  <Interface>
+    <Section name="Input">
+      <Member name="first_scan" type="Bool"  comment="靜態：first_scan（Bool）" />
+      <Member name="ID" type="UInt"  comment="靜態：ID（UInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="watch_dog" type="Int"  comment="靜態：watch_dog（Int）" />
+    </Section>
+    <Section name="Static">
+      <Member name="comm_load" type="Bool"  comment="靜態：comm_load（Bool）" />
+      <Member name="stat" type="Struct">
+        <Member name="done" type="Bool"  comment="靜態：done（Bool）" />
+        <Member name="error" type="Bool"  comment="靜態：error（Bool）" />
+        <Member name="status" type="Word"  comment="靜態：status（Word）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="request load" comment="1. request load">
+    <Fork>
+      <Series>
+        <Contact var="first_scan" />
+        <SCoil var="comm_load" />
+      </Series>
+      <Series>
+        <Contact var="stat.done" />
+        <RCoil var="comm_load" />
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="watchdog" comment="2. watchdog">
+    <Series>
+      <Box name="Inc" DestType="Int" eno="false">
+        <In port="operand" var="watch_dog" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portable form of the plant mapping FC: copy three latch words into event words.
+     (23019 used global EErr/NErr/AErr DBs; practice takes them as parameters.) -->
+<Lad kind="FC" name="SMB_Collect_Events" number="71" comment="Portable form of the plant mapping FC: copy three latch words into event words. (23019 used global EErr/NErr/AErr DBs; practice takes them as parameters.)">
+  <Interface>
+    <Section name="Input">
+      <Member name="e_src" type="Word"  comment="輸出：e_src（Word）" />
+      <Member name="n_src" type="Word"  comment="輸出：n_src（Word）" />
+      <Member name="a_src" type="Word"  comment="輸出：a_src（Word）" />
+    </Section>
+    <Section name="Output">
+      <Member name="e_word0" type="Word"  comment="輸出：e_word0（Word）" />
+      <Member name="e_word1" type="Word"  comment="輸出：e_word1（Word）" />
+      <Member name="e_word2" type="Word"  comment="輸出：e_word2（Word）" />
+    </Section>
+  </Interface>
+  <Network title="Mapping" comment="1. Mapping">
+    <Fork>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="e_src" />
+          <Out port="out1" var="e_word0" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="n_src" />
+          <Out port="out1" var="e_word1" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="a_src" />
+          <Out port="out1" var="e_word2" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

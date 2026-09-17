@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- MAX/MIN over ratio_check then *100 and LIMIT 0..100. -->
+<Lad kind="FB" name="VR_Max_Limit" number="56" comment="MAX/MIN over ratio_check then *100 and LIMIT 0..100.">
+  <Interface>
+    <Section name="Input">
+      <Member name="ratio_1" type="Real" start="1.0"  comment="暫存：ratio_1（Real）" />
+      <Member name="ratio_limit_1" type="Real" start="0.0"  comment="暫存：ratio_limit_1（Real）" />
+      <Member name="ratio_2" type="Real" start="1.0"  comment="暫存：ratio_2（Real）" />
+      <Member name="ratio_limit_2" type="Real" start="0.0"  comment="暫存：ratio_limit_2（Real）" />
+      <Member name="ratio_3" type="Real" start="1.0"  comment="暫存：ratio_3（Real）" />
+      <Member name="ratio_limit_3" type="Real" start="1.0"  comment="暫存：ratio_limit_3（Real）" />
+      <Member name="ratio_4" type="Real" start="1.0"  comment="暫存：ratio_4（Real）" />
+      <Member name="ratio_limit_4" type="Real" start="0.0"  comment="暫存：ratio_limit_4（Real）" />
+      <Member name="ratio_5" type="Real" start="1.0"  comment="暫存：ratio_5（Real）" />
+      <Member name="ratio_limit_5" type="Real" start="0.0"  comment="暫存：ratio_limit_5（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="vr_limit" type="Real"  comment="暫存：vr_limit（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="ratio_check" type="Array[0..4] of Real"  comment="暫存：ratio_check（Array[0..4] of Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="ratio_max" type="Real"  comment="暫存：ratio_max（Real）" />
+      <Member name="vr_limit_result" type="Real"  comment="暫存：vr_limit_result（Real）" />
+    </Section>
+  </Interface>
+  <Network title="max of ratio_check" comment="1. max of ratio_check">
+    <Series>
+      <Box name="MAX" value_type="Real" card="5" eno="false">
+        <In port="IN1" var="ratio_check[0]" />
+        <In port="IN2" var="ratio_check[1]" />
+        <In port="IN3" var="ratio_check[2]" />
+        <In port="IN4" var="ratio_check[3]" />
+        <In port="IN5" var="ratio_check[4]" />
+        <Out port="OUT" var="ratio_max" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="min of ratio_check" comment="2. min of ratio_check">
+    <Series>
+      <Box name="MIN" value_type="Real" card="5" eno="false">
+        <In port="IN1" var="ratio_check[0]" />
+        <In port="IN2" var="ratio_check[1]" />
+        <In port="IN3" var="ratio_check[2]" />
+        <In port="IN4" var="ratio_check[3]" />
+        <In port="IN5" var="ratio_check[4]" />
+        <Out port="OUT" var="vr_limit_result" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="scale and clamp" comment="3. scale and clamp">
+    <Fork>
+      <Series>
+        <Box name="Mul" SrcType="Real" eno="false">
+          <In port="in1" var="vr_limit_result" />
+          <In port="in2" const="100.0" type="Real" />
+          <Out port="out" var="vr_limit" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="vr_limit" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="vr_limit" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

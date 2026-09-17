@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Soft-gear follow-ratio status / write-timeout (calc nets were SCL). -->
+<Lad kind="FB" name="Delta_SoftGear_TrvPitch" number="99" comment="Soft-gear follow-ratio status / write-timeout (calc nets were SCL).">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="pitch" type="Real"  comment="常數：pitch（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="to_write_N1" type="Bool"  comment="常數：to_write_N1（Bool）" />
+      <Member name="to_write_M" type="Bool"  comment="常數：to_write_M（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="conf" type="Struct">
+        <Member name="max_follow_ratio" type="Real" start="2.0"  comment="常數：max_follow_ratio（Real）" />
+        <Member name="min_follow_ratio" type="Real" start="0.5"  comment="常數：min_follow_ratio（Real）" />
+      </Member>
+      <Member name="status" type="Struct">
+        <Member name="ratio_over" type="Bool"  comment="常數：ratio_over（Bool）" />
+        <Member name="ratio_under" type="Bool"  comment="常數：ratio_under（Bool）" />
+        <Member name="ratio_overflow" type="Bool"  comment="常數：ratio_overflow（Bool）" />
+        <Member name="timeout_update_N1" type="Bool"  comment="常數：timeout_update_N1（Bool）" />
+        <Member name="timeout_update_M" type="Bool"  comment="常數：timeout_update_M（Bool）" />
+      </Member>
+      <Member name="cur" type="Struct">
+        <Member name="follow_ratio" type="Real"  comment="常數：follow_ratio（Real）" />
+      </Member>
+      <Member name="N1_Write_TON" type="TON_TIME"  comment="常數：N1_Write_TON（TON_TIME）" />
+      <Member name="M_Write_TON" type="TON_TIME"  comment="常數：M_Write_TON（TON_TIME）" />
+    </Section>
+    <Section name="Constant">
+      <Member name="comm_timeout_time" type="Time" start="T#10s"  comment="常數：comm_timeout_time（Time）" />
+    </Section>
+  </Interface>
+
+  <Network title="ratio status" comment="1. ratio status">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="cur.follow_ratio" />
+          <In port="in2" var="conf.max_follow_ratio" />
+        </Box>
+        <Coil var="status.ratio_over" />
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="cur.follow_ratio" />
+          <In port="in2" var="conf.min_follow_ratio" />
+        </Box>
+        <Coil var="status.ratio_under" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="status.ratio_over" />
+          <Contact var="status.ratio_under" />
+        </Parallel>
+        <Coil var="status.ratio_overflow" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="write timeouts" comment="2. write timeouts">
+    <Fork>
+      <Series>
+        <Contact var="to_write_N1" />
+        <Box name="TON" instance="N1_Write_TON" time_type="Time">
+          <In port="PT" var="comm_timeout_time" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="status.timeout_update_N1" />
+      </Series>
+      <Series>
+        <Contact var="to_write_M" />
+        <Box name="TON" instance="M_Write_TON" time_type="Time">
+          <In port="PT" var="comm_timeout_time" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="status.timeout_update_M" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

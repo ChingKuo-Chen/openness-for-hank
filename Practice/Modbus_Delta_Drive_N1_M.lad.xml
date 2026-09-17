@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Delta N1/M: one read + two writes sequenced by query_idx. -->
+<Lad kind="FB" name="Modbus_Delta_Drive_N1_M" number="118" comment="Delta N1/M: one read + two writes sequenced by query_idx.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="mb_addr" type="UInt"  comment="靜態：mb_addr（UInt）" />
+      <Member name="first_scan" type="Bool"  comment="靜態：first_scan（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="had_error" type="Bool"  comment="靜態：had_error（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="finish" type="Bool"  comment="靜態：finish（Bool）" />
+      <Member name="error" type="Bool"  comment="靜態：error（Bool）" />
+      <Member name="my_MB_Master" type="MB_MASTER"  comment="靜態：my_MB_Master（MB_MASTER）" />
+    </Section>
+    <Section name="Static">
+      <Member name="query_idx" type="UInt"  comment="靜態：query_idx（UInt）" />
+      <Member name="Query" type="Modbus_Reader"  comment="靜態：Query（Modbus_Reader）" />
+      <Member name="Writer" type="Modbus_Writer"  comment="靜態：Writer（Modbus_Writer）" />
+      <Member name="cmd_rd" type="Struct">
+        <Member name="RTU_Mode" type="USInt"  comment="靜態：RTU_Mode（USInt）" />
+        <Member name="RTU_Data_Addr" type="UDInt"  comment="靜態：RTU_Data_Addr（UDInt）" />
+        <Member name="RTU_Data_Len" type="Int"  comment="靜態：RTU_Data_Len（Int）" />
+        <Member name="swap" type="Bool"  comment="靜態：swap（Bool）" />
+        <Member name="to_read" type="Bool"  comment="靜態：to_read（Bool）" />
+        <Member name="valid" type="Bool"  comment="資料有效" />
+        <Member name="raw_value" type="DInt"  comment="靜態：raw_value（DInt）" />
+        <Member name="total_count" type="DInt"  comment="靜態：total_count（DInt）" />
+        <Member name="failed_count" type="DInt"  comment="靜態：failed_count（DInt）" />
+      </Member>
+      <Member name="cmd_wr" type="Struct">
+        <Member name="RTU_Mode" type="USInt"  comment="靜態：RTU_Mode（USInt）" />
+        <Member name="RTU_Data_Addr" type="UDInt"  comment="靜態：RTU_Data_Addr（UDInt）" />
+        <Member name="RTU_Data_Len" type="Int"  comment="靜態：RTU_Data_Len（Int）" />
+        <Member name="swap" type="Bool"  comment="靜態：swap（Bool）" />
+        <Member name="to_write" type="Bool"  comment="靜態：to_write（Bool）" />
+        <Member name="valid" type="Bool"  comment="資料有效" />
+        <Member name="raw_value" type="DInt"  comment="靜態：raw_value（DInt）" />
+        <Member name="total_count" type="DInt"  comment="靜態：total_count（DInt）" />
+        <Member name="failed_count" type="DInt"  comment="靜態：failed_count（DInt）" />
+      </Member>
+      <Member name="Feedback" type="Struct">
+        <Member name="raw_in" type="DInt"  comment="靜態：raw_in（DInt）" />
+        <Member name="raw_value" type="Real"  comment="靜態：raw_value（Real）" />
+        <Member name="raw_min" type="Real"  comment="靜態：raw_min（Real）" />
+        <Member name="raw_max" type="Real"  comment="靜態：raw_max（Real）" />
+        <Member name="norm" type="Real"  comment="靜態：norm（Real）" />
+        <Member name="disp_min" type="Real"  comment="靜態：disp_min（Real）" />
+        <Member name="disp_max" type="Real"  comment="靜態：disp_max（Real）" />
+        <Member name="disp_value" type="Real"  comment="靜態：disp_value（Real）" />
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="first scan clear busy" comment="1. first scan clear busy">
+    <Series>
+      <Contact var="first_scan" />
+      <Fork>
+        <Series><RCoil var="Query.stat.busy" /></Series>
+        <Series><RCoil var="Writer.stat.busy" /></Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="idx 0 read" comment="2. idx 0 read">
+    <Series>
+      <Box name="Eq" SrcType="UInt">
+        <In port="in1" var="query_idx" />
+        <In port="in2" const="0" type="UInt" />
+      </Box>
+      <Contact var="enable" />
+      <Call name="Modbus_Reader" type="FB" instance="Query" scope="LocalVariable">
+        <Param name="enabled" section="Input" type="Bool" const="true" />
+        <Param name="reset" section="Input" type="Bool" var="reset" />
+        <Param name="mb_addr" section="Input" type="UInt" var="mb_addr" />
+        <Param name="my_MB_Master" section="InOut" type="MB_MASTER" var="my_MB_Master" />
+        <Param name="CMD" section="InOut" type="Struct" var="cmd_rd" />
+        <Param name="Feedback" section="InOut" type="Struct" var="Feedback" />
+        <Param name="error" section="InOut" type="Bool" var="error" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="idx 1 write N1" comment="3. idx 1 write N1">
+    <Series>
+      <Box name="Eq" SrcType="UInt">
+        <In port="in1" var="query_idx" />
+        <In port="in2" const="1" type="UInt" />
+      </Box>
+      <Contact var="enable" />
+      <Call name="Modbus_Writer" type="FB" instance="Writer" scope="LocalVariable">
+        <Param name="enable" section="Input" type="Bool" const="true" />
+        <Param name="reset" section="Input" type="Bool" var="reset" />
+        <Param name="mb_addr" section="Input" type="UInt" var="mb_addr" />
+        <Param name="my_MB_Master" section="InOut" type="MB_MASTER" var="my_MB_Master" />
+        <Param name="CMD" section="InOut" type="Struct" var="cmd_wr" />
+        <Param name="error" section="InOut" type="Bool" var="error" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="idx 2 write M then finish" comment="4. idx 2 write M then finish">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="UInt">
+          <In port="in1" var="query_idx" />
+          <In port="in2" const="2" type="UInt" />
+        </Box>
+        <Contact var="enable" />
+        <Call name="Modbus_Writer" type="FB" instance="Writer" scope="LocalVariable">
+          <Param name="enable" section="Input" type="Bool" const="true" />
+          <Param name="reset" section="Input" type="Bool" var="reset" />
+          <Param name="mb_addr" section="Input" type="UInt" var="mb_addr" />
+          <Param name="my_MB_Master" section="InOut" type="MB_MASTER" var="my_MB_Master" />
+          <Param name="CMD" section="InOut" type="Struct" var="cmd_wr" />
+          <Param name="error" section="InOut" type="Bool" var="error" />
+        </Call>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="UInt">
+          <In port="in1" var="query_idx" />
+          <In port="in2" const="2" type="UInt" />
+        </Box>
+        <SCoil var="finish" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="error latch and index" comment="5. error latch and index">
+    <Fork>
+      <Series>
+        <Contact var="error" />
+        <SCoil var="had_error" />
+      </Series>
+      <Series>
+        <Contact var="finish" />
+        <Box name="Inc" DestType="UInt" eno="false">
+          <In port="operand" var="query_idx" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="UInt">
+          <In port="in1" var="query_idx" />
+          <In port="in2" const="2" type="UInt" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="UInt" />
+          <Out port="out1" var="query_idx" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

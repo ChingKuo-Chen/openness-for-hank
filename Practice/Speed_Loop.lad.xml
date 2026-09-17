@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Speed loop: Cal_Ratios, Btn_Ratio VR, target select, Power_Loss_Ramp. -->
+<Lad kind="FB" name="Speed_Loop" number="115" comment="Speed loop: Cal_Ratios, Btn_Ratio VR, target select, Power_Loss_Ramp.">
+  <Interface>
+    <Section name="Input">
+      <Member name="in_action" type="Bool"  comment="動作進行中" />
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+      <Member name="is_finishing" type="Bool"  comment="靜態：is_finishing（Bool）" />
+      <Member name="is_jog_fwd" type="Bool"  comment="靜態：is_jog_fwd（Bool）" />
+      <Member name="is_jog_rev" type="Bool"  comment="靜態：is_jog_rev（Bool）" />
+      <Member name="is_strander_homing" type="Bool"  comment="靜態：is_strander_homing（Bool）" />
+      <Member name="PowerLess_Ramp" type="Real" start="5.0"  comment="靜態：PowerLess_Ramp（Real）" />
+      <Member name="lsp_raw_max" type="Real" start="27648.0"  comment="靜態：lsp_raw_max（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="pitch_inc_set" type="Bool"  comment="靜態：pitch_inc_set（Bool）" />
+      <Member name="pitch_dec_set" type="Bool"  comment="靜態：pitch_dec_set（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="cat_jog_ref" type="DInt"  comment="靜態：cat_jog_ref（DInt）" />
+    </Section>
+    <Section name="Static">
+      <Member name="HMI_PB_pitch_change" type="Bool"  comment="靜態：HMI_PB_pitch_change（Bool）" />
+      <Member name="VR" type="Btn_Ratio"  comment="靜態：VR（Btn_Ratio）" />
+      <Member name="Cal_Ratios" type="Cal_Ratios"  comment="靜態：Cal_Ratios（Cal_Ratios）" />
+      <Member name="ratio" type="Struct">
+        <Member name="strander" type="Real"  comment="靜態：strander（Real）" />
+        <Member name="tape1" type="Real"  comment="靜態：tape1（Real）" />
+        <Member name="tape2" type="Real"  comment="靜態：tape2（Real）" />
+        <Member name="tape3" type="Real"  comment="靜態：tape3（Real）" />
+        <Member name="cat" type="Real"  comment="靜態：cat（Real）" />
+      </Member>
+      <Member name="ref" type="Struct">
+        <Member name="SP" type="Real"  comment="設定值 Setpoint" />
+        <Member name="target" type="Real"  comment="靜態：target（Real）" />
+      </Member>
+      <Member name="spd" type="Struct">
+        <Member name="finishing" type="Real" start="10.0"  comment="靜態：finishing（Real）" />
+        <Member name="line_jog" type="Real" start="5.0"  comment="靜態：line_jog（Real）" />
+        <Member name="strander_homing" type="Real" start="5.0"  comment="靜態：strander_homing（Real）" />
+        <Member name="cat_jog" type="Real" start="5.0"  comment="靜態：cat_jog（Real）" />
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="calculate ratios" comment="1. calculate ratios">
+    <Series>
+      <Parallel>
+        <Contact var="in_action" negated="true" />
+        <Contact var="pitch_inc_set" />
+        <Contact var="pitch_dec_set" />
+        <Contact var="HMI_PB_pitch_change" />
+      </Parallel>
+      <Call name="Cal_Ratios" type="FB" instance="Cal_Ratios" scope="LocalVariable">
+        <Param name="0_enable" section="Input" type="Bool" const="true" />
+        <Param name="0_spd" section="Input" type="Real" var="ref.SP" />
+        <Param name="0_gain" section="Input" type="Real" const="1.0" />
+        <Param name="1_enable" section="Input" type="Bool" const="true" />
+        <Param name="1_spd" section="Input" type="Real" var="ref.SP" />
+        <Param name="1_gain" section="Input" type="Real" const="1.0" />
+        <Param name="2_enable" section="Input" type="Bool" const="true" />
+        <Param name="2_spd" section="Input" type="Real" var="ref.SP" />
+        <Param name="2_gain" section="Input" type="Real" const="1.0" />
+        <Param name="3_enable" section="Input" type="Bool" const="true" />
+        <Param name="3_spd" section="Input" type="Real" var="ref.SP" />
+        <Param name="3_gain" section="Input" type="Real" const="1.0" />
+        <Param name="4_enable" section="Input" type="Bool" const="true" />
+        <Param name="4_spd" section="Input" type="Real" var="ref.SP" />
+        <Param name="4_gain" section="Input" type="Real" const="1.0" />
+        <Param name="ratio_0" section="Output" type="Real" var="ratio.strander" />
+        <Param name="ratio_1" section="Output" type="Real" var="ratio.tape1" />
+        <Param name="ratio_2" section="Output" type="Real" var="ratio.tape2" />
+        <Param name="ratio_3" section="Output" type="Real" var="ratio.tape3" />
+        <Param name="ratio_4" section="Output" type="Real" var="ratio.cat" />
+      </Call>
+      <Fork>
+        <Series>
+          <Contact var="pitch_inc_set" />
+          <RCoil var="pitch_inc_set" />
+        </Series>
+        <Series>
+          <Contact var="pitch_dec_set" />
+          <RCoil var="pitch_dec_set" />
+        </Series>
+        <Series>
+          <Contact var="HMI_PB_pitch_change" />
+          <RCoil var="HMI_PB_pitch_change" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="VR setpoint" comment="2. VR setpoint">
+    <Series>
+      <Call name="Btn_Ratio" type="FB" instance="VR" scope="LocalVariable">
+        <Param name="inc_expb" section="Input" type="Bool" var="VR.inc_intpb" />
+        <Param name="dec_expb" section="Input" type="Bool" var="VR.dec_intpb" />
+        <Param name="limit_range" section="Input" type="Bool" const="true" />
+        <Param name="adj_slice" section="Input" type="Real" const="0.1" />
+        <Param name="VR_value" section="InOut" type="Real" var="ref.SP" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="power loss ramp" comment="3. power loss ramp">
+    <Series>
+      <Call name="Power_Loss_Ramp" type="FC">
+        <Param name="ratio_strander" section="Input" type="Real" var="ratio.strander" />
+        <Param name="ratio_cat" section="Input" type="Real" var="ratio.cat" />
+        <Param name="ratio_tape1" section="Input" type="Real" var="ratio.tape1" />
+        <Param name="ratio_tape2" section="Input" type="Real" var="ratio.tape2" />
+        <Param name="ratio_tape3" section="Input" type="Real" var="ratio.tape3" />
+        <Param name="PowerLess_Ramp" section="Input" type="Real" var="PowerLess_Ramp" />
+        <Param name="cmd_strander" section="Output" type="DInt" var="cat_jog_ref" />
+        <Param name="cmd_cat" section="Output" type="DInt" var="cat_jog_ref" />
+        <Param name="cmd_tape1" section="Output" type="DInt" var="cat_jog_ref" />
+        <Param name="cmd_tape2" section="Output" type="DInt" var="cat_jog_ref" />
+        <Param name="cmd_tape3" section="Output" type="DInt" var="cat_jog_ref" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="target reference" comment="4. target reference">
+    <Fork>
+      <Series>
+        <Contact var="is_run" />
+        <Contact var="is_finishing" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="ref.SP" />
+          <Out port="out1" var="ref.target" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is_run" negated="true" />
+        <Contact var="is_jog_fwd" negated="true" />
+        <Contact var="is_jog_rev" negated="true" />
+        <Contact var="is_strander_homing" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="ref.target" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is_finishing" />
+        <Box name="MIN" value_type="Real" card="2" eno="false">
+          <In port="IN1" var="ref.SP" />
+          <In port="IN2" var="spd.finishing" />
+          <Out port="OUT" var="ref.target" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_jog_fwd" />
+          <Contact var="is_jog_rev" />
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" var="spd.line_jog" />
+          <Out port="out1" var="ref.target" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is_strander_homing" />
+        <Box name="Move" eno="false">
+          <In port="in" var="spd.strander_homing" />
+          <Out port="out1" var="ref.target" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="capstan jog ref" comment="5. capstan jog ref">
+    <Series>
+      <Call name="CT_Linear_Output" type="FC">
+        <Param name="sync_ramp" section="Input" type="Real" var="spd.cat_jog" />
+        <Param name="ratio" section="Input" type="Real" const="1.0" />
+        <Param name="ref_max" section="Input" type="Real" var="lsp_raw_max" />
+        <Param name="mul" section="Input" type="Real" const="10.0" />
+        <Param name="cmd_ref" section="Output" type="DInt" var="cat_jog_ref" />
+      </Call>
+    </Series>
+  </Network>
+</Lad>

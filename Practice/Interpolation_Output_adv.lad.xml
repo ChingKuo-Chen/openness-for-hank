@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Linear AO path of Interpolation_Output_adv (lookup branch needs UDT + FC later). -->
+<Lad kind="FC" name="Interpolation_Output_adv" number="82" comment="Linear AO path of Interpolation_Output_adv (lookup branch needs UDT + FC later).">
+  <Interface>
+    <Section name="Input">
+      <Member name="linear_output" type="Bool"  comment="暫存：linear_output（Bool）" />
+      <Member name="sync_ramp" type="Real"  comment="暫存：sync_ramp（Real）" />
+      <Member name="ratio" type="Real"  comment="暫存：ratio（Real）" />
+      <Member name="factor" type="Real"  comment="暫存：factor（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ao" type="Int"  comment="暫存：ao（Int）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="norm_out" type="Real"  comment="暫存：norm_out（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="fixed_norm_out" type="Real"  comment="暫存：fixed_norm_out（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="normalized expected output" comment="1. normalized expected output">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="4" equation="IN1*IN2*IN3/IN4" eno="false">
+        <In port="in1" var="sync_ramp" />
+        <In port="in2" var="ratio" />
+        <In port="in3" var="factor" />
+        <In port="in4" const="10000.0" type="Real" />
+        <Out port="out" var="norm_out" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="AO: linear now; non-linear copies norm until Lookup exists" comment="2. AO: linear now; non-linear copies norm until Lookup exists">
+    <Fork>
+      <Series>
+        <Contact var="linear_output" />
+        <Box name="Scale_X" SrcType="Real" DestType="Int" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="norm_out" />
+          <In port="max" const="27648" type="Int" />
+          <Out port="out" var="ao" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="linear_output" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="norm_out" />
+          <Out port="out1" var="fixed_norm_out" />
+        </Box>
+        <Box name="Scale_X" SrcType="Real" DestType="Int" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="fixed_norm_out" />
+          <In port="max" const="27648" type="Int" />
+          <Out port="out" var="ao" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

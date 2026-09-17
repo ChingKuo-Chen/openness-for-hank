@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="Step_Last" number="35" comment="練習區塊 Step_Last（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="confirm" type="Bool"  comment="InOut：confirm（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="step_finish" type="Bool"  comment="InOut：step_finish（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="current_step" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="Last step, mark finished" comment="1. Last step, mark finished">
+    <Series>
+      <Contact var="current_step.exec" />
+      <Contact var="current_step.done" />
+      <Contact var="confirm" />
+      <Fork>
+        <Series>
+          <RCoil var="current_step.exec" />
+        </Series>
+        <Series>
+          <Coil var="step_finish" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

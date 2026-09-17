@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Recipe handshake: pulse flags, lock while running. Plant SMFA FCs become Bools. -->
+<Lad kind="FB" name="Recipe_Control" number="105" comment="Recipe handshake: pulse flags, lock while running. Plant SMFA FCs become Bools.">
+  <Interface>
+    <Section name="Input">
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+      <Member name="tape_enable" type="Bool"  comment="靜態：tape_enable（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="preview_to_run" type="Bool"  comment="靜態：preview_to_run（Bool）" />
+      <Member name="run_to_preview" type="Bool"  comment="靜態：run_to_preview（Bool）" />
+      <Member name="lock" type="Bool"  comment="靜態：lock（Bool）" />
+      <Member name="buffer_to_running" type="Bool"  comment="靜態：buffer_to_running（Bool）" />
+      <Member name="running_to_buffer" type="Bool"  comment="靜態：running_to_buffer（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="tm_to_run_tp" type="TON_TIME"  comment="靜態：tm_to_run_tp（TON_TIME）" />
+      <Member name="tm_to_recipe_tp" type="TON_TIME"  comment="靜態：tm_to_recipe_tp（TON_TIME）" />
+    </Section>
+  </Interface>
+
+  <Network title="preview / running pulses" comment="1. preview / running pulses">
+    <Fork>
+      <Series>
+        <Contact var="preview_to_run" />
+        <RCoil var="preview_to_run" />
+      </Series>
+      <Series>
+        <Contact var="run_to_preview" />
+        <RCoil var="run_to_preview" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="lock recipe while tape running" comment="2. lock recipe while tape running">
+    <Series>
+      <Contact var="is_run" />
+      <Contact var="tape_enable" />
+      <Coil var="lock" />
+    </Series>
+  </Network>
+
+  <Network title="buffer to running with 50ms pulse" comment="3. buffer to running with 50ms pulse">
+    <Fork>
+      <Series>
+        <Contact var="buffer_to_running" />
+        <Contact var="lock" negated="true" />
+        <Box name="TON" instance="tm_to_run_tp" time_type="Time">
+          <In port="PT" time="T#50ms" />
+          <Open port="ET" />
+        </Box>
+        <RCoil var="buffer_to_running" />
+      </Series>
+      <Series>
+        <Contact var="running_to_buffer" />
+        <Box name="TON" instance="tm_to_recipe_tp" time_type="Time">
+          <In port="PT" time="T#50ms" />
+          <Open port="ET" />
+        </Box>
+        <RCoil var="running_to_buffer" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

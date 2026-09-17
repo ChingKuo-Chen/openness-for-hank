@@ -1,0 +1,36 @@
+---
+description: >-
+  找到 pioneerm-automation 的 Openness standard。
+  即使沒把 standard 加進 Cursor workspace，也要去磁碟或 GitHub 找。
+alwaysApply: true
+---
+
+# 找 Openness standard
+
+法典、`host/`、`tools/`、`INSTALL.md` 在 GitHub **`pioneerm-automation/openness-standard`**。  
+**不要**把 `rules/*.md` 全文貼進本專案。日常 Openness **跑 standard 的 `host/`**，不要在機台 repo 維護第二份工具。
+
+## 搜尋順序（找到就讀，不要停下來等人加 Folder）
+
+1. Cursor workspace 是否已有資料夾名 `openness-standard`
+2. 本機台 repo **同層**：`../openness-standard`
+3. 常見父目錄：本機 `pioneerm-automation\openness-standard`（與機台 repo 並列）
+4. 都沒有 → `gh repo clone pioneerm-automation/openness-standard` 到**本 repo 的同層**（並列，不要 clone 進本 repo 裡面）
+
+找到後用**絕對路徑**讀並執行：
+
+- `<standard>/AGENTS.md`、`<standard>/rules/`
+- 工具：`<standard>/host/TiaOpennessCheck.exe`（沒有或原始碼較新：在 `host/` 跑 `Build.ps1`）
+- 新電腦：把 `<standard>/host/INSTALL.md` 丟給 Cursor
+
+把實際找到的路徑寫進 [`project-local.mdc`](project-local.mdc)（standard 根目錄）。
+
+## Workspace
+
+建議使用者 **File → Add Folder to Workspace** 選 `openness-standard`（skills／autoload 才會掛上）。這是建議，**不是**讀規定或跑 host 的前提。
+
+## 禁止
+
+- 找不到 standard 就自己發明一套 Openness 流程
+- 建置期 `ProjectReference` / include 指向 standard
+- 為日常使用把整份 `host/*.cs` copy 進本 repo

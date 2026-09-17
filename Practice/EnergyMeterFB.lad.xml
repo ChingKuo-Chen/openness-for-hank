@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Energy meter wrapper: gate + ProcS7Energy + ProcSMFAEnergy.
+     RD_LOC_T/DTL skipped on 1215 import — sysDay is an input. -->
+<Lad kind="FB" name="EnergyMeterFB" number="98" comment="Energy meter wrapper: gate + ProcS7Energy + ProcSMFAEnergy. RD_LOC_T/DTL skipped on 1215 import — sysDay is an input.">
+  <Interface>
+    <Section name="Input">
+      <Member name="hwID" type="HW_IO"  comment="靜態：hwID（HW_IO）" />
+      <Member name="forceRstEnCnt" type="Bool"  comment="靜態：forceRstEnCnt（Bool）" />
+      <Member name="powerBipolarRec" type="Bool"  comment="靜態：powerBipolarRec（Bool）" />
+      <Member name="procID_R" type="DInt"  comment="靜態：procID_R（DInt）" />
+      <Member name="procID_W" type="DInt"  comment="靜態：procID_W（DInt）" />
+      <Member name="actPowerTotal" type="Real"  comment="靜態：actPowerTotal（Real）" />
+      <Member name="actEnTotalLR" type="LReal"  comment="靜態：actEnTotalLR（LReal）" />
+      <Member name="unit" type="Real"  comment="靜態：unit（Real）" />
+      <Member name="sysDay" type="USInt"  comment="靜態：sysDay（USInt）" />
+    </Section>
+    <Section name="Output">
+      <Member name="gateCtrl" type="Bool"  comment="靜態：gateCtrl（Bool）" />
+      <Member name="dayPowerMax" type="Real"  comment="靜態：dayPowerMax（Real）" />
+      <Member name="dayEnergyMax" type="Real"  comment="靜態：dayEnergyMax（Real）" />
+      <Member name="actEnergy_kWh" type="Real"  comment="靜態：actEnergy_kWh（Real）" />
+      <Member name="operatingCntHours" type="Real"  comment="靜態：operatingCntHours（Real）" />
+      <Member name="actEnTotal_GWh" type="LReal"  comment="靜態：actEnTotal_GWh（LReal）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="readRaw" type="Variant"  comment="靜態：readRaw（Variant）" />
+      <Member name="writeRaw" type="Variant"  comment="靜態：writeRaw（Variant）" />
+    </Section>
+    <Section name="Static">
+      <Member name="statusWREC" type="Struct">
+        <Member name="reset" type="Bool"  comment="復位" />
+        <Member name="busy" type="Bool"  comment="靜態：busy（Bool）" />
+      </Member>
+      <Member name="ProcS7Energy_Instance" type="ProcS7Energy"  comment="靜態：ProcS7Energy_Instance（ProcS7Energy）" />
+      <Member name="ProcSMFAEnergy_Instance" type="ProcSMFAEnergy"  comment="靜態：ProcSMFAEnergy_Instance（ProcSMFAEnergy）" />
+      <Member name="resetOrForce" type="Bool"  comment="靜態：resetOrForce（Bool）" />
+    </Section>
+  </Interface>
+
+  <Network title="gate and energy FBs" comment="1. gate and energy FBs">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="powerBipolarRec" negated="true" />
+            <Box name="Gt" SrcType="Real">
+              <In port="in1" var="actPowerTotal" />
+              <In port="in2" const="0.0" type="Real" />
+            </Box>
+          </Series>
+          <Contact var="powerBipolarRec" />
+        </Parallel>
+        <Coil var="gateCtrl" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="statusWREC.reset" />
+          <Contact var="forceRstEnCnt" />
+        </Parallel>
+        <Coil var="resetOrForce" />
+      </Series>
+      <Series>
+        <Call name="ProcS7Energy" type="FB" instance="ProcS7Energy_Instance" scope="LocalVariable">
+          <Param name="hw_ID" section="Input" type="HW_IO" var="hwID" />
+          <Param name="resetEnCnt" section="Input" type="Bool" var="resetOrForce" />
+          <Param name="procID_R" section="Input" type="DInt" var="procID_R" />
+          <Param name="procID_W" section="Input" type="DInt" var="procID_W" />
+          <Param name="proc_W_busy" section="Output" type="Bool" var="statusWREC.busy" />
+          <Param name="readRaw" section="InOut" type="Variant" var="readRaw" />
+          <Param name="writeRaw" section="InOut" type="Variant" var="writeRaw" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="ProcSMFAEnergy" type="FB" instance="ProcSMFAEnergy_Instance" scope="LocalVariable">
+          <Param name="resetEnCntBusy" section="Input" type="Bool" var="statusWREC.busy" />
+          <Param name="sysDay" section="Input" type="USInt" var="sysDay" />
+          <Param name="actPower" section="Input" type="Real" var="actPowerTotal" />
+          <Param name="actEnTotalGain" section="Input" type="Real" var="unit" />
+          <Param name="actEnTotal_Wh_LR" section="Input" type="LReal" var="actEnTotalLR" />
+          <Param name="resetEnCnt" section="Output" type="Bool" var="statusWREC.reset" />
+          <Param name="dayPowerMax" section="Output" type="Real" var="dayPowerMax" />
+          <Param name="dayEnergyMax" section="Output" type="Real" var="dayEnergyMax" />
+          <Param name="actEnergy_kWh" section="Output" type="Real" var="actEnergy_kWh" />
+          <Param name="operatingCntHours" section="Output" type="Real" var="operatingCntHours" />
+          <Param name="actEnTotal_GWh" section="Output" type="LReal" var="actEnTotal_GWh" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

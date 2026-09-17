@@ -1,0 +1,58 @@
+---
+description: >-
+  WinCC Basic：怎麼連 PLC（Absolute）、Softkey／Discrete／Recipe 解法。
+  clone 後每則對話自動載入。
+alwaysApply: true
+---
+
+# Basic HMI（自動載入，照做）
+
+Classic Basic／Comfort = `HmiTarget`。**不要**用 Unified 的 `PlcTag =`。
+
+## 連 PLC（Absolute）
+
+目標：Tag 有 **Connection + 位址**，不是空 Internal。
+
+1. HW 連線已有。不必 `Connections.Create`。
+2. 要 Absolute 的 DB 用**標準存取**；必要時先編譯 PLC。
+3. 整張 Tag 表 Export → 每顆：
+   - `AddressAccessMode` = `Absolute`
+   - `LogicalAddress` = `%DBn.DBD/DBW/DBX…` 或 `%I/%Q/%M…`
+   - `Connection` = HW 連線名
+   - **不要**加 `ControllerTag`
+4. `TagTables.Import(Override)` → Save → 再 Export 驗證。
+
+驗證要有：Absolute、`LogicalAddress`、`Connection`、**無** ControllerTag。畫面頁碼等內部 Tag 可維持 Internal。
+
+不要：`ControllerTag` Import（runtime 不支援）；整表拿掉 Connection 改 Internal（編譯假過、沒連 PLC）。
+
+找 PLC 用**軟體名**。HMI-only 指令不要開場全掃 `FindAllPlcSoftwares`。
+
+## Softkey
+
+編譯「Softkey referenced object does not exist」＝ `ActivateScreen` 指到沒有的畫面。
+
+- Softkey 在 **`ScreenGlobalElements`**，不在各畫面 XML。逐畫面改沒用。
+- XML 節點 `Hmi.Screen.SoftKey`（`LocalName == "SoftKey"` 會掃不到）。
+- 匯入：`HmiTarget.ImportScreenGlobalElements(FileInfo, ImportOptions)`。**沒有** `composition.Import`。
+- 缺畫面：拿掉該鍵 `ActivateScreen`。有的畫面才改名。
+- 畫面名可改；**GraphicList／PictureList 實體名**不要跟畫面一起改字串。
+- **不要批次 `GraphicList.Export`**（會 dispose `HmiTarget`）。
+
+## Discrete
+
+WinCC Basic **沒有** Openness `DiscreteAlarms`。走編輯器 xlsx。
+
+- 偶數 byte 的 IEC `.0` → HMI **`.8`**。同一 Word bit 仍是 0..15。
+- 同一 Trigger tag **一個 bit 只能一筆**。8–14 出現兩輪是重複，後一輪改到空的 0–6。
+- xlsx zip 路徑必須 `/`（`xl/worksheets/…`）。`\` 會 `0032:000011` 且 log 空白。
+- 改 bit 只替換 `<v>`。不要 `XmlDocument.Save` 整表。
+- 成功：`Import finished: N discrete alarms`。然後 `--save`。
+- 左條 Visualization → 雙擊 **HMI alarms**（葉子）→ 分頁 Discrete。紙+入=Import。不要猜座標、不要掃整棵 TIA UIA。
+
+## Recipe
+
+Openness **刪不掉／匯不出** Recipe 定義。TIA 還能編、還要用 → **不要刪**。  
+Softkey／圖形清單／Discrete bit 與 Recipe 元素 Tag／`RecipeView*` **分開修**。
+
+全文與死路：[doc/OPENNESS_NOTES.md](../../doc/OPENNESS_NOTES.md) §10–§12、[doc/HOW-TO-DISCRETE.md](../../doc/HOW-TO-DISCRETE.md)。

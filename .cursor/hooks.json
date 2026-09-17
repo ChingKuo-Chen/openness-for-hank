@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "hooks": {
+    "workspaceOpen": [
+      {
+        "command": "powershell.exe -STA -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/clone-confirm.ps1",
+        "timeout": 180
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/clone-confirm.ps1",
+        "timeout": 20
+      }
+    ]
+  }
+}

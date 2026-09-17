@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Wrap an angle into 0..360 (23019 was SCL). -->
+<Lad kind="FC" name="Angle_Correct" number="94" comment="Wrap an angle into 0..360 (23019 was SCL).">
+  <Interface>
+    <Section name="Input">
+      <Member name="cur" type="Real"  comment="輸出：cur（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="corrected" type="Real"  comment="輸出：corrected（Real）" />
+    </Section>
+  </Interface>
+  <Network title="clamp 0..360" comment="1. clamp 0..360">
+    <Fork>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="cur" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="cur" />
+          <In port="in2" const="360.0" type="Real" />
+          <Out port="out" var="corrected" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="cur" />
+          <In port="in2" const="360.0" type="Real" />
+        </Box>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="cur" />
+          <In port="in2" const="360.0" type="Real" />
+          <Out port="out" var="corrected" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="cur" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="cur" />
+          <In port="in2" const="360.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" var="cur" />
+          <Out port="out1" var="corrected" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

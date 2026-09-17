@@ -1,6 +1,6 @@
 # Git 分支命名與歸檔 SOP
 
-> **適用：** pioneerm-automation 的 TIA 專案 repo，以及 `openness-standard`（若有長期分支）。  
+> **適用：** pioneerm-automation 的 TIA 專案 repo，以及 `tia-openness-cursor-new`（若有長期分支）。  
 > **分支對照表：** [doc/BRANCHES_MD.md](../doc/BRANCHES_MD.md) · 範本 [templates/branches.md.example.md](../templates/branches.md.example.md)  
 > **Agent 觸發：** [AGENTS.md](../AGENTS.md) §分支歸檔工作流程
 
@@ -24,7 +24,7 @@ Git **沒有遠端 rename**；改名 = **推新名 + 刪舊名**（或僅本地 
 | 專案類型 | 是否適用 |
 |----------|----------|
 | TIA 專案 repo（機台／產線） | **是** |
-| `openness-standard`（規範 repo 本身） | 是（若有長期分支） |
+| `tia-openness-cursor-new`（規範 repo 本身） | 是（若有長期分支） |
 | 之後的獨立 host 工具 repo | **否**（另訂；本 SOP 不涵蓋） |
 
 ---

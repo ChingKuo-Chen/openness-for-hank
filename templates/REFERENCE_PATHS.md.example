@@ -15,6 +15,7 @@
 | CPU / MLFB | （填實際，例如 6ES7…） |
 | Station | （填實際） |
 | 專案檔 | （本機 `.ap21` 路徑） |
+| openness-standard 根目錄 | （本機絕對路徑） |
 
 ---
 
@@ -22,7 +23,8 @@
 
 | 項目 | 路徑 |
 |------|------|
-| Siemens.Engineering.dll | `C:\Program Files\Siemens\Automation\Portal V21\PublicAPI\…` |
+| Siemens.Engineering.dll | `C:\Program Files\Siemens\Automation\Portal V21\PublicAPI\V21\net48\` |
+| TiaOpennessCheck | `<standard>/host/TiaOpennessCheck.exe` |
 | skip-vendor globs | 見 `.cursor/rules/skip-vendor-tree.mdc` |
 
 ---

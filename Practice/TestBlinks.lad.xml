@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Demo: BlinkCycles + Blink. -->
+<Lad kind="FB" name="TestBlinks" number="108" comment="Demo: BlinkCycles + Blink.">
+  <Interface>
+    <Section name="Static">
+      <Member name="to_blink_1" type="Bool"  comment="靜態：to_blink_1（Bool）" />
+      <Member name="is_blink_1" type="Bool"  comment="靜態：is_blink_1（Bool）" />
+      <Member name="to_blink_2" type="Bool"  comment="靜態：to_blink_2（Bool）" />
+      <Member name="is_blink_2" type="Bool"  comment="靜態：is_blink_2（Bool）" />
+      <Member name="t_on" type="Time" start="T#500ms"  comment="靜態：t_on（Time）" />
+      <Member name="t_off" type="Time" start="T#500ms"  comment="靜態：t_off（Time）" />
+      <Member name="myBlink_1" type="BlinkCycles"  comment="靜態：myBlink_1（BlinkCycles）" />
+      <Member name="myBlink_2" type="Blink"  comment="靜態：myBlink_2（Blink）" />
+    </Section>
+  </Interface>
+  <Network title="BlinkCycles" comment="1. BlinkCycles">
+    <Series>
+      <Call name="BlinkCycles" type="FB" instance="myBlink_1" scope="LocalVariable">
+        <Param name="s_in" section="Input" type="Bool" var="to_blink_1" />
+        <Param name="tm1_on" section="Input" type="Time" var="t_on" />
+        <Param name="tm1_off" section="Input" type="Time" var="t_off" />
+        <Param name="tm2_on" section="Input" type="Time" var="t_on" />
+        <Param name="tm2_off" section="Input" type="Time" var="t_off" />
+        <Param name="tm3_on" section="Input" type="Time" var="t_on" />
+        <Param name="tm3_off" section="Input" type="Time" var="t_off" />
+        <Param name="tm4_on" section="Input" type="Time" var="t_on" />
+        <Param name="tm4_off" section="Input" type="Time" var="t_off" />
+        <Param name="s_out" section="InOut" type="Bool" var="is_blink_1" />
+      </Call>
+    </Series>
+  </Network>
+  <Network title="Blink" comment="2. Blink">
+    <Series>
+      <Call name="Blink" type="FB" instance="myBlink_2" scope="LocalVariable">
+        <Param name="s_in" section="Input" type="Bool" var="to_blink_2" />
+        <Param name="tm_on" section="Input" type="Time" var="t_on" />
+        <Param name="tm_off" section="Input" type="Time" var="t_off" />
+        <Param name="s_out" section="Output" type="Bool" var="is_blink_2" />
+      </Call>
+    </Series>
+  </Network>
+</Lad>

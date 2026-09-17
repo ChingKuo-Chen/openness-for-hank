@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Watchdog for a free-running counter.
+
+     Requirement:
+       * Remember last scan's counter value.
+       * If the counter has not moved for longer than time_out, raise comm_err.
+       * Always store the current counter for the next scan.
+
+     Pure LAD, same behaviour as the 23019 block. -->
+<Lad kind="FB" name="WatchDog" number="2" comment="Watchdog for a free-running counter. Requirement: * Remember last scan's counter value. * If the counter has not moved for longer than time_out, raise comm_err. * Always store the current counter for the next scan. Pure LAD, same behaviour as the 23019 block.">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="cnt" type="DInt"  comment="靜態：cnt（DInt）" />
+      <Member name="time_out" type="Time"  comment="靜態：time_out（Time）" />
+    </Section>
+    <Section name="Output">
+      <Member name="comm_err" type="Bool"  comment="靜態：comm_err（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="cnt_old" type="DInt"  comment="靜態：cnt_old（DInt）" />
+      <Member name="watch_dog_timer" type="IEC_TIMER"  comment="靜態：watch_dog_timer（IEC_TIMER）" />
+    </Section>
+  </Interface>
+
+  <Network title="raise error when the counter stalls" comment="1. raise error when the counter stalls">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="DInt">
+          <In port="in1" var="cnt" />
+          <In port="in2" var="cnt_old" />
+        </Box>
+        <Box name="TON" instance="watch_dog_timer" time_type="Time">
+          <In port="PT" var="time_out" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="comm_err" />
+      </Series>
+      <Series>
+        <Box name="Move">
+          <In port="in" var="cnt" />
+          <Out port="out1" var="cnt_old" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+</Lad>

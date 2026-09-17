@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Brake release latch.
+
+     Requirement:
+       * relbrk_btn is a momentary push button. Each press toggles an internal
+         switch, so the operator can release and re-apply the brake by tapping.
+       * While the line is running the switch is forced off: you may not leave
+         the brake released during production.
+       * The brake output energises when the switch is on OR while running.
+       * The lamp follows the switch only, so the operator sees the manual state
+         rather than the running state.
+
+     Written from the requirement above using the instruction rules; the
+     reference block does the edge toggle in SCL, this is the LAD equivalent. -->
+<Lad kind="FB" name="Release_Brake" number="1" comment="Brake release latch. Requirement: * relbrk_btn is a momentary push button. Each press toggles an internal switch, so the operator can release and re-apply the brake by tapping. * While the line is running the switch is forced off: you may not leave the brake released during production. * The brake output energises when the switch is on OR while running. * The lamp follows the switch only, so the operator sees the manual state rather than the running state. Written from the requirement above using the instruction rules; the reference block does the edge toggle in SCL, this is the LAD equivalent.">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="run" type="Bool"  comment="運轉" />
+      <Member name="relbrk_btn" type="Bool"  comment="靜態：relbrk_btn（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="relbrk_out" type="Bool"  comment="靜態：relbrk_out（Bool）" />
+      <Member name="relbrk_lamp" type="Bool"  comment="靜態：relbrk_lamp（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="release_brk" type="Struct">
+        <Member name="sw" type="Bool"  comment="切換狀態" />
+        <Member name="prev" type="Bool"  comment="靜態：prev（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="toggle the switch on the rising edge of the button" comment="1. toggle the switch on the rising edge of the button">
+    <Series>
+      <PContact var="relbrk_btn" mem="release_brk.prev" />
+      <Fork>
+        <Series>
+          <Contact var="release_brk.sw" negated="true" />
+          <SCoil var="release_brk.sw" />
+        </Series>
+        <Series>
+          <Contact var="release_brk.sw" />
+          <RCoil var="release_brk.sw" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="running always cancels a manual release" comment="2. running always cancels a manual release">
+    <Series>
+      <Contact var="run" />
+      <RCoil var="release_brk.sw" />
+    </Series>
+  </Network>
+
+  <Network title="brake output follows the switch or the run state" comment="3. brake output follows the switch or the run state">
+    <Series>
+      <Parallel>
+        <Contact var="release_brk.sw" />
+        <Contact var="run" />
+      </Parallel>
+      <Coil var="relbrk_out" />
+    </Series>
+  </Network>
+
+  <Network title="lamp shows the manual switch only" comment="4. lamp shows the manual switch only">
+    <Series>
+      <Contact var="release_brk.sw" />
+      <Coil var="relbrk_lamp" />
+    </Series>
+  </Network>
+
+</Lad>

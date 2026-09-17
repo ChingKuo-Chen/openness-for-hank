@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Homing edges + drive-on OR. TO_Axis / MC_* left off 1215 practice. -->
+<Lad kind="FB" name="PTO_Ctrl" number="111" comment="Homing edges + drive-on OR. TO_Axis / MC_* left off 1215 practice.">
+  <Interface>
+    <Section name="Input">
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+      <Member name="is_S_twist" type="Bool"  comment="靜態：is_S_twist（Bool）" />
+      <Member name="is_jog" type="Bool"  comment="靜態：is_jog（Bool）" />
+      <Member name="is_homing" type="Bool"  comment="靜態：is_homing（Bool）" />
+      <Member name="snr_home" type="Bool"  comment="靜態：snr_home（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="speed_norm" type="Real"  comment="靜態：speed_norm（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="drv_on" type="Bool"  comment="靜態：drv_on（Bool）" />
+      <Member name="homing_done" type="Bool"  comment="靜態：homing_done（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="edge_homing_on" type="Bool"  comment="靜態：edge_homing_on（Bool）" />
+      <Member name="edge_homing_off" type="Bool"  comment="靜態：edge_homing_off（Bool）" />
+      <Member name="start_homing" type="Bool"  comment="靜態：start_homing（Bool）" />
+    </Section>
+  </Interface>
+  <Network title="homing handshake" comment="1. homing handshake">
+    <Fork>
+      <Series>
+        <PContact var="is_homing" mem="edge_homing_on" />
+        <Fork>
+          <Series><SCoil var="start_homing" /></Series>
+          <Series><RCoil var="homing_done" /></Series>
+        </Fork>
+      </Series>
+      <Series>
+        <NContact var="is_homing" mem="edge_homing_off" />
+        <Fork>
+          <Series><RCoil var="start_homing" /></Series>
+          <Series><RCoil var="homing_done" /></Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="start_homing" />
+        <Contact var="snr_home" />
+        <Fork>
+          <Series><SCoil var="homing_done" /></Series>
+          <Series><RCoil var="start_homing" /></Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="drive on" comment="2. drive on">
+    <Series>
+      <Parallel>
+        <Contact var="is_run" />
+        <Contact var="is_jog" />
+        <Contact var="start_homing" />
+      </Parallel>
+      <Coil var="drv_on" />
+    </Series>
+  </Network>
+</Lad>

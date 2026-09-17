@@ -3,7 +3,8 @@ name: tia-openness-cycle
 description: >-
   Run the TIA Portal V21 Openness compile/export evidence loop on a project
   repo. Use when firmware-style flash is requested by mistake, or the user
-  asks to compile, verify, 閉環, Openness cycle, or implement PLC/host changes.
+  asks to compile, verify, 閉環, Openness cycle, implement PLC/host changes,
+  or fix HMI compile / Softkey / Discrete alarm errors.
 ---
 
 # TIA Openness cycle
@@ -22,6 +23,8 @@ This replaces MCU **build → flash+verify**. Never call isptool, pyocd, or `mak
 6. Export only if blocks/DBs changed. **Download to PLC only if the user asked.**
 
 If host still prints `compile not implemented`, report that onboarding is incomplete; do not fake PASS.
+
+HMI compile / Softkey / Discrete 錯：先讀 [doc/OPENNESS_NOTES.md](../../../doc/OPENNESS_NOTES.md) **§12** 與 [doc/HOW-TO-DISCRETE.md](../../../doc/HOW-TO-DISCRETE.md)，再動手。不要逐畫面改 Softkey、不要 `composition.Import`、不要批次 Export GraphicList、不要找 Openness Discrete API。
 
 ## Report
 

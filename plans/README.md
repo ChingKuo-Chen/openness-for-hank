@@ -8,7 +8,7 @@ TIA Openness **Agent 與人類**共用的計畫目錄。不確定從哪讀起 �
 
 | 計畫 | 誰讀 | 觸發 |
 |------|------|------|
-| **[doc/ADD_PROJECT.md](../doc/ADD_PROJECT.md)** | **人類** — 3 步入門 | clone + workspace 後說「加入專案」 |
+| **[doc/ADD_PROJECT.md](../doc/ADD_PROJECT.md)** | **人類** — 入門 | clone 機台後說「加入專案」（standard 可尚未加入 workspace） |
 | [templates/add_project_onboarding.md](../templates/add_project_onboarding.md) | **Agent** — 逐步清單 | `加入專案 <name>` |
 | [cursor_rules_trim_sop.md](cursor_rules_trim_sop.md) | **Agent** — rules 修剪 | onboarding Step 5b |
 

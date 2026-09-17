@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One Modbus read via MB_MASTER then Comm_Swap + Conv_Fdb_Record. -->
+<Lad kind="FB" name="Modbus_Reader" number="88" comment="One Modbus read via MB_MASTER then Comm_Swap + Conv_Fdb_Record.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enabled" type="Bool"  comment="靜態：enabled（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="mb_addr" type="UInt"  comment="靜態：mb_addr（UInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="my_MB_Master" type="MB_MASTER"  comment="靜態：my_MB_Master（MB_MASTER）" />
+      <Member name="CMD" type="Struct">
+        <Member name="RTU_Mode" type="USInt"  comment="靜態：RTU_Mode（USInt）" />
+        <Member name="RTU_Data_Addr" type="UDInt"  comment="靜態：RTU_Data_Addr（UDInt）" />
+        <Member name="RTU_Data_Len" type="Int"  comment="靜態：RTU_Data_Len（Int）" />
+        <Member name="swap" type="Bool"  comment="靜態：swap（Bool）" />
+        <Member name="to_read" type="Bool"  comment="靜態：to_read（Bool）" />
+        <Member name="valid" type="Bool"  comment="資料有效" />
+        <Member name="raw_value" type="DInt"  comment="靜態：raw_value（DInt）" />
+        <Member name="total_count" type="DInt"  comment="靜態：total_count（DInt）" />
+        <Member name="failed_count" type="DInt"  comment="靜態：failed_count（DInt）" />
+      </Member>
+      <Member name="Feedback" type="Struct">
+        <Member name="raw_in" type="DInt"  comment="靜態：raw_in（DInt）" />
+        <Member name="raw_value" type="Real"  comment="靜態：raw_value（Real）" />
+        <Member name="raw_min" type="Real"  comment="靜態：raw_min（Real）" />
+        <Member name="raw_max" type="Real"  comment="靜態：raw_max（Real）" />
+        <Member name="norm" type="Real"  comment="靜態：norm（Real）" />
+        <Member name="disp_min" type="Real"  comment="靜態：disp_min（Real）" />
+        <Member name="disp_max" type="Real"  comment="靜態：disp_max（Real）" />
+        <Member name="disp_value" type="Real"  comment="靜態：disp_value（Real）" />
+      </Member>
+      <Member name="error" type="Bool"  comment="靜態：error（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="RawDInt" type="DInt"  comment="靜態：RawDInt（DInt）" />
+      <Member name="stat" type="Struct">
+        <Member name="done" type="Bool"  comment="靜態：done（Bool）" />
+        <Member name="busy" type="Bool"  comment="靜態：busy（Bool）" />
+        <Member name="error" type="Bool"  comment="靜態：error（Bool）" />
+        <Member name="status" type="Word"  comment="靜態：status（Word）" />
+      </Member>
+      <Member name="req" type="Bool"  comment="靜態：req（Bool）" />
+    </Section>
+  </Interface>
+
+  <Network title="clear valid when idle" comment="1. clear valid when idle">
+    <Series>
+      <Contact var="enabled" />
+      <Contact var="CMD.to_read" negated="true" />
+      <RCoil var="CMD.valid" />
+    </Series>
+  </Network>
+
+  <Network title="read one command" comment="2. read one command">
+    <Fork>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="CMD.to_read" />
+        <Coil var="req" />
+      </Series>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="CMD.to_read" />
+        <Box name="MB_MASTER" instance="my_MB_Master">
+          <In port="REQ" var="req" />
+          <In port="MB_ADDR" var="mb_addr" />
+          <In port="MODE" var="CMD.RTU_Mode" />
+          <In port="DATA_ADDR" var="CMD.RTU_Data_Addr" />
+          <In port="DATA_LEN" var="CMD.RTU_Data_Len" />
+          <In port="DATA_PTR" var="RawDInt" />
+          <Out port="DONE" var="stat.done" />
+          <Out port="BUSY" var="stat.busy" />
+          <Out port="ERROR" var="stat.error" />
+          <Out port="STATUS" var="stat.status" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="CMD.to_read" />
+        <Contact var="stat.busy" negated="true" />
+        <Box name="Inc" DestType="DInt" eno="false">
+          <In port="operand" var="CMD.total_count" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="CMD.to_read" />
+        <Contact var="stat.done" />
+        <Fork>
+          <Series>
+            <Call name="Comm_Swap" type="FC">
+              <Param name="swap" section="Input" type="Bool" var="CMD.swap" />
+              <Param name="len" section="Input" type="Int" var="CMD.RTU_Data_Len" />
+              <Param name="raw" section="Input" type="DInt" var="RawDInt" />
+              <Param name="final" section="Output" type="DInt" var="CMD.raw_value" />
+            </Call>
+          </Series>
+          <Series>
+            <Call name="Conv_Fdb_Record" type="FC">
+              <Param name="in" section="Input" type="DInt" var="CMD.raw_value" />
+              <Param name="mtr_info" section="InOut" type="Struct" var="Feedback" />
+            </Call>
+          </Series>
+          <Series><RCoil var="error" /></Series>
+          <Series><SCoil var="CMD.valid" /></Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="CMD.to_read" />
+        <Contact var="stat.error" />
+        <Fork>
+          <Series>
+            <Box name="Inc" DestType="DInt" eno="false">
+              <In port="operand" var="CMD.failed_count" />
+            </Box>
+          </Series>
+          <Series><SCoil var="error" /></Series>
+          <Series><RCoil var="CMD.valid" /></Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="reset counters" comment="3. reset counters">
+    <Series>
+      <Contact var="reset" />
+      <Box name="Move" card="2" eno="false">
+        <In port="in" const="0" type="DInt" />
+        <Out port="out1" var="CMD.total_count" />
+        <Out port="out2" var="CMD.failed_count" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

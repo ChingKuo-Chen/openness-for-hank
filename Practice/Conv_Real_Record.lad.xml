@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="Conv_Real_Record" number="62" comment="練習區塊 Conv_Real_Record（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="in" type="DInt"  comment="暫存：in（DInt）" />
+      <Member name="div" type="Real"  comment="暫存：div（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="fdbk_record" type="Struct">
+        <Member name="raw_min" type="Real"  comment="暫存：raw_min（Real）" />
+        <Member name="raw_max" type="Real"  comment="暫存：raw_max（Real）" />
+        <Member name="norm" type="Real"  comment="暫存：norm（Real）" />
+        <Member name="disp_min" type="Real"  comment="暫存：disp_min（Real）" />
+        <Member name="disp_max" type="Real"  comment="暫存：disp_max（Real）" />
+        <Member name="disp_value" type="Real"  comment="暫存：disp_value（Real）" />
+      </Member>
+    </Section>
+    <Section name="Temp">
+      <Member name="in_r" type="Real"  comment="暫存：in_r（Real）" />
+      <Member name="in_d" type="Real"  comment="暫存：in_d（Real）" />
+    </Section>
+  </Interface>
+  <Network title="norm to scale" comment="1. norm to scale">
+    <Fork>
+      <Series>
+        <Box name="Convert" SrcType="DInt" DestType="Real">
+          <In port="in" var="in" />
+          <Out port="out" var="in_r" />
+        </Box>
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" var="in_r" />
+          <In port="in2" var="div" />
+          <Out port="out" var="in_d" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" var="fdbk_record.raw_min" />
+          <In port="value" var="in_d" />
+          <In port="max" var="fdbk_record.raw_max" />
+          <Out port="out" var="fdbk_record.norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" var="fdbk_record.disp_min" />
+          <In port="value" var="fdbk_record.norm" />
+          <In port="max" var="fdbk_record.disp_max" />
+          <Out port="out" var="fdbk_record.disp_value" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

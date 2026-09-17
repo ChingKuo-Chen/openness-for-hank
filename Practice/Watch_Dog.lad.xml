@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Watchdog keyed by a changing id; ok when timer not timed out or disabled. -->
+<Lad kind="FB" name="Watch_Dog" number="12" comment="Watchdog keyed by a changing id; ok when timer not timed out or disabled.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enabled" type="Bool"  comment="靜態：enabled（Bool）" />
+      <Member name="watch_id" type="Int"  comment="靜態：watch_id（Int）" />
+      <Member name="watch_time" type="Time"  comment="靜態：watch_time（Time）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ok" type="Bool"  comment="靜態：ok（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="id_old" type="Int"  comment="靜態：id_old（Int）" />
+      <Member name="watch_dog_timer" type="IEC_TIMER"  comment="靜態：watch_dog_timer（IEC_TIMER）" />
+    </Section>
+  </Interface>
+  <Network title="Watch dogs" comment="1. Watch dogs">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Int">
+          <In port="in1" var="watch_id" />
+          <In port="in2" var="id_old" />
+        </Box>
+        <CoilTON var="watch_dog_timer" time_type="Time">
+          <In port="value" var="watch_time" />
+        </CoilTON>
+      </Series>
+      <Series>
+        <Box name="Move">
+          <In port="in" var="watch_id" />
+          <Out port="out1" var="id_old" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="watch_dog_timer.Q" negated="true" />
+          <Contact var="enabled" negated="true" />
+        </Parallel>
+        <Coil var="ok" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

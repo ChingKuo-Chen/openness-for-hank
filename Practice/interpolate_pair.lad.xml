@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mark valid when cur_pos is between P1 and P2. Interpolation itself was SCL. -->
+<Lad kind="FC" name="interpolate_pair" number="57" comment="Mark valid when cur_pos is between P1 and P2. Interpolation itself was SCL.">
+  <Interface>
+    <Section name="Input">
+      <Member name="P1" type="Real"  comment="暫存：P1（Real）" />
+      <Member name="V1" type="Real"  comment="暫存：V1（Real）" />
+      <Member name="P2" type="Real"  comment="暫存：P2（Real）" />
+      <Member name="V2" type="Real"  comment="暫存：V2（Real）" />
+      <Member name="cur_pos" type="Real"  comment="暫存：cur_pos（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="out_val" type="Real"  comment="暫存：out_val（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="valid" type="Bool"  comment="資料有效" />
+      <Member name="cur_val" type="Real"  comment="暫存：cur_val（Real）" />
+    </Section>
+  </Interface>
+  <Network title="Check if out of range" comment="1. Check if out of range">
+    <Series>
+      <Box name="InRange" SrcType="Real">
+        <In port="min" var="P1" />
+        <In port="in" var="cur_pos" />
+        <In port="max" var="P2" />
+      </Box>
+      <Coil var="valid" />
+    </Series>
+  </Network>
+</Lad>

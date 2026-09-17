@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="Conv_AI_Record" number="60" comment="練習區塊 Conv_AI_Record（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="ai" type="Int"  comment="暫存：ai（Int）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="scale_record" type="Struct">
+        <Member name="min" type="Real"  comment="暫存：min（Real）" />
+        <Member name="max" type="Real"  comment="暫存：max（Real）" />
+        <Member name="display" type="Real"  comment="暫存：display（Real）" />
+      </Member>
+    </Section>
+    <Section name="Temp">
+      <Member name="norm" type="Real"  comment="暫存：norm（Real）" />
+    </Section>
+  </Interface>
+  <Network title="norm to scale" comment="1. norm to scale">
+    <Fork>
+      <Series>
+        <Box name="Normalize" SrcType="Int" DestType="Real" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="ai" />
+          <In port="max" const="27648" type="Int" />
+          <Out port="out" var="norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" var="scale_record.min" />
+          <In port="value" var="norm" />
+          <In port="max" var="scale_record.max" />
+          <Out port="out" var="scale_record.display" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Clamp setValue, normalize to 0..1, scale to scaleTo. -->
+<Lad kind="FC" name="Conv_SetValue_ToScale" number="21" comment="Clamp setValue, normalize to 0..1, scale to scaleTo.">
+  <Interface>
+    <Section name="Input">
+      <Member name="maxSetValue" type="Real"  comment="暫存：maxSetValue（Real）" />
+      <Member name="scaleTo" type="Real"  comment="暫存：scaleTo（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="setValue" type="Real"  comment="暫存：setValue（Real）" />
+      <Member name="scaleValue" type="Real"  comment="暫存：scaleValue（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="norm" type="Real"  comment="暫存：norm（Real）" />
+    </Section>
+  </Interface>
+  <Network title="limit normalize scale" comment="1. limit normalize scale">
+    <Fork>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="setValue" />
+          <In port="MX" var="maxSetValue" />
+          <Out port="OUT" var="setValue" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="setValue" />
+          <In port="max" var="maxSetValue" />
+          <Out port="out" var="norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="norm" />
+          <In port="max" var="scaleTo" />
+          <Out port="out" var="scaleValue" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

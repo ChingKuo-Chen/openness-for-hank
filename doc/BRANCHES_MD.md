@@ -16,7 +16,7 @@
 - **更新 `<name>` branches.md**
 - **維護 `<name>` doc/branches.md**
 
-Agent 在 **該專案** `<workspace>/<name>/doc/branches.md` **新增或更新**（不寫入 openness-standard，除非改通則本身）。
+Agent 在 **該專案** `<name>/doc/branches.md` **新增或更新**（不寫入 `openness-standard`，除非改通則本身）。
 
 Ask / Agent 模式皆可；更新時 **必須** `git fetch origin --prune` 後查 `origin/*` tip，勿憑記憶填表，勿只讀本地 `refs/heads`。
 

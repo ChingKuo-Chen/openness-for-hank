@@ -23,7 +23,7 @@
 |----------|----------|
 | 已有 TIA V21 專案 + Openness host | **是** |
 | 僅文件、尚無 `.ap21` | 否（先完成 onboarding） |
-| `openness-standard` 本身 | **否** |
+| `tia-openness-cursor-new` 本身 | **否** |
 
 ---
 

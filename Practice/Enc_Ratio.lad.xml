@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Encoder / button VR% adjuster (Hold_Adj_Btn + pulse accumulation). -->
+<Lad kind="FB" name="Enc_Ratio" number="76" comment="Encoder / button VR% adjuster (Hold_Adj_Btn + pulse accumulation).">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable_cnt" type="Bool"  comment="暫存：enable_cnt（Bool）" />
+      <Member name="limit_range" type="Bool"  comment="暫存：limit_range（Bool）" />
+      <Member name="inc_pb" type="Bool"  comment="暫存：inc_pb（Bool）" />
+      <Member name="dec_pb" type="Bool"  comment="暫存：dec_pb（Bool）" />
+      <Member name="adj_slice" type="Real" start="0.01"  comment="暫存：adj_slice（Real）" />
+      <Member name="cnt_value" type="DInt"  comment="暫存：cnt_value（DInt）" />
+      <Member name="multiply_cnt" type="DInt" start="1"  comment="暫存：multiply_cnt（DInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="VR_value" type="Real"  comment="暫存：VR_value（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="total_pulses" type="Real" start="10000.0"  comment="暫存：total_pulses（Real）" />
+      <Member name="old_VR_value" type="Real"  comment="暫存：old_VR_value（Real）" />
+      <Member name="max_VR_value" type="Real" start="100.0"  comment="暫存：max_VR_value（Real）" />
+      <Member name="VR_bar" type="Int"  comment="暫存：VR_bar（Int）" />
+      <Member name="accu_cnt" type="DInt"  comment="暫存：accu_cnt（DInt）" />
+      <Member name="prev_cnt" type="DInt"  comment="上次計數" />
+      <Member name="min_pls_i" type="DInt" start="0"  comment="暫存：min_pls_i（DInt）" />
+      <Member name="Hold_SpdUp" type="Hold_Adj_Btn"  comment="暫存：Hold_SpdUp（Hold_Adj_Btn）" />
+      <Member name="Hold_SpdDown" type="Hold_Adj_Btn"  comment="暫存：Hold_SpdDown（Hold_Adj_Btn）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="range_valid" type="Bool"  comment="暫存：range_valid（Bool）" />
+      <Member name="diff_cnt" type="DInt"  comment="暫存：diff_cnt（DInt）" />
+      <Member name="cal_VR_value" type="Real"  comment="暫存：cal_VR_value（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="Hold INC / DEC" comment="1. Hold INC / DEC">
+    <Fork>
+      <Series>
+        <Call name="Hold_Adj_Btn" type="FB" instance="Hold_SpdUp" scope="LocalVariable">
+          <Param name="pb" section="Input" type="Bool" var="inc_pb" />
+          <Param name="negative" section="Input" type="Bool" const="false" />
+          <Param name="slice" section="Input" type="Real" var="adj_slice" />
+          <Param name="reading" section="InOut" type="Real" var="VR_value" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Hold_Adj_Btn" type="FB" instance="Hold_SpdDown" scope="LocalVariable">
+          <Param name="pb" section="Input" type="Bool" var="dec_pb" />
+          <Param name="negative" section="Input" type="Bool" const="true" />
+          <Param name="slice" section="Input" type="Real" var="adj_slice" />
+          <Param name="reading" section="InOut" type="Real" var="VR_value" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="external VR change updates accumulator" comment="2. external VR change updates accumulator">
+    <Series>
+      <Box name="Ne" SrcType="Real">
+        <In port="in1" var="VR_value" />
+        <In port="in2" var="old_VR_value" />
+      </Box>
+      <Fork>
+        <Series>
+          <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2/IN3" eno="false">
+            <In port="in1" var="VR_value" />
+            <In port="in2" var="total_pulses" />
+            <In port="in3" var="max_VR_value" />
+            <Out port="out" var="accu_cnt" />
+          </Box>
+        </Series>
+        <Series>
+          <Box name="Move" card="2" eno="false">
+            <In port="in" var="VR_value" />
+            <Out port="out1" var="cal_VR_value" />
+            <Out port="out2" var="old_VR_value" />
+          </Box>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="pulse delta and remember prev" comment="3. pulse delta and remember prev">
+    <Fork>
+      <Series>
+        <Box name="Sub" SrcType="DInt" eno="false">
+          <In port="in1" var="cnt_value" />
+          <In port="in2" var="prev_cnt" />
+          <Out port="out" var="diff_cnt" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="cnt_value" />
+          <Out port="out1" var="prev_cnt" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="accumulate when enabled and in range" comment="4. accumulate when enabled and in range">
+    <Fork>
+      <Series>
+        <Box name="Gt" SrcType="DInt">
+          <In port="in1" var="diff_cnt" />
+          <In port="in2" const="-1000000" type="DInt" />
+        </Box>
+        <Box name="Lt" SrcType="DInt">
+          <In port="in1" var="diff_cnt" />
+          <In port="in2" const="1000000" type="DInt" />
+        </Box>
+        <Coil var="range_valid" />
+      </Series>
+      <Series>
+        <Contact var="enable_cnt" />
+        <Contact var="range_valid" />
+        <Box name="Calc" SrcType="DInt" card="3" equation="IN1*IN2+IN3" eno="false">
+          <In port="in1" var="diff_cnt" />
+          <In port="in2" var="multiply_cnt" />
+          <In port="in3" var="accu_cnt" />
+          <Out port="out" var="accu_cnt" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="DInt" eno="false">
+          <In port="MN" var="min_pls_i" />
+          <In port="IN" var="accu_cnt" />
+          <In port="MX" var="total_pulses" />
+          <Out port="OUT" var="accu_cnt" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="VR from accumulator" comment="5. VR from accumulator">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2/IN3" eno="false">
+        <In port="in1" var="accu_cnt" />
+        <In port="in2" var="max_VR_value" />
+        <In port="in3" var="total_pulses" />
+        <Out port="out" var="cal_VR_value" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="optional clamp to VR_value" comment="6. optional clamp to VR_value">
+    <Fork>
+      <Series>
+        <Contact var="limit_range" />
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="cal_VR_value" />
+          <In port="MX" var="max_VR_value" />
+          <Out port="OUT" var="VR_value" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="limit_range" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="cal_VR_value" />
+          <Out port="out1" var="VR_value" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="VR bar" comment="7. VR bar">
+    <Series>
+      <Box name="Round" SrcType="Real" DestType="Int" eno="false">
+        <In port="in" var="VR_value" />
+        <Out port="out" var="VR_bar" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="remember VR" comment="8. remember VR">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="VR_value" />
+        <Out port="out1" var="old_VR_value" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

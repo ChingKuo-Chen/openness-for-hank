@@ -1,0 +1,9 @@
+# 本 repo 是機台專案
+
+規定與 Openness 工具在 **openness-standard**（GitHub：`pioneerm-automation/openness-standard`）。
+
+1. 先讀 [`.cursor/rules/find-standard.mdc`](.cursor/rules/find-standard.mdc)，依搜尋順序找到 standard。
+2. 再讀那邊的 `AGENTS.md`、`rules/`。
+3. 跑 Openness 用 `<standard>/host/`，不要在本 repo 另養一份工具。
+
+本機路徑、PLC、`.ap21` 只寫在 [`.cursor/rules/project-local.mdc`](.cursor/rules/project-local.mdc)。

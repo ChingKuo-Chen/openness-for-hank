@@ -1,0 +1,22 @@
+// =============================================================================
+// 區塊：XOR_Bit（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\XOR_Bit.txt
+// =============================================================================
+
+FUNCTION "XOR_Bit" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    bin : Bool;
+    inv : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    bout : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\XOR_Bit.txt
+BEGIN
+    bout := bin XOR inv;
+END_FUNCTION

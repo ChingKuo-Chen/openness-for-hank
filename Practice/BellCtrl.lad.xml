@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Start bell on pb+ok_start, hold 2s after release, then 5s buzzled; OR with ring_bell. -->
+<Lad kind="FB" name="BellCtrl" number="16" comment="Start bell on pb+ok_start, hold 2s after release, then 5s buzzled; OR with ring_bell.">
+  <Interface>
+    <Section name="Input">
+      <Member name="pb" type="Bool"  comment="按鈕" />
+      <Member name="ok_start" type="Bool"  comment="靜態：ok_start（Bool）" />
+      <Member name="ring_bell" type="Bool"  comment="靜態：ring_bell（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="bell_out" type="Bool"  comment="靜態：bell_out（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="buzzling" type="Bool"  comment="靜態：buzzling（Bool）" />
+      <Member name="buzzled" type="Bool"  comment="靜態：buzzled（Bool）" />
+      <Member name="TON_Buzzling" type="IEC_TIMER"  comment="靜態：TON_Buzzling（IEC_TIMER）" />
+      <Member name="TON_buzzled" type="IEC_TIMER"  comment="靜態：TON_buzzled（IEC_TIMER）" />
+    </Section>
+  </Interface>
+  <Network title="Trigger the bell to run, buzzling and buzzled" comment="1. Trigger the bell to run, buzzling and buzzled">
+    <Fork>
+      <Series>
+        <Contact var="pb" />
+        <Contact var="ok_start" />
+        <SCoil var="buzzling" />
+      </Series>
+      <Series>
+        <Contact var="buzzling" />
+        <Contact var="pb" negated="true" />
+        <Box name="TON" instance="TON_Buzzling" time_type="Time">
+          <In port="PT" time="t#2s" />
+          <Open port="ET" />
+        </Box>
+        <Fork>
+          <Series>
+            <RCoil var="buzzling" />
+          </Series>
+          <Series>
+            <Contact var="buzzling" negated="true" />
+            <SCoil var="buzzled" />
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="buzzled" />
+        <Box name="TON" instance="TON_buzzled" time_type="Time">
+          <In port="PT" time="t#5s" />
+          <Open port="ET" />
+        </Box>
+        <RCoil var="buzzled" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="buzzling" />
+          <Contact var="ring_bell" />
+        </Parallel>
+        <Coil var="bell_out" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Blink output with independent on/off times.
+
+     Requirement:
+       * When tm_on / tm_off are non-zero, latch them into the static struct so
+         a later call with t#0s keeps the previous setting.
+       * While s_in is true: stay off for tm_off, then turn s_out on for tm_on,
+         then repeat. TON_2's Q is what cuts the on-phase.
+
+     Written from the requirement; matches the 23019 LAD networks. -->
+<Lad kind="FB" name="Blink" number="3" comment="Blink output with independent on/off times. Requirement: * When tm_on / tm_off are non-zero, latch them into the static struct so a later call with t#0s keeps the previous setting. * While s_in is true: stay off for tm_off, then turn s_out on for tm_on, then repeat. TON_2's Q is what cuts the on-phase. Written from the requirement; matches the 23019 LAD networks.">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="s_in" type="Bool"  comment="閃爍使能輸入" />
+      <Member name="tm_on" type="Time"  comment="導通時間" />
+      <Member name="tm_off" type="Time"  comment="關斷時間" />
+    </Section>
+    <Section name="Output">
+      <Member name="s_out" type="Bool"  comment="閃爍輸出" />
+    </Section>
+    <Section name="Static">
+      <Member name="s" type="Struct">
+        <Member name="activate" type="Bool"  comment="靜態：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="靜態：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="靜態：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="靜態：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="靜態：TON_2（IEC_TIMER）" />
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="Check if there is new setting" comment="1. Check if there is new setting">
+    <Fork>
+      <Series>
+        <Box name="Ne" SrcType="Time">
+          <In port="in1" var="tm_on" />
+          <In port="in2" time="t#0s" />
+        </Box>
+        <Box name="Move">
+          <In port="in" var="tm_on" />
+          <Out port="out1" var="s.tm_on" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ne" SrcType="Time">
+          <In port="in1" var="tm_off" />
+          <In port="in2" time="t#0s" />
+        </Box>
+        <Box name="Move">
+          <In port="in" var="tm_off" />
+          <Out port="out1" var="s.tm_off" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="Blink" comment="2. Blink">
+    <Series>
+      <Contact var="s_in" />
+      <Contact var="s.TON_2.Q" negated="true" />
+      <Box name="TON" instance="s.TON_1" time_type="Time">
+        <In port="PT" var="s.tm_off" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="s_out" />
+      <CoilTON var="s.TON_2" time_type="Time">
+        <In port="value" var="s.tm_on" />
+      </CoilTON>
+    </Series>
+  </Network>
+
+</Lad>

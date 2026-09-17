@@ -1,0 +1,24 @@
+// DC12 inner RS-485 Modbus RTU slave configuration.
+// The CB 1241 instruction fixes the format to 8 data bits / 1 stop bit;
+// PARITY = 0 selects the requested 8-N-1 framing.
+DATA_BLOCK "DC12_RTU_Config"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 0.1
+VAR
+    Enable             : Bool := TRUE;
+    ResetPort          : Bool := FALSE;
+    Baud               : UDInt := 57600;
+    Parity             : UInt := 0;       // 0=None, 1=Odd, 2=Even
+    ResponseTimeout    : UInt := 1000;    // ms; used by MB_COMM_LOAD
+    StationAddress     : UInt := 30;
+    HoldingStartOffset : UInt := 4100;    // PDU 4100 = conventional Holding 44101
+    CommReady          : Bool;
+    PortError          : Bool;
+    PortStatus         : Word;
+    NewData            : Bool;            // FC06 / FC16 wrote to DB18
+    DataRead           : Bool;            // FC03 read DB18
+    Error              : Bool;
+    Status             : Word;
+END_VAR
+BEGIN
+END_DATA_BLOCK

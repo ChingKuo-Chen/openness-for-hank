@@ -1,0 +1,29 @@
+// =============================================================================
+// 區塊：Recipe_Ctrl（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Recipe_Ctrl.txt
+// =============================================================================
+
+FUNCTION_BLOCK "Recipe_Ctrl"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_IN_OUT
+    preview : Real;
+    running : Real;
+END_VAR
+VAR
+    preview_to_run : Bool;
+    run_to_preview : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Recipe_Ctrl.txt
+BEGIN
+    IF preview_to_run THEN
+        running := preview;
+        preview_to_run := FALSE;
+    END_IF;
+    IF run_to_preview THEN
+        preview := running;
+        run_to_preview := FALSE;
+    END_IF;
+END_FUNCTION_BLOCK

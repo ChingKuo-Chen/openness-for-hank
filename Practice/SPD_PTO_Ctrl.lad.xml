@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Jog direction latch; MC_* omitted on 1215 practice. -->
+<Lad kind="FB" name="SPD_PTO_Ctrl" number="112" comment="Jog direction latch; MC_* omitted on 1215 practice.">
+  <Interface>
+    <Section name="Input">
+      <Member name="run" type="Bool"  comment="運轉" />
+      <Member name="s_twist" type="Bool"  comment="靜態：s_twist（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="MC_start_velocity" type="Real"  comment="靜態：MC_start_velocity（Real）" />
+      <Member name="speed_norm" type="Real"  comment="靜態：speed_norm（Real）" />
+      <Member name="mc_busy" type="Bool"  comment="靜態：mc_busy（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="jog_forward" type="Bool"  comment="靜態：jog_forward（Bool）" />
+      <Member name="jog_backward" type="Bool"  comment="靜態：jog_backward（Bool）" />
+      <Member name="do_jog_fwd" type="Bool"  comment="靜態：do_jog_fwd（Bool）" />
+      <Member name="do_jog_bwd" type="Bool"  comment="靜態：do_jog_bwd（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="velocity_cur" type="Real"  comment="靜態：velocity_cur（Real）" />
+    </Section>
+  </Interface>
+  <Network title="direction" comment="1. direction">
+    <Fork>
+      <Series>
+        <Contact var="run" />
+        <Parallel>
+          <Contact var="mc_busy" negated="true" />
+          <Contact var="jog_forward" />
+        </Parallel>
+        <Contact var="s_twist" negated="true" />
+        <Coil var="jog_forward" />
+      </Series>
+      <Series>
+        <Contact var="run" />
+        <Parallel>
+          <Contact var="mc_busy" negated="true" />
+          <Contact var="jog_backward" />
+        </Parallel>
+        <Contact var="s_twist" />
+        <Coil var="jog_backward" />
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="jog when above start velocity" comment="2. jog when above start velocity">
+    <Fork>
+      <Series>
+        <Contact var="jog_forward" />
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="velocity_cur" />
+          <In port="in2" var="MC_start_velocity" />
+        </Box>
+        <Coil var="do_jog_fwd" />
+      </Series>
+      <Series>
+        <Contact var="jog_backward" />
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="velocity_cur" />
+          <In port="in2" var="MC_start_velocity" />
+        </Box>
+        <Coil var="do_jog_bwd" />
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="speed_norm" />
+          <Out port="out1" var="velocity_cur" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

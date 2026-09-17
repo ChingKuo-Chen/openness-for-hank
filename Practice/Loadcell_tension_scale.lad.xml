@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loadcell raw to tension (23019 was SCL over globals). -->
+<Lad kind="FC" name="Loadcell_tension_scale" number="213" comment="Loadcell raw to tension (23019 was SCL over globals).">
+  <Interface>
+    <Section name="Input">
+      <Member name="raw_1600" type="Int"  comment="暫存：raw_1600（Int）" />
+      <Member name="raw_630" type="Int"  comment="暫存：raw_630（Int）" />
+      <Member name="raw_min" type="Int"  comment="暫存：raw_min（Int）" />
+      <Member name="raw_max" type="Int"  comment="暫存：raw_max（Int）" />
+      <Member name="ten_min" type="Real"  comment="暫存：ten_min（Real）" />
+      <Member name="ten_max" type="Real"  comment="暫存：ten_max（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ten_1600" type="Real"  comment="暫存：ten_1600（Real）" />
+      <Member name="ten_630" type="Real"  comment="暫存：ten_630（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="n1600" type="Real"  comment="暫存：n1600（Real）" />
+      <Member name="n630" type="Real"  comment="暫存：n630（Real）" />
+    </Section>
+  </Interface>
+  <Network title="1600" comment="1. 1600">
+    <Fork>
+      <Series>
+        <Box name="Normalize" SrcType="Int" DestType="Real" eno="false">
+          <In port="min" var="raw_min" />
+          <In port="value" var="raw_1600" />
+          <In port="max" var="raw_max" />
+          <Out port="out" var="n1600" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" var="ten_min" />
+          <In port="value" var="n1600" />
+          <In port="max" var="ten_max" />
+          <Out port="out" var="ten_1600" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="630" comment="2. 630">
+    <Fork>
+      <Series>
+        <Box name="Normalize" SrcType="Int" DestType="Real" eno="false">
+          <In port="min" var="raw_min" />
+          <In port="value" var="raw_630" />
+          <In port="max" var="raw_max" />
+          <Out port="out" var="n630" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" var="ten_min" />
+          <In port="value" var="n630" />
+          <In port="max" var="ten_max" />
+          <Out port="out" var="ten_630" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

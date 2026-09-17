@@ -1,0 +1,33 @@
+// =============================================================================
+// 區塊：Range_Check（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Range_Check.txt
+// =============================================================================
+
+FUNCTION "Range_Check" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    MN : Real;
+    in_val : Real;
+    MX : Real;
+    warn_margin_per : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    out_val : Real;
+    over : Bool;
+    under : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    margin : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Range_Check.txt
+BEGIN
+    out_val := in_val;
+    margin := (MX - MN) * warn_margin_per / 100.0;
+    over := in_val > (MX - margin);
+    under := in_val < (MN + margin);
+END_FUNCTION

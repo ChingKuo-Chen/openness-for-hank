@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plate tension: size clamp, remain, torque, lookup, finish flags. No Enc_Dia/SMFA. -->
+<Lad kind="FB" name="Tape_Plate1_Control_red" number="127" comment="Plate tension: size clamp, remain, torque, lookup, finish flags. No Enc_Dia/SMFA.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="is_stopping" type="Bool"  comment="暫存：is_stopping（Bool）" />
+      <Member name="line_run_1s" type="Bool"  comment="暫存：line_run_1s（Bool）" />
+      <Member name="snr_phy_finishing" type="Bool"  comment="暫存：snr_phy_finishing（Bool）" />
+      <Member name="snr_broken" type="Bool"  comment="暫存：snr_broken（Bool）" />
+      <Member name="pb_reset" type="Bool"  comment="暫存：pb_reset（Bool）" />
+      <Member name="enc_plate" type="DInt"  comment="暫存：enc_plate（DInt）" />
+      <Member name="tape_ratio" type="Real" start="1.0"  comment="暫存：tape_ratio（Real）" />
+      <Member name="auto_mode" type="Bool"  comment="暫存：auto_mode（Bool）" />
+      <Member name="tension_target" type="Real"  comment="暫存：tension_target（Real）" />
+      <Member name="stop_torque_comp" type="Real"  comment="暫存：stop_torque_comp（Real）" />
+      <Member name="gear_id" type="Int"  comment="暫存：gear_id（Int）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="tape_empty" type="Real"  comment="暫存：tape_empty（Real）" />
+      <Member name="tape_full" type="Real"  comment="暫存：tape_full（Real）" />
+      <Member name="tape_current" type="Real"  comment="暫存：tape_current（Real）" />
+      <Member name="tape_remain" type="Real"  comment="暫存：tape_remain（Real）" />
+      <Member name="tape_thickness" type="Real"  comment="暫存：tape_thickness（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="tens_out_norm" type="Real"  comment="暫存：tens_out_norm（Real）" />
+      <Member name="tens_out_ao" type="Int"  comment="暫存：tens_out_ao（Int）" />
+      <Member name="auto_lamp" type="Bool"  comment="暫存：auto_lamp（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="pb_reset_dia" type="Bool"  comment="暫存：pb_reset_dia（Bool）" />
+      <Member name="sw_auto_mode" type="Bool"  comment="暫存：sw_auto_mode（Bool）" />
+      <Member name="sw_dia_finctrl" type="Bool"  comment="暫存：sw_dia_finctrl（Bool）" />
+      <Member name="is_finishing" type="Bool"  comment="暫存：is_finishing（Bool）" />
+      <Member name="is_finished" type="Bool"  comment="暫存：is_finished（Bool）" />
+      <Member name="is_snr_finished" type="Bool"  comment="暫存：is_snr_finished（Bool）" />
+      <Member name="is_snr_broken" type="Bool"  comment="暫存：is_snr_broken（Bool）" />
+      <Member name="used_per" type="Real"  comment="暫存：used_per（Real）" />
+      <Member name="prev_used_per" type="Real"  comment="暫存：prev_used_per（Real）" />
+      <Member name="gear_ratio" type="Real" start="1.0"  comment="暫存：gear_ratio（Real）" />
+      <Member name="gear_ppr" type="Real" start="4096.0"  comment="暫存：gear_ppr（Real）" />
+      <Member name="gear_id_old" type="Int"  comment="暫存：gear_id_old（Int）" />
+      <Member name="torque_Nm" type="Real"  comment="暫存：torque_Nm（Real）" />
+      <Member name="torque_out" type="Real"  comment="暫存：torque_out（Real）" />
+      <Member name="slowD" type="Real"  comment="暫存：slowD（Real）" />
+      <Member name="enc" type="Struct">
+        <Member name="old" type="DInt"  comment="暫存：old（DInt）" />
+        <Member name="diff" type="Real"  comment="差值" />
+        <Member name="acc" type="Real"  comment="暫存：acc（Real）" />
+      </Member>
+      <Member name="Hysteresis" type="Interpolation_Controler_adv"  comment="暫存：Hysteresis（Interpolation_Controler_adv）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="torque_norm" type="Real"  comment="暫存：torque_norm（Real）" />
+      <Member name="tmp" type="Real"  comment="暫存：tmp（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="acknowledge fault" comment="1. acknowledge fault">
+    <Series>
+      <Contact var="pb_reset" />
+      <RCoil var="is_snr_broken" />
+    </Series>
+  </Network>
+
+  <Network title="prevent empty greater than full" comment="2. prevent empty greater than full">
+    <Series>
+      <Box name="Ge" SrcType="Real">
+        <In port="in1" var="tape_empty" />
+        <In port="in2" var="tape_full" />
+      </Box>
+      <Box name="Add" SrcType="Real" eno="false">
+        <In port="in1" var="tape_empty" />
+        <In port="in2" const="10.0" type="Real" />
+        <Out port="out" var="tape_full" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="reset diameter" comment="3. reset diameter">
+    <Series>
+      <Contact var="pb_reset_dia" />
+      <Box name="Move" eno="false">
+        <In port="in" var="tape_full" />
+        <Out port="out1" var="tape_current" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="clamp values" comment="4. clamp values">
+    <Fork>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="used_per" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="used_per" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="tape_remain" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="tape_remain" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" var="tape_empty" />
+          <In port="IN" var="tape_current" />
+          <In port="MX" var="tape_full" />
+          <Out port="OUT" var="tape_current" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="used percent to remain" comment="5. used percent to remain">
+    <Series>
+      <Box name="Ne" SrcType="Real">
+        <In port="in1" var="used_per" />
+        <In port="in2" var="prev_used_per" />
+      </Box>
+      <Box name="Sub" SrcType="Real" eno="false">
+        <In port="in1" const="100.0" type="Real" />
+        <In port="in2" var="used_per" />
+        <Out port="out" var="tape_remain" />
+      </Box>
+      <Box name="Move" eno="false">
+        <In port="in" var="used_per" />
+        <Out port="out1" var="prev_used_per" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="accumulate plate encoder" comment="6. accumulate plate encoder">
+    <Fork>
+      <Series>
+        <Call name="Enc_Diff" type="FC">
+          <Param name="bipolar" section="Input" type="Bool" const="false" />
+          <Param name="enabled" section="Input" type="Bool" var="enable" />
+          <Param name="cur_cnt" section="Input" type="DInt" var="enc_plate" />
+          <Param name="prev_cnt" section="InOut" type="DInt" var="enc.old" />
+          <Param name="diff" section="InOut" type="Real" var="enc.diff" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="enc.acc" />
+          <In port="in2" var="enc.diff" />
+          <Out port="out" var="enc.acc" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="enc.acc" />
+          <In port="in2" var="gear_ppr" />
+        </Box>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="enc.acc" />
+          <In port="in2" var="gear_ppr" />
+          <Out port="out" var="enc.acc" />
+        </Box>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="tape_current" />
+          <In port="in2" var="tape_thickness" />
+          <Out port="out" var="tape_current" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="remain from diameter" comment="7. remain from diameter">
+    <Fork>
+      <Series>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" const="100.0" type="Real" />
+          <In port="in2" var="used_per" />
+          <Out port="out" var="tape_remain" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" const="100.0" type="Real" />
+          <In port="in2" var="tape_remain" />
+          <Out port="out" var="used_per" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="calculate tension" comment="8. calculate tension">
+    <Fork>
+      <Series>
+        <Contact var="auto_mode" />
+        <Coil var="sw_auto_mode" />
+      </Series>
+      <Series>
+        <Contact var="sw_auto_mode" />
+        <Coil var="auto_lamp" />
+      </Series>
+      <Series>
+        <Contact var="sw_auto_mode" />
+        <Box name="Mul" SrcType="Real">
+          <In port="in1" var="tension_target" />
+          <In port="in2" var="tape_current" />
+          <Out port="out" var="tmp" />
+        </Box>
+        <Box name="Div" SrcType="Real">
+          <In port="in1" var="tmp" />
+          <In port="in2" var="gear_ratio" />
+          <Out port="out" var="tmp" />
+        </Box>
+        <Box name="Mul" SrcType="Real" eno="false">
+          <In port="in1" var="tmp" />
+          <In port="in2" const="0.0049" type="Real" />
+          <Out port="out" var="torque_Nm" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="sw_auto_mode" />
+        <Contact var="is_stopping" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="torque_Nm" />
+          <In port="in2" var="stop_torque_comp" />
+          <Out port="out" var="torque_out" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="sw_auto_mode" />
+        <Contact var="is_stopping" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="torque_Nm" />
+          <Out port="out1" var="torque_out" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="torque_out" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="torque_out" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="interpolation control" comment="9. interpolation control">
+    <Fork>
+      <Series>
+        <Box name="Ne" SrcType="Int">
+          <In port="in1" var="gear_id" />
+          <In port="in2" var="gear_id_old" />
+        </Box>
+        <SCoil var="Hysteresis.pb.load" />
+        <Box name="Move" eno="false">
+          <In port="in" var="gear_id" />
+          <Out port="out1" var="gear_id_old" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="Interpolation_Controler_adv" type="FB" instance="Hysteresis" scope="LocalVariable">
+          <Param name="select_id" section="Input" type="Int" var="gear_id" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="send tension output" comment="10. send tension output">
+    <Fork>
+      <Series>
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" var="torque_out" />
+          <In port="in2" const="100.0" type="Real" />
+          <Out port="out" var="torque_norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="Interpolation_Lookup_adv" type="FC">
+          <Param name="p1" section="Input" type="Real" const="0.0" />
+          <Param name="v1" section="Input" type="Real" const="0.0" />
+          <Param name="p2" section="Input" type="Real" const="1.0" />
+          <Param name="v2" section="Input" type="Real" const="1.0" />
+          <Param name="expect" section="Input" type="Real" var="torque_norm" />
+          <Param name="out" section="Output" type="Real" var="tens_out_norm" />
+        </Call>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Int" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="tens_out_norm" />
+          <In port="max" const="27648" type="Int" />
+          <Out port="out" var="tens_out_ao" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="break and finish" comment="11. break and finish">
+    <Fork>
+      <Series>
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="tape_empty" />
+          <In port="in2" var="tape_thickness" />
+          <Out port="out" var="slowD" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="line_run_1s" />
+        <Contact var="sw_dia_finctrl" />
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="tape_current" />
+          <In port="in2" var="slowD" />
+        </Box>
+        <Coil var="is_finishing" />
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="line_run_1s" />
+        <Contact var="sw_dia_finctrl" />
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="tape_current" />
+          <In port="in2" var="tape_empty" />
+        </Box>
+        <Coil var="is_finished" />
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="line_run_1s" />
+        <Contact var="snr_phy_finishing" />
+        <Coil var="is_snr_finished" />
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="line_run_1s" />
+        <Contact var="snr_broken" />
+        <Coil var="is_snr_broken" />
+      </Series>
+      <Series>
+        <Contact var="auto_mode" />
+        <SCoil var="sw_dia_finctrl" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cooling water pump: charge while low (with TOF) or latched between lo/hi. -->
+<Lad kind="FB" name="WaterPump" number="30" comment="Cooling water pump: charge while low (with TOF) or latched between lo/hi.">
+  <Interface>
+    <Section name="Input">
+      <Member name="WM_lo" type="Bool"  comment="低水位" />
+      <Member name="WM_hi" type="Bool"  comment="高水位" />
+      <Member name="charge_tm" type="Time"  comment="低水位延時" />
+    </Section>
+    <Section name="Output">
+      <Member name="charge" type="Bool"  comment="充水/泵運轉輸出" />
+    </Section>
+    <Section name="Static">
+      <Member name="use_hi" type="Bool"  comment="靜態：use_hi（Bool）" />
+      <Member name="low_tof" type="Bool"  comment="靜態：low_tof（Bool）" />
+      <Member name="low_set" type="Bool"  comment="靜態：low_set（Bool）" />
+      <Member name="on_TOF" type="TOF_TIME"  comment="靜態：on_TOF（TOF_TIME）" />
+    </Section>
+  </Interface>
+  <Network title="Control the cooling water pump" comment="1. Control the cooling water pump">
+    <Fork>
+      <Series>
+        <Contact var="use_hi" negated="true" />
+        <Contact var="WM_lo" />
+        <Box name="TOF" instance="on_TOF" time_type="Time">
+          <In port="PT" var="charge_tm" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="low_tof" />
+      </Series>
+      <Series>
+        <Contact var="use_hi" />
+        <Contact var="WM_lo" />
+        <Sr var="low_set">
+          <In port="r1" var="WM_hi" />
+        </Sr>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="low_tof" />
+          <Contact var="low_set" />
+        </Parallel>
+        <Coil var="charge" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

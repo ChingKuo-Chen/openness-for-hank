@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 練習用 LAD PID：P + I - D（對 PV 微分）+ 前饋 + 輸出限幅 + 積分飽和防 windup。
+     可攜腳位，不依賴廠端全域標籤。 -->
+<Lad kind="FB" name="PID_Ctrl" number="200"
+     comment="練習用 PID 功能塊（LAD）。公式：out = LIMIT( P + I - D + Kf×feed_fwd )。P=Kp×err，I=Kp×(Ts/Ti)×err_acc，D 對 PV 微分後低通。enable 才累積積分；pause 凍結 I/D 更新；輸出到上下限時 windup 停止積分。">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool" comment="TRUE：PID 閉環；FALSE：只輸出前饋，積分清零" />
+      <Member name="pause" type="Bool" comment="TRUE：暫停；不累積積分、不更新 D 與 pid_sum" />
+      <Member name="ctrl_inv" type="Bool" comment="反向控制：err = PV - SP（例如加熱/冷卻反作用）" />
+      <Member name="SP" type="Real" comment="設定值（Setpoint）" />
+      <Member name="PV" type="Real" comment="程序值（Process Value，感測回授）" />
+      <Member name="Kp" type="Real" start="1.0" comment="比例增益 Kp" />
+      <Member name="Ti" type="Real" start="10.0" comment="積分時間常數 Ti（秒）；≤0 時 I 項為 0" />
+      <Member name="Td" type="Real" start="0.0" comment="微分時間常數 Td（秒）；≤0 時 D 項為 0" />
+      <Member name="Ts" type="Real" start="0.1" comment="掃描週期 Ts（秒），通常填 OB 週期" />
+      <Member name="feed_fwd" type="Real" comment="前饋量（例如已知負載）" />
+      <Member name="Kf" type="Real" start="0.0" comment="前饋增益 Kf" />
+      <Member name="out_min" type="Real" start="0.0" comment="輸出下限（例如 0%）" />
+      <Member name="out_max" type="Real" start="100.0" comment="輸出上限（例如 100%）" />
+    </Section>
+    <Section name="Output">
+      <Member name="out" type="Real" comment="限幅後的最終輸出" />
+      <Member name="err" type="Real" comment="本次偏差（監視用）" />
+      <Member name="P" type="Real" comment="比例項（監視用）" />
+      <Member name="I" type="Real" comment="積分項（監視用）" />
+      <Member name="D" type="Real" comment="微分項，已濾波（監視用）" />
+      <Member name="at_limit" type="Bool" comment="輸出已貼上限或下限" />
+    </Section>
+    <Section name="Static">
+      <Member name="err_acc" type="Real" comment="偏差累加器（積分狀態）" />
+      <Member name="old_PV" type="Real" comment="上一掃描 PV，供 D 項微分" />
+      <Member name="D_filt" type="Real" comment="微分低通濾波後狀態" />
+      <Member name="pid_sum" type="Real" comment="P+I-D 合計；pause 時保持不變" />
+      <Member name="windup" type="Bool" comment="積分飽和旗標：輸出到限幅時停止累積 err_acc" />
+    </Section>
+    <Section name="Temp">
+      <Member name="pv_diff" type="Real" comment="本掃描 PV 變化量" />
+      <Member name="d_raw" type="Real" comment="微分原始值（濾波前）" />
+      <Member name="ff" type="Real" comment="前饋項 Kf×feed_fwd" />
+      <Member name="out_raw" type="Real" comment="限幅前的輸出" />
+      <Member name="ts_over_ti" type="Real" comment="Ts/Ti 比值（I 項用）" />
+      <Member name="td_over_ts" type="Real" comment="Td/Ts 比值（D 項用）" />
+    </Section>
+  </Interface>
+
+  <Network title="① 算偏差 err"
+           comment="ctrl_inv=FALSE：err = SP - PV（一般正作用）。&#10;ctrl_inv=TRUE：err = PV - SP（反作用，例如加熱過頭要關閥）。">
+    <Fork>
+      <Series>
+        <Contact var="ctrl_inv" negated="true" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="SP" />
+          <In port="in2" var="PV" />
+          <Out port="out" var="err" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="ctrl_inv" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="PV" />
+          <In port="in2" var="SP" />
+          <Out port="out" var="err" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="② 比例項 P = Kp × err"
+           comment="P 項只跟當下偏差成正比，反應最快。Kp 越大越敏感，但太大容易震盪。">
+    <Series>
+      <Box name="Mul" SrcType="Real" eno="false">
+        <In port="in1" var="Kp" />
+        <In port="in2" var="err" />
+        <Out port="out" var="P" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="③ 積分累加 err_acc"
+           comment="只有 enable 且未 windup 且未 pause 時，才把 err 累加到 err_acc。&#10;windup：輸出已貼限幅，再積分也推不動，先停累加避免 overshoot。">
+    <Series>
+      <Contact var="enable" />
+      <Contact var="windup" negated="true" />
+      <Contact var="pause" negated="true" />
+      <Box name="Add" SrcType="Real" eno="false">
+        <In port="in1" var="err_acc" />
+        <In port="in2" var="err" />
+        <Out port="out" var="err_acc" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="④ 關閉時清積分"
+           comment="enable=FALSE 時 err_acc 清 0，避免下次啟動帶著舊積分衝出去。">
+    <Series>
+      <Contact var="enable" negated="true" />
+      <Box name="Move" eno="false">
+        <In port="in" const="0.0" type="Real" />
+        <Out port="out1" var="err_acc" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑤ 積分項 I = Kp × (Ts/Ti) × err_acc"
+           comment="I 項消除長時間小偏差。Ti 越大積分越慢。Ti≤0 時不算 I（輸出 0）。">
+    <Fork>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="Ti" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="2" equation="IN1/IN2" eno="false">
+          <In port="IN1" var="Ts" />
+          <In port="IN2" var="Ti" />
+          <Out port="OUT" var="ts_over_ti" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2*IN3" eno="false">
+          <In port="IN1" var="Kp" />
+          <In port="IN2" var="ts_over_ti" />
+          <In port="IN3" var="err_acc" />
+          <Out port="OUT" var="I" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="Ti" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="I" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="⑥ 算 PV 變化量 pv_diff"
+           comment="D 項看 PV 怎麼變，不是看 err。pause 時不更新（凍結微分）。">
+    <Fork>
+      <Series>
+        <Contact var="pause" negated="true" />
+        <Contact var="ctrl_inv" negated="true" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="PV" />
+          <In port="in2" var="old_PV" />
+          <Out port="out" var="pv_diff" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="pause" negated="true" />
+        <Contact var="ctrl_inv" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="old_PV" />
+          <In port="in2" var="PV" />
+          <Out port="out" var="pv_diff" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="⑦ 微分原始值 d_raw = Kp × (Td/Ts) × pv_diff"
+           comment="Td>0 且 Ts>0 才算 D。Td 越大對 PV 變化越敏感；設 0 可關閉 D。">
+    <Fork>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="Td" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="Ts" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="2" equation="IN1/IN2" eno="false">
+          <In port="IN1" var="Td" />
+          <In port="IN2" var="Ts" />
+          <Out port="OUT" var="td_over_ts" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2*IN3" eno="false">
+          <In port="IN1" var="Kp" />
+          <In port="IN2" var="td_over_ts" />
+          <In port="IN3" var="pv_diff" />
+          <Out port="OUT" var="d_raw" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Series>
+            <Box name="Le" SrcType="Real">
+              <In port="in1" var="Td" />
+              <In port="in2" const="0.0" type="Real" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Le" SrcType="Real">
+              <In port="in1" var="Ts" />
+              <In port="in2" const="0.0" type="Real" />
+            </Box>
+          </Series>
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="d_raw" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="⑧ D 項低通濾波"
+           comment="D_filt = D_filt + (d_raw - D_filt) × 0.1。&#10;微分對雜訊很敏感，簡單一階低通讓 D 項平滑一點。">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1+(IN2-IN1)*IN3" eno="false">
+        <In port="IN1" var="D_filt" />
+        <In port="IN2" var="d_raw" />
+        <In port="IN3" const="0.1" type="Real" />
+        <Out port="OUT" var="D_filt" />
+      </Box>
+      <Box name="Move" eno="false">
+        <In port="in" var="D_filt" />
+        <Out port="out1" var="D" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑨ 記住本掃描 PV"
+           comment="把 PV 存到 old_PV，下一掃描才能算 pv_diff。pause 時不更新。">
+    <Series>
+      <Contact var="pause" negated="true" />
+      <Box name="Move" eno="false">
+        <In port="in" var="PV" />
+        <Out port="out1" var="old_PV" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑩ PID 合計 pid_sum = P + I - D"
+           comment="enable 且未 pause 時才算新 pid_sum。pause 時 pid_sum 保持（輸出凍結）。">
+    <Series>
+      <Contact var="enable" />
+      <Contact var="pause" negated="true" />
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1+IN2-IN3" eno="false">
+        <In port="IN1" var="P" />
+        <In port="IN2" var="I" />
+        <In port="IN3" var="D" />
+        <Out port="OUT" var="pid_sum" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑪ 關閉時清 pid_sum"
+           comment="enable=FALSE 時 pid_sum 清 0。">
+    <Series>
+      <Contact var="enable" negated="true" />
+      <Box name="Move" eno="false">
+        <In port="in" const="0.0" type="Real" />
+        <Out port="out1" var="pid_sum" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑫ 前饋 ff = Kf × feed_fwd"
+           comment="前饋不等待偏差，直接依已知負載給輸出。disable 時仍可單獨輸出 ff。">
+    <Series>
+      <Box name="Mul" SrcType="Real" eno="false">
+        <In port="in1" var="Kf" />
+        <In port="in2" var="feed_fwd" />
+        <Out port="out" var="ff" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑬ 合成 out_raw"
+           comment="enable：out_raw = pid_sum + ff。&#10;disable：out_raw = ff（只有前饋，PID 部分為 0）。">
+    <Fork>
+      <Series>
+        <Contact var="enable" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="pid_sum" />
+          <In port="in2" var="ff" />
+          <Out port="out" var="out_raw" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enable" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="ff" />
+          <Out port="out1" var="out_raw" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="⑭ 輸出限幅 LIMIT"
+           comment="把 out_raw 限制在 out_min ~ out_max，避免閥門/變頻器超量程。">
+    <Series>
+      <Box name="LIMIT" value_type="Real" eno="false">
+        <In port="MN" var="out_min" />
+        <In port="IN" var="out_raw" />
+        <In port="MX" var="out_max" />
+        <Out port="OUT" var="out" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="⑮ 積分飽和 windup"
+           comment="輸出貼上限或下限時設 windup，下一掃描③就不再累積 err_acc。&#10;disable 時清 windup 與 at_limit。">
+    <Fork>
+      <Series>
+        <Contact var="enable" />
+        <Parallel>
+          <Series>
+            <Box name="Ge" SrcType="Real">
+              <In port="in1" var="out" />
+              <In port="in2" var="out_max" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Le" SrcType="Real">
+              <In port="in1" var="out" />
+              <In port="in2" var="out_min" />
+            </Box>
+          </Series>
+        </Parallel>
+        <SCoil var="windup" />
+        <Coil var="at_limit" />
+      </Series>
+      <Series>
+        <Contact var="enable" negated="true" />
+        <RCoil var="windup" />
+        <RCoil var="at_limit" />
+      </Series>
+    </Fork>
+  </Network>
+
+</Lad>

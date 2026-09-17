@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tape head RPM from line speed * pitch, then CT_Linear_Output when running. -->
+<Lad kind="FB" name="Tape_Head_RPM_Ctrl" number="109" comment="Tape head RPM from line speed * pitch, then CT_Linear_Output when running.">
+  <Interface>
+    <Section name="Input">
+      <Member name="q_run" type="Bool"  comment="暫存：q_run（Bool）" />
+      <Member name="tape_pitch" type="Real"  comment="暫存：tape_pitch（Real）" />
+      <Member name="lsp_cmd" type="Real"  comment="暫存：lsp_cmd（Real）" />
+      <Member name="rpm_disp_max" type="Real" start="1500.0"  comment="暫存：rpm_disp_max（Real）" />
+      <Member name="rpm_raw_max" type="Real" start="27648.0"  comment="暫存：rpm_raw_max（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="cmd_ref" type="DInt"  comment="暫存：cmd_ref（DInt）" />
+    </Section>
+    <Section name="Static">
+      <Member name="cur_pitch" type="Real"  comment="暫存：cur_pitch（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="tape_head_rpm" type="Real"  comment="暫存：tape_head_rpm（Real）" />
+      <Member name="rpm_out_norm" type="Real"  comment="暫存：rpm_out_norm（Real）" />
+    </Section>
+  </Interface>
+  <Network title="latch pitch" comment="1. latch pitch">
+    <Series>
+      <Parallel>
+        <Contact var="q_run" negated="true" />
+        <Contact var="q_run" />
+      </Parallel>
+      <Box name="Move" eno="false">
+        <In port="in" var="tape_pitch" />
+        <Out port="out1" var="cur_pitch" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="rpm and command" comment="2. rpm and command">
+    <Fork>
+      <Series>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2/IN3" eno="false">
+          <In port="in1" var="lsp_cmd" />
+          <In port="in2" var="cur_pitch" />
+          <In port="in3" const="1000.0" type="Real" />
+          <Out port="out" var="tape_head_rpm" />
+        </Box>
+        <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="tape_head_rpm" />
+          <In port="max" var="rpm_disp_max" />
+          <Out port="out" var="rpm_out_norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="q_run" />
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="rpm_out_norm" />
+          <Param name="ref_max" section="Input" type="Real" var="rpm_raw_max" />
+          <Param name="mul" section="Input" type="Real" const="10.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_ref" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="q_run" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="DInt" />
+          <Out port="out1" var="cmd_ref" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

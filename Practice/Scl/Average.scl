@@ -1,0 +1,29 @@
+// =============================================================================
+// 區塊：Average（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Average.txt
+// =============================================================================
+
+FUNCTION "Average" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    new_val : Real;
+    samples : Int;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    avg : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    smp_cnt : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Average.txt
+BEGIN
+    IF samples > 0 THEN
+        smp_cnt := INT_TO_REAL(samples);
+        avg := (avg * (smp_cnt - 1.0) + new_val) / smp_cnt;
+    END_IF;
+END_FUNCTION

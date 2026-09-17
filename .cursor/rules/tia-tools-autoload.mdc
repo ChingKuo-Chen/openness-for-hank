@@ -1,0 +1,34 @@
+---
+description: >-
+  寫機工具與 Import／IO／AllowList／卡住重跑。clone 後每則對話自動載入。
+alwaysApply: true
+---
+
+# 工具與寫機注意（自動載入）
+
+本 org 不是 MCU。不要 flash／isptool／pyocd。
+
+## Host
+
+- 編譯：`host/Build.ps1`。重編 exe 後 TIA Openness **AllowList 會再問** → 按 **Yes to all**（不要只按 Yes）。
+- 長跑 `TiaOpennessCheck` log／CPU 不動 = 卡住。自己殺了重跑，不要等使用者問。
+- Override 後舊物件常 **disposed** → 用名稱重新 Find。
+- `Import(..., Override)` = 整份蓋掉同名，不是合併。先 Export 備份。只改工作副本。
+- XML `ID="18B"` 是 hex，不要整份字串取代。
+- `--import-scl` 先刪同名再 Generate。`--save` 才存；`--compile` 不會存。
+
+## IO／參考
+
+- 寫新機先要 **2～3 個**參考。參考只讀，不要 Openness attach。
+- Hardware Tag **名不改**。≥80% 對上：名留程式底、址改 C 表。C 表沒寫仍在用的舊 Tag 不要刪。
+- 不要自己開下一項 C 表新點。
+
+## 小工具位置
+
+- Openness host：`host/`（`INSTALL.md`、`Build.ps1`、`GrantAllowListAccess.ps1`）。新電腦把 `host/INSTALL.md` 丟給 Cursor。
+- LAD／GUI／IO：`tools/`
+- 已驗證 LAD／SCL：`Practice/`（說明 `doc/LAD_PRACTICE.md`）
+- Discrete 怎麼點：`doc/HOW-TO-DISCRETE.md`
+- 寫專案注意卡：`doc/notes/OPENNESS-BASIC-HMI-TAG-HANDOFF.md`
+
+TIA 可短暫置頂來點；點完拿掉。不要對整棵 TIA 做 UIA Descendants。

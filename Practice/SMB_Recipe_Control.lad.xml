@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SMB recipe lock + five button pulses (SMFA FCs become Bools). -->
+<Lad kind="FB" name="SMB_Recipe_Control" number="110" comment="SMB recipe lock + five button pulses (SMFA FCs become Bools).">
+  <Interface>
+    <Section name="Input">
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+    </Section>
+    <Section name="InOut">
+      <Member name="lock" type="Bool"  comment="靜態：lock（Bool）" />
+      <Member name="running_to_buffer" type="Bool"  comment="靜態：running_to_buffer（Bool）" />
+      <Member name="buffer_to_running" type="Bool"  comment="靜態：buffer_to_running（Bool）" />
+      <Member name="rcp_to_running" type="Bool"  comment="靜態：rcp_to_running（Bool）" />
+      <Member name="buffer_to_rcp" type="Bool"  comment="靜態：buffer_to_rcp（Bool）" />
+      <Member name="rcp_to_buffer" type="Bool"  comment="靜態：rcp_to_buffer（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="tm_running_to_buffer" type="TON_TIME"  comment="靜態：tm_running_to_buffer（TON_TIME）" />
+      <Member name="tm_buffer_to_running" type="TON_TIME"  comment="靜態：tm_buffer_to_running（TON_TIME）" />
+      <Member name="tm_recipe_to_running" type="TON_TIME"  comment="靜態：tm_recipe_to_running（TON_TIME）" />
+      <Member name="tm_buffer_to_recipe" type="TON_TIME"  comment="靜態：tm_buffer_to_recipe（TON_TIME）" />
+      <Member name="tm_recipe_to_buffer" type="TON_TIME"  comment="靜態：tm_recipe_to_buffer（TON_TIME）" />
+    </Section>
+  </Interface>
+  <Network title="lock when running" comment="1. lock when running">
+    <Series>
+      <Contact var="is_run" />
+      <Coil var="lock" />
+    </Series>
+  </Network>
+  <Network title="running to buffer" comment="2. running to buffer">
+    <Series>
+      <Contact var="running_to_buffer" />
+      <Box name="TON" instance="tm_running_to_buffer" time_type="Time">
+        <In port="PT" time="T#20ms" />
+        <Open port="ET" />
+      </Box>
+      <RCoil var="running_to_buffer" />
+    </Series>
+  </Network>
+  <Network title="buffer to running" comment="3. buffer to running">
+    <Series>
+      <Contact var="buffer_to_running" />
+      <Contact var="lock" negated="true" />
+      <Box name="TON" instance="tm_buffer_to_running" time_type="Time">
+        <In port="PT" time="T#50ms" />
+        <Open port="ET" />
+      </Box>
+      <RCoil var="buffer_to_running" />
+    </Series>
+  </Network>
+  <Network title="recipe to running" comment="4. recipe to running">
+    <Series>
+      <Contact var="rcp_to_running" />
+      <Contact var="lock" negated="true" />
+      <Box name="TON" instance="tm_recipe_to_running" time_type="Time">
+        <In port="PT" time="T#50ms" />
+        <Open port="ET" />
+      </Box>
+      <RCoil var="rcp_to_running" />
+    </Series>
+  </Network>
+  <Network title="buffer to recipe" comment="5. buffer to recipe">
+    <Series>
+      <Contact var="buffer_to_rcp" />
+      <Box name="TON" instance="tm_buffer_to_recipe" time_type="Time">
+        <In port="PT" time="T#50ms" />
+        <Open port="ET" />
+      </Box>
+      <RCoil var="buffer_to_rcp" />
+    </Series>
+  </Network>
+  <Network title="recipe to buffer" comment="6. recipe to buffer">
+    <Series>
+      <Contact var="rcp_to_buffer" />
+      <Box name="TON" instance="tm_recipe_to_buffer" time_type="Time">
+        <In port="PT" time="T#20ms" />
+        <Open port="ET" />
+      </Box>
+      <RCoil var="rcp_to_buffer" />
+    </Series>
+  </Network>
+</Lad>

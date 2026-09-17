@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Length control: pick encoder, Get_Finish_Length, then MeterCnt. -->
+<Lad kind="FB" name="LenCtrl" number="92" comment="Length control: pick encoder, Get_Finish_Length, then MeterCnt.">
+  <Interface>
+    <Section name="Input">
+      <Member name="running" type="Bool"  comment="靜態：running（Bool）" />
+      <Member name="finish_control" type="Bool"  comment="靜態：finish_control（Bool）" />
+      <Member name="enc_len" type="DInt"  comment="靜態：enc_len（DInt）" />
+      <Member name="enc_capstan" type="DInt"  comment="靜態：enc_capstan（DInt）" />
+      <Member name="cur_lsp" type="Real"  comment="靜態：cur_lsp（Real）" />
+      <Member name="ramped_ref" type="Real"  comment="斜坡後參考（%）" />
+      <Member name="pre_ref" type="Real"  comment="靜態：pre_ref（Real）" />
+      <Member name="ramp_dec" type="Real"  comment="減速斜坡" />
+      <Member name="ramp_NStop" type="Real"  comment="停止斜坡" />
+    </Section>
+    <Section name="InOut">
+      <Member name="is_pre_len" type="Bool"  comment="靜態：is_pre_len（Bool）" />
+      <Member name="is_fin_len" type="Bool"  comment="靜態：is_fin_len（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="dia_adj" type="Struct">
+        <Member name="Enabled" type="Bool"  comment="靜態：Enabled（Bool）" />
+        <Member name="factor" type="Real"  comment="靜態：factor（Real）" />
+        <Member name="Capstan" type="Real" start="1.0"  comment="靜態：Capstan（Real）" />
+        <Member name="Cable" type="Real" start="1.0"  comment="靜態：Cable（Real）" />
+      </Member>
+      <Member name="len" type="Struct">
+        <Member name="reset" type="Bool"  comment="復位" />
+        <Member name="product_length" type="Real"  comment="靜態：product_length（Real）" />
+        <Member name="slow_at" type="Real"  comment="開始減速位置" />
+        <Member name="stop_at" type="Real"  comment="停止位置" />
+        <Member name="last_length" type="Real"  comment="靜態：last_length（Real）" />
+      </Member>
+      <Member name="enc_cur" type="DInt"  comment="靜態：enc_cur（DInt）" />
+      <Member name="slow_at_lr" type="LReal"  comment="靜態：slow_at_lr（LReal）" />
+      <Member name="stop_at_lr" type="LReal"  comment="靜態：stop_at_lr（LReal）" />
+      <Member name="MeterCnt_DB" type="MeterCnt"  comment="靜態：MeterCnt_DB（MeterCnt）" />
+    </Section>
+  </Interface>
+
+  <Network title="length adjustment / encoder select" comment="1. length adjustment / encoder select">
+    <Fork>
+      <Series>
+        <Box name="Calc" SrcType="Real" card="2" equation="IN1/IN2" eno="false">
+          <In port="in1" var="dia_adj.Capstan" />
+          <In port="in2" var="dia_adj.Cable" />
+          <Out port="out" var="dia_adj.factor" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="dia_adj.Enabled" negated="true" />
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" const="1.0" type="Real" />
+              <Out port="out1" var="MeterCnt_DB.conf.length_adj" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="enc_len" />
+              <Out port="out1" var="enc_cur" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="dia_adj.Enabled" />
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="dia_adj.factor" />
+              <Out port="out1" var="MeterCnt_DB.conf.length_adj" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="enc_capstan" />
+              <Out port="out1" var="enc_cur" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="finish points then meter" comment="2. finish points then meter">
+    <Fork>
+      <Series>
+        <Contact var="is_fin_len" negated="true" />
+        <Contact var="is_pre_len" negated="true" />
+        <Call name="Get_Finish_Length" type="FC">
+          <Param name="ramped_ref" section="Input" type="Real" var="ramped_ref" />
+          <Param name="ramp_dec" section="Input" type="Real" var="ramp_dec" />
+          <Param name="ramp_NStop" section="Input" type="Real" var="ramp_NStop" />
+          <Param name="finishing_ref" section="Input" type="Real" var="pre_ref" />
+          <Param name="linespeed" section="Input" type="Real" var="cur_lsp" />
+          <Param name="finish_length" section="Input" type="Real" var="len.product_length" />
+          <Param name="Slow_at" section="Output" type="Real" var="len.slow_at" />
+          <Param name="Stop_at" section="Output" type="Real" var="len.stop_at" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="len.reset" />
+        <Box name="Convert" SrcType="LReal" DestType="Real" eno="false">
+          <In port="in" var="MeterCnt_DB.tripA" />
+          <Out port="out" var="len.last_length" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Convert" SrcType="Real" DestType="LReal" eno="false">
+          <In port="in" var="len.slow_at" />
+          <Out port="out" var="slow_at_lr" />
+        </Box>
+        <Box name="Convert" SrcType="Real" DestType="LReal" eno="false">
+          <In port="in" var="len.stop_at" />
+          <Out port="out" var="stop_at_lr" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="MeterCnt" type="FB" instance="MeterCnt_DB" scope="LocalVariable">
+          <Param name="bipolar" section="Input" type="Bool" const="true" />
+          <Param name="enabled" section="Input" type="Bool" var="running" />
+          <Param name="reset" section="Input" type="Bool" var="len.reset" />
+          <Param name="fin_ctrl" section="Input" type="Bool" var="finish_control" />
+          <Param name="cur_cnt" section="Input" type="DInt" var="enc_cur" />
+          <Param name="pre_alarm_length" section="Input" type="LReal" var="slow_at_lr" />
+          <Param name="final_length" section="Input" type="LReal" var="stop_at_lr" />
+          <Param name="cur_speed" section="Input" type="Real" var="cur_lsp" />
+          <Param name="is_pre_len" section="Output" type="Bool" var="is_pre_len" />
+          <Param name="is_fin_len" section="Output" type="Bool" var="is_fin_len" />
+        </Call>
+      </Series>
+      <Series>
+        <RCoil var="len.reset" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

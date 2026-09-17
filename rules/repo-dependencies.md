@@ -1,6 +1,7 @@
 # TIA 專案 Repo 依賴規範
 
-TIA 專案 **clone 單一 repo 即可還原工程與 host**。`openness-standard` 僅供 Agent / 規範，**不得**作為建置期 sibling 依賴。
+日常：**機台一個 repo** + 同層（或 workspace）的 **`openness-standard`**。  
+工具、規定、LAD 範本只維護在 standard。機台 repo 放這台的 HANDOFF、C 表、規格與路由 `.mdc`。
 
 ---
 
@@ -8,36 +9,49 @@ TIA 專案 **clone 單一 repo 即可還原工程與 host**。`openness-standard
 
 | 路徑 | 用途 | 備註 |
 |------|------|------|
-| `../openness-standard` | Agent 讀規範、複製範本 | **執行期／建置期都不要 reference** |
-| TIA Portal V21 PublicAPI（本機 Program Files） | `Siemens.Engineering.dll` | 不進 Git；路徑寫在 `project-local.mdc` |
+| `../openness-standard` | Agent **讀**規定、**跑** `host/` / `tools/` | 執行期用 exe／腳本；**不要**當 `.csproj` 編譯輸入 |
+| TIA Portal V21 PublicAPI（本機 Program Files） | Openness DLL | 不進 Git；路徑寫在 `project-local.mdc` |
 
-除上述外，**禁止**在 `.csproj`、腳本、Makefile 使用 `../<其他 repo>/` 當建置輸入。
+除上述外，**禁止**在 `.csproj`、Makefile 使用 `../<其他 repo>/` 當建置輸入。
 
 ---
 
-## 禁止：建置依賴 openness-standard
+## 日常：工具只在 standard
+
+寫機、編譯、匯入區塊：
+
+```text
+<openness-standard>/host/TiaOpennessCheck.exe
+<openness-standard>/host/Build.ps1
+```
+
+機台 **不要**再 copy 整份 `host/*.cs` 當日常工具（會分叉）。  
+`templates/host/` 只作出貨／對方沒有 standard 時的最小骨架，不是每人一份實戰 host。
+
+找不到 standard：照專案 [`.cursor/rules/find-standard.mdc`](../templates/cursor-rules/find-standard.mdc) 搜尋或 `gh repo clone` 到同層。**不要**因此停工等人加 Folder。
+
+---
+
+## 禁止：建置依賴 standard 源碼
 
 ```xml
 <!-- 禁止 -->
-<ProjectReference Include="..\openness-standard\templates\host\OpennessHost.csproj" />
+<ProjectReference Include="..\openness-standard\host\..." />
 ```
 
 ```csharp
-// 禁止
-// 從 ../openness-standard/templates/host/Program.cs 當編譯來源
+// 禁止：把 standard 的 Program.cs 當本專案編譯來源
 ```
-
-工程師不必 clone `openness-standard` 也能還原專案（TIA + Visual Studio / dotnet 除外）。規範與範本由 Agent 讀取後 **copy 進專案 repo**。
 
 ---
 
-## Copy-not-include
+## Onboarding 要 copy 進機台的（薄層）
 
-1. **複製** [templates/host/](../templates/host/) → `<project>/host/`（納入 Git）
-2. **複製** [templates/cursor-rules/](../templates/cursor-rules/) → `<project>/.cursor/rules/` 後修剪
-3. `.csproj` 以 HintPath 指向 **本機** V21 PublicAPI，路徑寫在 Directory.Build.props 或 `project-local.mdc` 記載的變數；**不要**把 DLL 勾進 Git
+1. [templates/cursor-rules/](../templates/cursor-rules/) → `<project>/.cursor/rules/`（**必含** `find-standard.mdc`）
+2. [templates/AGENTS.md.example](../templates/AGENTS.md.example) → `<project>/AGENTS.md`（若尚無）
+3. 修剪後填 `project-local.mdc`（含 standard 根路徑、`.ap21`、PLC）
 
-`openness-standard` 更新 host 骨架時，對各專案 `host/` 做 diff 同步，不要改成 include。
+**不要**預設把 `templates/host/` 整包 copy 進機台。
 
 ---
 
@@ -45,8 +59,9 @@ TIA 專案 **clone 單一 repo 即可還原工程與 host**。`openness-standard
 
 ```text
 專案內不得出現：
-- ProjectReference / Import 指向 ../openness-standard
+- ProjectReference / Import 指向 ../openness-standard 的 C# 工程
 - Git 追蹤 Siemens.Engineering*.dll
+- 第二份實戰 host/*.cs（與 standard 重複維護）
 ```
 
-專案 `doc/` 應自包含出貨與 Openness 說明，勿把日常連結寫成「請打開 ../openness-standard/...」當唯一真相（Agent 可讀 central；人類交付文件要在專案內）。
+專案 `doc/` 出貨說明要自含；Agent 讀規定仍以 standard 為準。

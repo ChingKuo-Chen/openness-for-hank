@@ -1,9 +1,9 @@
 # Cursor Rules 修剪 SOP — 新專案 onboarding
 
-> **人類怎麼觸發** → [doc/ADD_PROJECT.md](../doc/ADD_PROJECT.md)  
-> **觸發**：使用者說 **「加入專案 `<name>`」**，在 [add_project_onboarding.md](../templates/add_project_onboarding.md) 複製 template 之後執行修剪。  
-> **目標**：`.cursor/rules/` 內**全部為已解析路徑**；專案內產出 **`doc/REFERENCE_PATHS.md`**。  
-> **禁止**：rule 內留 `<CPU>`、`<DLL>`、`<!-- CUSTOMIZE -->` 等需 Agent 再推導的占位符。
+> **人類** → [doc/ADD_PROJECT.md](../doc/ADD_PROJECT.md)  
+> **觸發**：`加入專案 <name>`  
+> **目標**：`.cursor/rules/` 內為已解析路徑；必留 `find-standard.mdc`；產出 `doc/REFERENCE_PATHS.md`。  
+> **禁止**：rule 內留占位符；刪掉 `find-standard.mdc`。
 
 ---
 
@@ -11,11 +11,10 @@
 
 | 層 | 檔案 | 角色 |
 |----|------|------|
-| 總地圖 | `openness-standard/reference/tia_v21.md` | V21 預設路徑（探索用） |
-| 專案捷徑 | `<project>/.cursor/rules/project-local.mdc` | 日常開專案／編譯時**直接有路徑** |
-| 交付物 | `<project>/doc/REFERENCE_PATHS.md` | onboarding 產出的**已解析路徑表** |
-
-Template 只是空白表單；**填滿**後不得留占位符。
+| 總地圖 | `openness-standard/reference/tia_v21.md` | V21 預設路徑 |
+| 找 standard | `<project>/.cursor/rules/find-standard.mdc` | 沒加 workspace 也能找 |
+| 專案捷徑 | `<project>/.cursor/rules/project-local.mdc` | `.ap21`、CPU、**standard 根路徑** |
+| 交付物 | `<project>/doc/REFERENCE_PATHS.md` | 已解析路徑表 |
 
 ---
 
@@ -23,11 +22,10 @@ Template 只是空白表單；**填滿**後不得留占位符。
 
 | 複製進專案（`.mdc`） | 留在 central（`rules/*.md`） |
 |----------------------|------------------------------|
-| 本專案路徑、CPU、DLL、dev 閉環 | Openness 禁則、排版、release、分支 |
-| **路由與摘要** | **完整必守規範** |
+| 找 standard、本專案路徑、CPU、DLL | Openness 禁則、排版、release、分支 |
 
 - **禁止**把 `rules/*.md` 全文貼進 `.mdc`。
-- **禁止**在 `.mdc` 寫與 `rules/` 矛盾的規則。
+- **不要刪** `find-standard.mdc`、`tia-hmi-autoload.mdc`、`tia-tools-autoload.mdc`。
 
 ---
 
@@ -35,10 +33,11 @@ Template 只是空白表單；**填滿**後不得留占位符。
 
 | # | 讀什麼 | 得到什麼 |
 |---|--------|----------|
-| 1 | 本機 `Siemens.Engineering.dll`（見 [tia_v21.md](../reference/tia_v21.md) 查詢命令） | **實際** DLL 完整路徑 |
-| 2 | 專案內 `.ap21` / 文件記載的專案檔 | 專案檔路徑 |
-| 3 | 使用者／README 的 CPU、station | MLFB、station 名 |
-| 4 | 找不到就停，問使用者；**不要**填 V16 路徑 |
+| 1 | [find-standard.mdc](../templates/cursor-rules/find-standard.mdc) 搜尋順序 | **standard 根目錄**（必要時 clone 到同層） |
+| 2 | 本機 V21 `PublicAPI\V21\net48\` | DLL 目錄 |
+| 3 | 專案內記載的 `.ap21` | 專案檔路徑 |
+| 4 | 使用者／README 的 CPU、station | MLFB、station 名 |
+| 5 | 找不到就停，問使用者；**不要**填 V16 路徑 |
 
 ---
 
@@ -48,31 +47,34 @@ Template 只是空白表單；**填滿**後不得留占位符。
 mkdir <name>/.cursor/rules
 複製 templates/cursor-rules/*.mdc → <name>/.cursor/rules/
 project-local.mdc.example → project-local.mdc
+templates/AGENTS.md.example → <name>/AGENTS.md（若尚無）
 ```
 
-**兩層規範**：專案 `.mdc` = 路由；法典 = [rules/README.md](../rules/README.md)。
+**不要**複製 `templates/host/` 當日常步驟。
 
 ---
 
 ## Phase 3–5 — 修剪
 
-將 `project-local.mdc`、`openness-routing.mdc`、`skip-vendor-tree.mdc` 的 glob／路徑改為 **本機真實字串**。
+將 `project-local.mdc` 的 standard 根路徑、`.ap21`、DLL、PLC 改為真實字串。
 
 ---
 
 ## Phase 6 — REFERENCE_PATHS.md
 
-用 [REFERENCE_PATHS.md.example](../templates/REFERENCE_PATHS.md.example) 填滿。
+用 [REFERENCE_PATHS.md.example](../templates/REFERENCE_PATHS.md.example) 填滿（含 standard 路徑）。
 
 ---
 
 ## Phase 7 — 驗收
 
-- DLL 路徑在檔案系統存在（或已註明「待使用者安裝」且 ONBOARDING ⬜）
+- standard 目錄存在且有 `host/Build.ps1`
+- DLL 路徑存在（或 ONBOARDING ⬜ 待裝 TIA）
 - 無 `<CPU>`、`<!-- CUSTOMIZE -->`
+- `find-standard.mdc` 仍在
 
 ---
 
 ## Phase 8 — 請使用者檢查
 
-請使用者打開 **`.cursor/rules/project-local.mdc`** 確認定位、V21、CPU、station、DLL。有誤再改。確認後 ONBOARDING「人工確認」改 ✅。
+打開 **`.cursor/rules/project-local.mdc`**。建議 Add Folder `openness-standard`。

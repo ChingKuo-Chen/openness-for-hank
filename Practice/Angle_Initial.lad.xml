@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- On rising is_run, zero one HSC; clear enable_cnt_offset when stopped.
+     (23019 zeros three HSCs; multi CTRL_HSC bare-import fails on PRACTICE_1215 —
+      keep one instance here; plant wiring can call this FB three times.) -->
+<Lad kind="FB" name="Angle_Initial" number="173" comment="On rising is_run, zero one HSC; clear enable_cnt_offset when stopped. (23019 zeros three HSCs; multi CTRL_HSC bare-import fails on PRACTICE_1215 — keep one instance here; plant wiring can call this FB three times.)">
+  <Interface>
+    <Section name="Input">
+      <Member name="is_run" type="Bool"  comment="運轉中" />
+      <Member name="hsc_port" type="HW_HSC"  comment="靜態：hsc_port（HW_HSC）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="enable_cnt_offset" type="Bool"  comment="靜態：enable_cnt_offset（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="edge_angle_initial" type="Bool"  comment="靜態：edge_angle_initial（Bool）" />
+      <Member name="is_angle_initial" type="Bool"  comment="靜態：is_angle_initial（Bool）" />
+      <Member name="hsc" type="CTRL_HSC"  comment="靜態：hsc（CTRL_HSC）" />
+      <Member name="cv" type="Bool"  comment="靜態：cv（Bool）" />
+    </Section>
+  </Interface>
+  <Network title="angle initial" comment="1. angle initial">
+    <Fork>
+      <Series>
+        <Contact var="is_run" />
+        <PCoil var="is_angle_initial" mem="edge_angle_initial" />
+      </Series>
+      <Series>
+        <Contact var="is_angle_initial" />
+        <Box name="CTRL_HSC" instance="hsc">
+          <In port="HSC" var="hsc_port" />
+          <In port="CV" var="cv" />
+          <In port="NEW_CV" const="0" type="DInt" />
+          <Open port="DIR" /><Open port="RV" /><Open port="PERIOD" />
+          <Open port="NEW_DIR" /><Open port="NEW_RV" /><Open port="NEW_PERIOD" />
+          <Open port="BUSY" /><Open port="STATUS" /><Open port="eno" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is_run" negated="true" />
+        <RCoil var="enable_cnt_offset" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

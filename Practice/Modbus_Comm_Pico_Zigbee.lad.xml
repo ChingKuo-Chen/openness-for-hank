@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pico Zigbee: same sequencer skeleton as Comm_Main, Danfoss slot. -->
+<Lad kind="FB" name="Modbus_Comm_Pico_Zigbee" number="122" comment="Pico Zigbee: same sequencer skeleton as Comm_Main, Danfoss slot.">
+  <Interface>
+    <Section name="Input">
+      <Member name="first_scan" type="Bool"  comment="靜態：first_scan（Bool）" />
+      <Member name="ack" type="Bool"  comment="確認" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="mb_addr" type="UInt"  comment="靜態：mb_addr（UInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="my_MB_Master" type="MB_MASTER"  comment="靜態：my_MB_Master（MB_MASTER）" />
+    </Section>
+    <Section name="Static">
+      <Member name="query_idx" type="UInt"  comment="靜態：query_idx（UInt）" />
+      <Member name="Drive" type="Modbus_Danfoss_Drive"  comment="靜態：Drive（Modbus_Danfoss_Drive）" />
+    </Section>
+  </Interface>
+  <Network title="query danfoss" comment="1. query danfoss">
+    <Series>
+      <Call name="Modbus_Danfoss_Drive" type="FB" instance="Drive" scope="LocalVariable">
+        <Param name="enable" section="Input" type="Bool" const="true" />
+        <Param name="reset" section="Input" type="Bool" var="reset" />
+        <Param name="mb_addr" section="Input" type="UInt" var="mb_addr" />
+        <Param name="first_scan" section="Input" type="Bool" var="first_scan" />
+        <Param name="my_MB_Master" section="InOut" type="MB_MASTER" var="my_MB_Master" />
+      </Call>
+    </Series>
+  </Network>
+  <Network title="advance and ack" comment="2. advance and ack">
+    <Fork>
+      <Series>
+        <Contact var="Drive.finish" />
+        <Box name="Inc" DestType="UInt" eno="false">
+          <In port="operand" var="query_idx" />
+        </Box>
+        <RCoil var="Drive.finish" />
+      </Series>
+      <Series>
+        <Contact var="ack" />
+        <RCoil var="Drive.had_error" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

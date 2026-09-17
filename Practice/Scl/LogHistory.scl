@@ -1,0 +1,53 @@
+// =============================================================================
+// 區塊：LogHistory（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\LogHistory.txt
+// =============================================================================
+
+FUNCTION_BLOCK "LogHistory"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    admin : Bool;
+    clear : Bool;
+    trigger : Bool;
+    id : Int;
+    pos : Real;
+END_VAR
+VAR
+    cur_pos : Real;
+    view_from : Int;
+    total : Int;
+    trig_edge : Bool;
+    trig_prev : Bool;
+    log_id : Array[0..9] of Int;
+    log_pos : Array[0..9] of Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    idx : Int;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\LogHistory.txt
+BEGIN
+    IF pos <> 0.0 THEN
+        cur_pos := pos;
+    END_IF;
+    trig_edge := trigger AND NOT trig_prev;
+    trig_prev := trigger;
+    IF clear THEN
+        FOR idx := 0 TO 9 DO
+            log_id[idx] := 0;
+            log_pos[idx] := 0.0;
+        END_FOR;
+        total := 0;
+        view_from := 0;
+    ELSIF trig_edge AND (total < 10) THEN
+        log_id[total] := id;
+        log_pos[total] := cur_pos;
+        total := total + 1;
+    END_IF;
+    IF admin THEN
+        view_from := 0;
+    END_IF;
+END_FUNCTION_BLOCK

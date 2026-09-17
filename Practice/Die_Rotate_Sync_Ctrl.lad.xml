@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Die-rotate sync: copy run flags, Rotor_Angle pair, enable PID, clear homing. -->
+<Lad kind="FB" name="Die_Rotate_Sync_Ctrl" number="103" comment="Die-rotate sync: copy run flags, Rotor_Angle pair, enable PID, clear homing.">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_run" type="Bool"  comment="靜態：line_run（Bool）" />
+      <Member name="s_twist" type="Bool"  comment="靜態：s_twist（Bool）" />
+      <Member name="jog" type="Bool"  comment="靜態：jog（Bool）" />
+      <Member name="enc_strander" type="DInt"  comment="靜態：enc_strander（DInt）" />
+      <Member name="enc_die" type="DInt"  comment="靜態：enc_die（DInt）" />
+      <Member name="main_rpm_norm" type="Real"  comment="靜態：main_rpm_norm（Real）" />
+      <Member name="die_run" type="Bool"  comment="靜態：die_run（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="pid_enable" type="Bool"  comment="靜態：pid_enable（Bool）" />
+      <Member name="rpm_output_norm" type="Real"  comment="靜態：rpm_output_norm（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="homing_done_1600" type="Bool"  comment="靜態：homing_done_1600（Bool）" />
+      <Member name="homing_done_strander" type="Bool"  comment="靜態：homing_done_strander（Bool）" />
+      <Member name="homing_done_die" type="Bool"  comment="靜態：homing_done_die（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="is" type="Struct">
+        <Member name="run" type="Bool"  comment="運轉" />
+        <Member name="S_twist" type="Bool"  comment="靜態：S_twist（Bool）" />
+        <Member name="jog" type="Bool"  comment="靜態：jog（Bool）" />
+      </Member>
+      <Member name="Strander_Angle" type="Rotor_Angle"  comment="靜態：Strander_Angle（Rotor_Angle）" />
+      <Member name="Die_Angle" type="Rotor_Angle"  comment="靜態：Die_Angle（Rotor_Angle）" />
+    </Section>
+  </Interface>
+
+  <Network title="copy plant bits" comment="1. copy plant bits">
+    <Fork>
+      <Series>
+        <Contact var="line_run" />
+        <Coil var="is.run" />
+      </Series>
+      <Series>
+        <Contact var="s_twist" />
+        <Coil var="is.S_twist" />
+      </Series>
+      <Series>
+        <Contact var="jog" />
+        <Coil var="is.jog" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="rotor angles" comment="2. rotor angles">
+    <Fork>
+      <Series>
+        <Call name="Rotor_Angle" type="FB" instance="Strander_Angle" scope="LocalVariable">
+          <Param name="enc" section="Input" type="DInt" var="enc_strander" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Rotor_Angle" type="FB" instance="Die_Angle" scope="LocalVariable">
+          <Param name="enc" section="Input" type="DInt" var="enc_die" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="main rpm feed-forward" comment="3. main rpm feed-forward">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="main_rpm_norm" />
+        <Out port="out1" var="rpm_output_norm" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="enable PID" comment="4. enable PID">
+    <Series>
+      <Contact var="is.run" />
+      <Contact var="die_run" />
+      <Coil var="pid_enable" />
+    </Series>
+  </Network>
+
+  <Network title="clear homing when stopped" comment="5. clear homing when stopped">
+    <Fork>
+      <Series>
+        <Contact var="is.run" negated="true" />
+        <RCoil var="homing_done_1600" />
+      </Series>
+      <Series>
+        <Contact var="is.run" negated="true" />
+        <RCoil var="homing_done_strander" />
+      </Series>
+      <Series>
+        <Contact var="is.run" negated="true" />
+        <RCoil var="homing_done_die" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pulse meter: Enc_Diff → Enc_Accu → metres; Enc_Reset on hold keys; finish flags. -->
+<Lad kind="FB" name="MeterCnt" number="86" comment="Pulse meter: Enc_Diff → Enc_Accu → metres; Enc_Reset on hold keys; finish flags.">
+  <Interface>
+    <Section name="Input">
+      <Member name="bipolar" type="Bool"  comment="雙向計數" />
+      <Member name="enabled" type="Bool"  comment="暫存：enabled（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="fin_ctrl" type="Bool"  comment="暫存：fin_ctrl（Bool）" />
+      <Member name="cur_cnt" type="DInt"  comment="目前計數" />
+      <Member name="pre_alarm_length" type="LReal"  comment="暫存：pre_alarm_length（LReal）" />
+      <Member name="final_length" type="LReal"  comment="暫存：final_length（LReal）" />
+      <Member name="cur_speed" type="Real"  comment="暫存：cur_speed（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="is_pre_len" type="Bool"  comment="暫存：is_pre_len（Bool）" />
+      <Member name="is_fin_len" type="Bool"  comment="暫存：is_fin_len（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="tripA" type="LReal"  comment="暫存：tripA（LReal）" />
+      <Member name="tripB" type="LReal"  comment="暫存：tripB（LReal）" />
+      <Member name="ODO" type="LReal"  comment="暫存：ODO（LReal）" />
+      <Member name="Total_Hours" type="Real"  comment="暫存：Total_Hours（Real）" />
+      <Member name="conf" type="Struct">
+        <Member name="meter_per_unit" type="Real" start="1.0"  comment="暫存：meter_per_unit（Real）" />
+        <Member name="pulses_per_unit" type="Real" start="1024.0"  comment="暫存：pulses_per_unit（Real）" />
+        <Member name="length_adj" type="Real" start="1.0"  comment="暫存：length_adj（Real）" />
+        <Member name="pulses_per_meter" type="LReal"  comment="暫存：pulses_per_meter（LReal）" />
+        <Member name="pulses_per_10M" type="LReal"  comment="暫存：pulses_per_10M（LReal）" />
+      </Member>
+      <Member name="cur" type="Struct">
+        <Member name="progress" type="Real"  comment="暫存：progress（Real）" />
+        <Member name="progress_per_int" type="Int"  comment="暫存：progress_per_int（Int）" />
+        <Member name="length_left" type="Real"  comment="暫存：length_left（Real）" />
+        <Member name="time_left" type="Real"  comment="暫存：time_left（Real）" />
+        <Member name="avg_speed" type="Real"  comment="暫存：avg_speed（Real）" />
+      </Member>
+      <Member name="prev" type="Struct">
+        <Member name="cnt" type="DInt"  comment="暫存：cnt（DInt）" />
+        <Member name="sec_p" type="Bool"  comment="暫存：sec_p（Bool）" />
+      </Member>
+      <Member name="accu" type="Struct">
+        <Member name="tripA" type="LReal"  comment="暫存：tripA（LReal）" />
+        <Member name="tripB" type="LReal"  comment="暫存：tripB（LReal）" />
+        <Member name="ODO" type="LReal"  comment="暫存：ODO（LReal）" />
+        <Member name="sec" type="Int"  comment="暫存：sec（Int）" />
+      </Member>
+      <Member name="rst_tripA" type="Struct">
+        <Member name="btn" type="Bool"  comment="暫存：btn（Bool）" />
+        <Member name="busy" type="Bool"  comment="暫存：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="暫存：done（Bool）" />
+        <Member name="wait_timer" type="IEC_TIMER"  comment="暫存：wait_timer（IEC_TIMER）" />
+      </Member>
+      <Member name="rst_tripB" type="Struct">
+        <Member name="btn" type="Bool"  comment="暫存：btn（Bool）" />
+        <Member name="busy" type="Bool"  comment="暫存：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="暫存：done（Bool）" />
+        <Member name="wait_timer" type="IEC_TIMER"  comment="暫存：wait_timer（IEC_TIMER）" />
+      </Member>
+      <Member name="rst_tripODO" type="Struct">
+        <Member name="btn" type="Bool"  comment="暫存：btn（Bool）" />
+        <Member name="busy" type="Bool"  comment="暫存：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="暫存：done（Bool）" />
+        <Member name="wait_timer" type="IEC_TIMER"  comment="暫存：wait_timer（IEC_TIMER）" />
+      </Member>
+      <Member name="sec_pls" type="TON_TIME"  comment="暫存：sec_pls（TON_TIME）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="diff_cnt" type="Real"  comment="暫存：diff_cnt（Real）" />
+      <Member name="ppm_r" type="Real"  comment="暫存：ppm_r（Real）" />
+      <Member name="tripA_r" type="Real"  comment="暫存：tripA_r（Real）" />
+      <Member name="final_r" type="Real"  comment="暫存：final_r（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="encoder delta" comment="1. encoder delta">
+    <Series>
+      <Call name="Enc_Diff" type="FC">
+        <Param name="bipolar" section="Input" type="Bool" var="bipolar" />
+        <Param name="enabled" section="Input" type="Bool" var="enabled" />
+        <Param name="cur_cnt" section="Input" type="DInt" var="cur_cnt" />
+        <Param name="prev_cnt" section="InOut" type="DInt" var="prev.cnt" />
+        <Param name="diff" section="InOut" type="Real" var="diff_cnt" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="accumulate pulses" comment="2. accumulate pulses">
+    <Series>
+      <Contact var="enabled" />
+      <Fork>
+        <Series>
+          <Call name="Enc_Accu" type="FC">
+            <Param name="diff" section="Input" type="Real" var="diff_cnt" />
+            <Param name="accu" section="InOut" type="LReal" var="accu.tripA" />
+          </Call>
+        </Series>
+        <Series>
+          <Call name="Enc_Accu" type="FC">
+            <Param name="diff" section="Input" type="Real" var="diff_cnt" />
+            <Param name="accu" section="InOut" type="LReal" var="accu.tripB" />
+          </Call>
+        </Series>
+        <Series>
+          <Call name="Enc_Accu" type="FC">
+            <Param name="diff" section="Input" type="Real" var="diff_cnt" />
+            <Param name="accu" section="InOut" type="LReal" var="accu.ODO" />
+          </Call>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="pulses per metre (was SCL)" comment="3. pulses per metre (was SCL)">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1/IN2*IN3" eno="false">
+        <In port="in1" var="conf.pulses_per_unit" />
+        <In port="in2" var="conf.meter_per_unit" />
+        <In port="in3" var="conf.length_adj" />
+        <Out port="out" var="ppm_r" />
+      </Box>
+      <Box name="Convert" SrcType="Real" DestType="LReal" eno="false">
+        <In port="in" var="ppm_r" />
+        <Out port="out" var="conf.pulses_per_meter" />
+      </Box>
+      <Box name="Mul" SrcType="LReal" eno="false">
+        <In port="in1" var="conf.pulses_per_meter" />
+        <In port="in2" const="10.0" type="LReal" />
+        <Out port="out" var="conf.pulses_per_10M" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="metres and ODO rollover" comment="4. metres and ODO rollover">
+    <Fork>
+      <Series>
+        <Box name="Div" SrcType="LReal" eno="false">
+          <In port="in1" var="accu.tripA" />
+          <In port="in2" var="conf.pulses_per_meter" />
+          <Out port="out" var="tripA" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Div" SrcType="LReal" eno="false">
+          <In port="in1" var="accu.tripB" />
+          <In port="in2" var="conf.pulses_per_meter" />
+          <Out port="out" var="tripB" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="LReal">
+          <In port="in1" var="accu.ODO" />
+          <In port="in2" var="conf.pulses_per_10M" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Add" SrcType="LReal" eno="false">
+              <In port="in1" var="ODO" />
+              <In port="in2" const="0.01" type="LReal" />
+              <Out port="out" var="ODO" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Sub" SrcType="LReal" eno="false">
+              <In port="in1" var="accu.ODO" />
+              <In port="in2" var="conf.pulses_per_10M" />
+              <Out port="out" var="accu.ODO" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="reset hold keys" comment="5. reset hold keys">
+    <Fork>
+      <Series>
+        <Call name="Enc_Reset" type="FC">
+          <Param name="force" section="Input" type="Bool" var="reset" />
+          <Param name="rst_hold_time" section="Input" type="Time" time="T#2s" />
+          <Param name="rst" section="InOut" type="Struct" var="rst_tripA" />
+          <Param name="accu" section="InOut" type="LReal" var="accu.tripA" />
+          <Param name="reading" section="InOut" type="LReal" var="tripA" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Enc_Reset" type="FC">
+          <Param name="force" section="Input" type="Bool" const="false" />
+          <Param name="rst_hold_time" section="Input" type="Time" time="T#2s" />
+          <Param name="rst" section="InOut" type="Struct" var="rst_tripB" />
+          <Param name="accu" section="InOut" type="LReal" var="accu.tripB" />
+          <Param name="reading" section="InOut" type="LReal" var="tripB" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Enc_Reset" type="FC">
+          <Param name="force" section="Input" type="Bool" const="false" />
+          <Param name="rst_hold_time" section="Input" type="Time" time="T#5s" />
+          <Param name="rst" section="InOut" type="Struct" var="rst_tripODO" />
+          <Param name="accu" section="InOut" type="LReal" var="accu.ODO" />
+          <Param name="reading" section="InOut" type="LReal" var="ODO" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="finish / pre-alarm" comment="6. finish / pre-alarm">
+    <Series>
+      <Contact var="fin_ctrl" />
+      <Box name="Gt" SrcType="LReal">
+        <In port="in1" var="final_length" />
+        <In port="in2" const="0.1" type="LReal" />
+      </Box>
+      <Fork>
+        <Series>
+          <Box name="Ge" SrcType="LReal">
+            <In port="in1" var="tripA" />
+            <In port="in2" var="final_length" />
+          </Box>
+          <Coil var="is_fin_len" />
+        </Series>
+        <Series>
+          <Box name="Lt" SrcType="LReal">
+            <In port="in1" var="tripA" />
+            <In port="in2" var="final_length" />
+          </Box>
+          <Box name="Ge" SrcType="LReal">
+            <In port="in1" var="tripA" />
+            <In port="in2" var="pre_alarm_length" />
+          </Box>
+          <Coil var="is_pre_len" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="progress and length left" comment="7. progress and length left">
+    <Fork>
+      <Series>
+        <Box name="Convert" SrcType="LReal" DestType="Real">
+          <In port="in" var="tripA" />
+          <Out port="out" var="tripA_r" />
+        </Box>
+        <Box name="Convert" SrcType="LReal" DestType="Real">
+          <In port="in" var="final_length" />
+          <Out port="out" var="final_r" />
+        </Box>
+        <Box name="Div" SrcType="Real">
+          <In port="in1" var="tripA_r" />
+          <In port="in2" var="final_r" />
+          <Out port="out" var="cur.progress" />
+        </Box>
+        <Box name="Scale_X" SrcType="Real" DestType="Int" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="cur.progress" />
+          <In port="max" const="100" type="Int" />
+          <Out port="out" var="cur.progress_per_int" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="final_r" />
+          <In port="in2" var="tripA_r" />
+          <Out port="out" var="cur.length_left" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="time left (Average was SCL — pass speed through)" comment="8. time left (Average was SCL — pass speed through)">
+    <Fork>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="cur_speed" />
+          <Out port="out1" var="cur.avg_speed" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="cur.avg_speed" />
+          <In port="in2" const="0.5" type="Real" />
+        </Box>
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" var="cur.length_left" />
+          <In port="in2" var="cur.avg_speed" />
+          <Out port="out" var="cur.time_left" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="cur.avg_speed" />
+          <In port="in2" const="0.5" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" const="99999.9" type="Real" />
+          <Out port="out1" var="cur.time_left" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="total hours" comment="9. total hours">
+    <Fork>
+      <Series>
+        <Contact var="enabled" />
+        <Contact var="prev.sec_p" negated="true" />
+        <Box name="TON" instance="sec_pls" time_type="Time">
+          <In port="PT" time="T#1s" />
+          <Open port="ET" />
+        </Box>
+        <Fork>
+          <Series>
+            <Coil var="prev.sec_p" />
+          </Series>
+          <Series>
+            <Box name="Inc" DestType="Int" eno="false">
+              <In port="operand" var="accu.sec" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="enabled" />
+        <Box name="Ge" SrcType="Int">
+          <In port="in1" var="accu.sec" />
+          <In port="in2" const="36" type="Int" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Add" SrcType="Real" eno="false">
+              <In port="in1" var="Total_Hours" />
+              <In port="in2" const="0.01" type="Real" />
+              <Out port="out" var="Total_Hours" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Sub" SrcType="Int" eno="false">
+              <In port="in1" var="accu.sec" />
+              <In port="in2" const="36" type="Int" />
+              <Out port="out" var="accu.sec" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

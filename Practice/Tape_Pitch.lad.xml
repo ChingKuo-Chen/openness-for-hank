@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Manual tape-pitch nudge; Clock_1Hz becomes a Bool input. -->
+<Lad kind="FB" name="Tape_Pitch" number="97" comment="Manual tape-pitch nudge; Clock_1Hz becomes a Bool input.">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_run" type="Bool"  comment="靜態：line_run（Bool）" />
+      <Member name="pb_ovrlap_inc" type="Bool"  comment="靜態：pb_ovrlap_inc（Bool）" />
+      <Member name="pb_ovrlap_dec" type="Bool"  comment="靜態：pb_ovrlap_dec（Bool）" />
+      <Member name="clock_1hz" type="Bool"  comment="靜態：clock_1hz（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="angle_ok" type="Bool"  comment="靜態：angle_ok（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="dirty" type="Bool"  comment="靜態：dirty（Bool）" />
+      <Member name="tape_pitch" type="Real"  comment="靜態：tape_pitch（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="clock_m" type="Bool"  comment="靜態：clock_m（Bool）" />
+      <Member name="pb_chgP_m" type="Bool"  comment="靜態：pb_chgP_m（Bool）" />
+      <Member name="tick" type="Bool"  comment="靜態：tick（Bool）" />
+    </Section>
+  </Interface>
+
+  <Network title="inc/dec pitch on clock or edge" comment="1. inc/dec pitch on clock or edge">
+    <Fork>
+      <Series>
+        <PContact var="clock_1hz" mem="clock_m" />
+        <Coil var="tick" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="pb_ovrlap_dec" />
+          <Contact var="pb_ovrlap_inc" />
+        </Parallel>
+        <PBox mem="pb_chgP_m" />
+        <Coil var="tick" />
+      </Series>
+      <Series>
+        <Contact var="tick" />
+        <Contact var="pb_ovrlap_dec" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="tape_pitch" />
+          <In port="in2" const="0.1" type="Real" />
+          <Out port="out" var="tape_pitch" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="tick" />
+        <Contact var="pb_ovrlap_inc" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="tape_pitch" />
+          <In port="in2" const="0.1" type="Real" />
+          <Out port="out" var="tape_pitch" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="tick" />
+        <SCoil var="dirty" />
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="tape_pitch" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Coil var="angle_ok" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

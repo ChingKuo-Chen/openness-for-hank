@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Convert raw AI integer temperature using ai / (10 ** decimal). -->
+<Lad kind="FC" name="Conv_Temperature" number="20" comment="Convert raw AI integer temperature using ai / (10 ** decimal).">
+  <Interface>
+    <Section name="Input">
+      <Member name="ai" type="Int"  comment="暫存：ai（Int）" />
+      <Member name="decimal" type="Int"  comment="暫存：decimal（Int）" />
+    </Section>
+    <Section name="Output">
+      <Member name="reading" type="Real"  comment="暫存：reading（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="ai_r" type="Real"  comment="暫存：ai_r（Real）" />
+    </Section>
+  </Interface>
+  <Network title="Temperature Reading" comment="1. Temperature Reading">
+    <Series>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1 / (IN2 ** IN3)" eno="false">
+        <In port="in1" var="ai" />
+        <In port="in2" const="10.0" type="Real" />
+        <In port="in3" var="decimal" />
+        <Out port="out" var="reading" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

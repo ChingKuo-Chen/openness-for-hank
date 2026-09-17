@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Safety door unlock latch with auto re-lock after unlock_time or to_lock. -->
+<Lad kind="FB" name="SaftyDoor" number="15" comment="Safety door unlock latch with auto re-lock after unlock_time or to_lock.">
+  <Interface>
+    <Section name="Input">
+      <Member name="standby" type="Bool"  comment="常數：standby（Bool）" />
+      <Member name="to_lock" type="Bool"  comment="常數：to_lock（Bool）" />
+      <Member name="to_unlock" type="Bool"  comment="常數：to_unlock（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="unlock" type="Bool"  comment="常數：unlock（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="unlock_timer" type="IEC_TIMER"  comment="常數：unlock_timer（IEC_TIMER）" />
+    </Section>
+    <Section name="Constant">
+      <Member name="unlock_time" type="Time" start="T#10s"  comment="常數：unlock_time（Time）" />
+    </Section>
+  </Interface>
+  <Network title="request unlock while standby" comment="1. request unlock while standby">
+    <Series>
+      <Contact var="standby" />
+      <Contact var="to_unlock" />
+      <SCoil var="unlock" />
+    </Series>
+  </Network>
+  <Network title="re-lock after timeout or lock request" comment="2. re-lock after timeout or lock request">
+    <Series>
+      <Contact var="unlock" />
+      <Fork>
+        <Series>
+          <CoilTON var="unlock_timer" time_type="Time">
+            <In port="value" var="unlock_time" />
+          </CoilTON>
+        </Series>
+        <Series>
+          <Parallel>
+            <Contact var="unlock_timer.Q" />
+            <Contact var="to_lock" />
+          </Parallel>
+          <RCoil var="unlock" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

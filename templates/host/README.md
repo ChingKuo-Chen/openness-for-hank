@@ -1,9 +1,6 @@
-# Openness host 骨架
+# Openness host 骨架（非日常）
 
-複製整個 `host/` 到 TIA 專案 repo，**不要** ProjectReference 回 `openness-standard`。
+日常寫機請跑 **standard 根目錄的 [`host/`](../../host/)**，不要把這份 copy 進每一台。
 
-見 [rules/repo-dependencies.md](../../rules/repo-dependencies.md)。
-
-1. 改 `OpennessHost.csproj` 的 HintPath 為本機 V21 `Siemens.Engineering.dll`
-2. 驗證命令寫進 `.cursor/rules/project-local.mdc`
-3. 第一波只要求能建置（本機有 DLL 時）與列出「尚未實作 compile」；完整 Openness API 呼叫之後再補
+這包只留給：出貨給沒有 `openness-standard` 的人、或離線最小編譯骨架。  
+**不要** ProjectReference 回 `openness-standard`。見 [rules/repo-dependencies.md](../../rules/repo-dependencies.md)。

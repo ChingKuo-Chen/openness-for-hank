@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ctrl-code decode, rotor angle, PTO handshake. No multi CTRL_HSC on 1215. -->
+<Lad kind="FB" name="Rotor_Sync_Ctrl" number="126" comment="Ctrl-code decode, rotor angle, PTO handshake. No multi CTRL_HSC on 1215.">
+  <Interface>
+    <Section name="Input">
+      <Member name="bit0" type="Bool"  comment="暫存：bit0（Bool）" />
+      <Member name="bit1" type="Bool"  comment="暫存：bit1（Bool）" />
+      <Member name="bit2" type="Bool"  comment="暫存：bit2（Bool）" />
+      <Member name="enc_rotor" type="DInt"  comment="暫存：enc_rotor（DInt）" />
+      <Member name="snr_home" type="Bool"  comment="暫存：snr_home（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="speed_norm" type="Real"  comment="暫存：speed_norm（Real）" />
+      <Member name="main_rpm" type="Real"  comment="暫存：main_rpm（Real）" />
+      <Member name="motor_max_rpm" type="Real" start="800.0"  comment="暫存：motor_max_rpm（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ctrl_code" type="Int"  comment="暫存：ctrl_code（Int）" />
+      <Member name="rpm_output_norm" type="Real"  comment="暫存：rpm_output_norm（Real）" />
+      <Member name="pid_enable" type="Bool"  comment="暫存：pid_enable（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="enable_cnt_offset" type="Bool"  comment="暫存：enable_cnt_offset（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="is" type="Struct">
+        <Member name="run" type="Bool"  comment="運轉" />
+        <Member name="S_twist" type="Bool"  comment="暫存：S_twist（Bool）" />
+        <Member name="jog" type="Bool"  comment="暫存：jog（Bool）" />
+        <Member name="homing" type="Bool"  comment="暫存：homing（Bool）" />
+        <Member name="angle_initial" type="Bool"  comment="暫存：angle_initial（Bool）" />
+      </Member>
+      <Member name="edge_angle_initial" type="Bool"  comment="暫存：edge_angle_initial（Bool）" />
+      <Member name="RotorAng" type="Rotor_Angle"  comment="暫存：RotorAng（Rotor_Angle）" />
+      <Member name="Pto" type="PTO_Ctrl"  comment="暫存：Pto（PTO_Ctrl）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="angle_wrapped" type="Real"  comment="暫存：angle_wrapped（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="ctrl code" comment="1. ctrl code">
+    <Fork>
+      <Series>
+        <Contact var="bit2" negated="true" />
+        <Contact var="bit1" negated="true" />
+        <Contact var="bit0" />
+        <Box name="Move" eno="false">
+          <In port="in" const="1" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" negated="true" />
+        <Contact var="bit1" />
+        <Contact var="bit0" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="2" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" negated="true" />
+        <Contact var="bit1" />
+        <Contact var="bit0" />
+        <Box name="Move" eno="false">
+          <In port="in" const="3" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" />
+        <Contact var="bit1" negated="true" />
+        <Contact var="bit0" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="4" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" />
+        <Contact var="bit1" negated="true" />
+        <Contact var="bit0" />
+        <Box name="Move" eno="false">
+          <In port="in" const="5" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" />
+        <Contact var="bit1" />
+        <Contact var="bit0" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="6" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" />
+        <Contact var="bit1" />
+        <Contact var="bit0" />
+        <Box name="Move" eno="false">
+          <In port="in" const="7" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="bit2" negated="true" />
+        <Contact var="bit1" negated="true" />
+        <Contact var="bit0" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="Int" />
+          <Out port="out1" var="ctrl_code" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="decode mode" comment="2. decode mode">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="6" type="Int" />
+          </Box>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="7" type="Int" />
+          </Box>
+        </Parallel>
+        <Coil var="is.run" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="2" type="Int" />
+          </Box>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="4" type="Int" />
+          </Box>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="6" type="Int" />
+          </Box>
+        </Parallel>
+        <Coil var="is.S_twist" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="2" type="Int" />
+          </Box>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="3" type="Int" />
+          </Box>
+        </Parallel>
+        <Coil var="is.jog" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="4" type="Int" />
+          </Box>
+          <Box name="Eq" SrcType="Int">
+            <In port="in1" var="ctrl_code" />
+            <In port="in2" const="5" type="Int" />
+          </Box>
+        </Parallel>
+        <Coil var="is.homing" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="angle initial pulse" comment="3. angle initial pulse">
+    <Fork>
+      <Series>
+        <Contact var="is.run" />
+        <PCoil var="is.angle_initial" mem="edge_angle_initial" />
+      </Series>
+      <Series>
+        <Contact var="is.run" negated="true" />
+        <RCoil var="enable_cnt_offset" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="rotor angle wrap" comment="4. rotor angle wrap">
+    <Fork>
+      <Series>
+        <Call name="Rotor_Angle" type="FB" instance="RotorAng" scope="LocalVariable">
+          <Param name="enc" section="Input" type="DInt" var="enc_rotor" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Angle_Correct" type="FC">
+          <Param name="cur" section="Input" type="Real" var="RotorAng.angle.cur" />
+          <Param name="corrected" section="Output" type="Real" var="angle_wrapped" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="PTO handshake" comment="5. PTO handshake">
+    <Series>
+      <Call name="PTO_Ctrl" type="FB" instance="Pto" scope="LocalVariable">
+        <Param name="is_run" section="Input" type="Bool" var="is.run" />
+        <Param name="is_S_twist" section="Input" type="Bool" var="is.S_twist" />
+        <Param name="is_jog" section="Input" type="Bool" var="is.jog" />
+        <Param name="is_homing" section="Input" type="Bool" var="is.homing" />
+        <Param name="snr_home" section="Input" type="Bool" var="snr_home" />
+        <Param name="reset" section="Input" type="Bool" var="reset" />
+        <Param name="speed_norm" section="Input" type="Real" var="speed_norm" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="rpm feed-forward and PID enable" comment="6. rpm feed-forward and PID enable">
+    <Fork>
+      <Series>
+        <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="main_rpm" />
+          <In port="max" var="motor_max_rpm" />
+          <Out port="out" var="rpm_output_norm" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is.run" />
+        <Coil var="pid_enable" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

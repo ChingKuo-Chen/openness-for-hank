@@ -1,0 +1,123 @@
+// =============================================================================
+// 區塊：PID_Universal（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\PID_Universal.txt
+// =============================================================================
+
+FUNCTION_BLOCK "PID_Universal"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    FeedForward : Real;
+    PV : Real;
+    OB_cycle : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    SP : Real;
+END_VAR
+VAR
+    enable : Bool;
+    pause : Bool;
+    ctrl_inv : Bool;
+    bipolar_out : Bool;
+    Kc : Real := 1.0;
+    Ti : Real := 1.0;
+    Td : Real;
+    Kf : Real;
+    Ts : Real;
+    err_now : Real;
+    err_acc : Real;
+    old_PV : Real;
+    old_Kc : Real;
+    old_Ti : Real;
+    old_Td : Real;
+    old_Ts : Real;
+    PV_diff : Real;
+    P : Real;
+    I : Real;
+    D : Real;
+    D_filtered : Real;
+    PID : Real;
+    FF : Real;
+    Out : Real;
+    windup : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    I_bumpless : Bool;
+    D_bumpless : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\PID_Universal.txt
+BEGIN
+    IF NOT enable THEN
+        SP := PV;
+    END_IF;
+    Ts := OB_cycle;
+    IF ctrl_inv THEN
+        err_now := PV - SP;
+    ELSE
+        err_now := SP - PV;
+    END_IF;
+    IF enable THEN
+        IF NOT windup AND NOT pause THEN
+            err_acc := err_acc + err_now;
+        END_IF;
+    ELSE
+        err_acc := 0.0;
+    END_IF;
+    IF NOT pause THEN
+        IF ctrl_inv THEN
+            PV_diff := old_PV - PV;
+        ELSE
+            PV_diff := PV - old_PV;
+        END_IF;
+        old_PV := PV;
+    END_IF;
+    I_bumpless := (Kc <> old_Kc) OR (Ti <> old_Ti) OR (Ts <> old_Ts);
+    D_bumpless := (Kc <> old_Kc) OR (Td <> old_Td) OR (Ts <> old_Ts);
+    P := Kc * err_now;
+    IF I_bumpless AND (Kc <> 0.0) AND (Ts <> 0.0) THEN
+        err_acc := I * (Ti / Ts) / Kc;
+    END_IF;
+    IF (Ti <> 0.0) THEN
+        I := Kc * (Ts / Ti) * err_acc;
+    ELSE
+        I := 0.0;
+    END_IF;
+    IF (Td > 0.0) AND D_bumpless AND (Kc <> 0.0) AND (Ts <> 0.0) THEN
+        PV_diff := D * (Ts / Td) / Kc;
+    END_IF;
+    IF Ts <> 0.0 THEN
+        D := Kc * (Td / Ts) * PV_diff;
+    ELSE
+        D := 0.0;
+    END_IF;
+    D_filtered := D_filtered + (D - D_filtered) * 0.1;
+    old_Kc := Kc;
+    old_Ti := Ti;
+    old_Td := Td;
+    old_Ts := Ts;
+    FF := Kf * FeedForward;
+    IF enable THEN
+        IF NOT pause THEN
+            PID := P + I - D_filtered;
+        END_IF;
+        Out := PID + FF;
+    ELSE
+        Out := FF;
+    END_IF;
+    IF bipolar_out THEN
+        windup := (Out <= -1.0) OR (Out >= 1.0);
+        IF Out > 1.0 THEN Out := 1.0; END_IF;
+        IF Out < -1.0 THEN Out := -1.0; END_IF;
+    ELSE
+        windup := (Out <= 0.0) OR (Out >= 1.0);
+        IF Out > 1.0 THEN Out := 1.0; END_IF;
+        IF Out < 0.0 THEN Out := 0.0; END_IF;
+    END_IF;
+    IF NOT enable THEN
+        windup := FALSE;
+    END_IF;
+END_FUNCTION_BLOCK

@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Per-axis inverse ratio * PowerLess_Ramp via CT_Linear_Output (no global tags). -->
+<Lad kind="FC" name="Power_Loss_Ramp" number="80" comment="Per-axis inverse ratio * PowerLess_Ramp via CT_Linear_Output (no global tags).">
+  <Interface>
+    <Section name="Input">
+      <Member name="ratio_strander" type="Real"  comment="暫存：ratio_strander（Real）" />
+      <Member name="ratio_cat" type="Real"  comment="暫存：ratio_cat（Real）" />
+      <Member name="ratio_tape1" type="Real"  comment="暫存：ratio_tape1（Real）" />
+      <Member name="ratio_tape2" type="Real"  comment="暫存：ratio_tape2（Real）" />
+      <Member name="ratio_tape3" type="Real"  comment="暫存：ratio_tape3（Real）" />
+      <Member name="PowerLess_Ramp" type="Real"  comment="暫存：PowerLess_Ramp（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="cmd_strander" type="DInt"  comment="暫存：cmd_strander（DInt）" />
+      <Member name="cmd_cat" type="DInt"  comment="暫存：cmd_cat（DInt）" />
+      <Member name="cmd_tape1" type="DInt"  comment="暫存：cmd_tape1（DInt）" />
+      <Member name="cmd_tape2" type="DInt"  comment="暫存：cmd_tape2（DInt）" />
+      <Member name="cmd_tape3" type="DInt"  comment="暫存：cmd_tape3（DInt）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="inv_strander" type="Real"  comment="暫存：inv_strander（Real）" />
+      <Member name="inv_cat" type="Real"  comment="暫存：inv_cat（Real）" />
+      <Member name="inv_tape1" type="Real"  comment="暫存：inv_tape1（Real）" />
+      <Member name="inv_tape2" type="Real"  comment="暫存：inv_tape2（Real）" />
+      <Member name="inv_tape3" type="Real"  comment="暫存：inv_tape3（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="strander" comment="1. strander">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_strander" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1.0" type="Real" />
+          <Out port="out1" var="inv_strander" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_strander" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" const="1.0" type="Real" />
+          <In port="in2" var="ratio_strander" />
+          <Out port="out" var="inv_strander" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="inv_strander" />
+          <Param name="ref_max" section="Input" type="Real" var="PowerLess_Ramp" />
+          <Param name="mul" section="Input" type="Real" const="1000.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_strander" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="capstan" comment="2. capstan">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_cat" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1.0" type="Real" />
+          <Out port="out1" var="inv_cat" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_cat" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" const="1.0" type="Real" />
+          <In port="in2" var="ratio_cat" />
+          <Out port="out" var="inv_cat" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="inv_cat" />
+          <Param name="ref_max" section="Input" type="Real" var="PowerLess_Ramp" />
+          <Param name="mul" section="Input" type="Real" const="1000.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_cat" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="tape1" comment="3. tape1">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape1" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1.0" type="Real" />
+          <Out port="out1" var="inv_tape1" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape1" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" const="1.0" type="Real" />
+          <In port="in2" var="ratio_tape1" />
+          <Out port="out" var="inv_tape1" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="inv_tape1" />
+          <Param name="ref_max" section="Input" type="Real" var="PowerLess_Ramp" />
+          <Param name="mul" section="Input" type="Real" const="1000.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_tape1" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="tape2" comment="4. tape2">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape2" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1.0" type="Real" />
+          <Out port="out1" var="inv_tape2" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape2" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" const="1.0" type="Real" />
+          <In port="in2" var="ratio_tape2" />
+          <Out port="out" var="inv_tape2" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="inv_tape2" />
+          <Param name="ref_max" section="Input" type="Real" var="PowerLess_Ramp" />
+          <Param name="mul" section="Input" type="Real" const="1000.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_tape2" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="tape3" comment="5. tape3">
+    <Fork>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape3" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1.0" type="Real" />
+          <Out port="out1" var="inv_tape3" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="ratio_tape3" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Div" SrcType="Real" eno="false">
+          <In port="in1" const="1.0" type="Real" />
+          <In port="in2" var="ratio_tape3" />
+          <Out port="out" var="inv_tape3" />
+        </Box>
+      </Series>
+      <Series>
+        <Call name="CT_Linear_Output" type="FC">
+          <Param name="sync_ramp" section="Input" type="Real" const="100.0" />
+          <Param name="ratio" section="Input" type="Real" var="inv_tape3" />
+          <Param name="ref_max" section="Input" type="Real" var="PowerLess_Ramp" />
+          <Param name="mul" section="Input" type="Real" const="1000.0" />
+          <Param name="cmd_ref" section="Output" type="DInt" var="cmd_tape3" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

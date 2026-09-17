@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Latch word copy LAD half (23019 networks 1/3 are SCL for %M packing). -->
+<Lad kind="FB" name="Latch_v2" number="81" comment="Latch word copy LAD half (23019 networks 1/3 are SCL for %M packing).">
+  <Interface>
+    <Section name="Input">
+      <Member name="ack" type="Bool"  comment="確認" />
+      <Member name="clear" type="Bool"  comment="清除" />
+    </Section>
+    <Section name="Output">
+      <Member name="err_set" type="Bool"  comment="靜態：err_set（Bool）" />
+      <Member name="err_coil" type="Bool"  comment="靜態：err_coil（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="LW" type="Word"  comment="靜態：LW（Word）" />
+      <Member name="L_W" type="Word"  comment="靜態：L_W（Word）" />
+      <Member name="latched" type="Word"  comment="靜態：latched（Word）" />
+    </Section>
+  </Interface>
+  <Network title="copy LW into L_W" comment="1. copy LW into L_W">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="LW" />
+        <Out port="out1" var="L_W" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="clear or hold latch" comment="2. clear or hold latch">
+    <Fork>
+      <Series>
+        <Contact var="clear" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="Word" />
+          <Out port="out1" var="latched" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="ack" />
+        <Box name="Move" eno="false">
+          <In port="in" var="L_W" />
+          <Out port="out1" var="latched" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ne" SrcType="Word">
+          <In port="in1" var="latched" />
+          <In port="in2" const="0" type="Word" />
+        </Box>
+        <Coil var="err_set" />
+      </Series>
+      <Series>
+        <Box name="Ne" SrcType="Word">
+          <In port="in1" var="LW" />
+          <In port="in2" const="0" type="Word" />
+        </Box>
+        <Coil var="err_coil" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lifter request/action + bobbin lock (plant I/Q become pins). -->
+<Lad kind="FB" name="Bobbin_Loading" number="124" comment="Lifter request/action + bobbin lock (plant I/Q become pins).">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="ext_switch" type="Bool"  comment="靜態：ext_switch（Bool）" />
+      <Member name="is_lift_async" type="Bool"  comment="靜態：is_lift_async（Bool）" />
+      <Member name="err_tilt_a" type="Bool"  comment="靜態：err_tilt_a（Bool）" />
+      <Member name="err_tilt_b" type="Bool"  comment="靜態：err_tilt_b（Bool）" />
+      <Member name="pb_up_a" type="Bool"  comment="靜態：pb_up_a（Bool）" />
+      <Member name="pb_up_b" type="Bool"  comment="靜態：pb_up_b（Bool）" />
+      <Member name="pb_down_a" type="Bool"  comment="靜態：pb_down_a（Bool）" />
+      <Member name="pb_down_b" type="Bool"  comment="靜態：pb_down_b（Bool）" />
+      <Member name="snr_up_a" type="Bool"  comment="靜態：snr_up_a（Bool）" />
+      <Member name="snr_up_b" type="Bool"  comment="靜態：snr_up_b（Bool）" />
+      <Member name="snr_down_a" type="Bool"  comment="靜態：snr_down_a（Bool）" />
+      <Member name="snr_down_b" type="Bool"  comment="靜態：snr_down_b（Bool）" />
+      <Member name="pb_lock" type="Bool"  comment="靜態：pb_lock（Bool）" />
+      <Member name="pb_unlock" type="Bool"  comment="靜態：pb_unlock（Bool）" />
+      <Member name="snr_locked" type="Bool"  comment="靜態：snr_locked（Bool）" />
+      <Member name="snr_min_width" type="Bool"  comment="靜態：snr_min_width（Bool）" />
+      <Member name="snr_max_w1" type="Bool"  comment="靜態：snr_max_w1（Bool）" />
+      <Member name="snr_max_w2" type="Bool"  comment="靜態：snr_max_w2（Bool）" />
+      <Member name="snr_rail_a" type="Bool"  comment="靜態：snr_rail_a（Bool）" />
+      <Member name="snr_rail_b" type="Bool"  comment="靜態：snr_rail_b（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="q_up_a" type="Bool"  comment="靜態：q_up_a（Bool）" />
+      <Member name="q_up_b" type="Bool"  comment="靜態：q_up_b（Bool）" />
+      <Member name="q_down_a" type="Bool"  comment="靜態：q_down_a（Bool）" />
+      <Member name="q_down_b" type="Bool"  comment="靜態：q_down_b（Bool）" />
+      <Member name="q_lock" type="Bool"  comment="靜態：q_lock（Bool）" />
+      <Member name="q_unlock" type="Bool"  comment="靜態：q_unlock（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="has_alarm" type="Bool"  comment="靜態：has_alarm（Bool）" />
+      <Member name="ok_to_action" type="Bool"  comment="靜態：ok_to_action（Bool）" />
+      <Member name="lift_individual_act" type="Bool"  comment="靜態：lift_individual_act（Bool）" />
+      <Member name="lift_action" type="Struct">
+        <Member name="Up" type="Struct">
+          <Member name="both" type="Bool"  comment="靜態：both（Bool）" />
+          <Member name="A" type="Bool"  comment="靜態：A（Bool）" />
+          <Member name="B" type="Bool"  comment="靜態：B（Bool）" />
+        </Member>
+        <Member name="Down" type="Struct">
+          <Member name="both" type="Bool"  comment="靜態：both（Bool）" />
+          <Member name="A" type="Bool"  comment="靜態：A（Bool）" />
+          <Member name="B" type="Bool"  comment="靜態：B（Bool）" />
+        </Member>
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="check if lift is tilting" comment="1. check if lift is tilting">
+    <Series>
+      <Parallel>
+        <Contact var="err_tilt_a" />
+        <Contact var="err_tilt_b" />
+      </Parallel>
+      <Coil var="has_alarm" />
+    </Series>
+  </Network>
+
+  <Network title="ok to action" comment="2. ok to action">
+    <Series>
+      <Contact var="enable" />
+      <Contact var="has_alarm" negated="true" />
+      <Coil var="ok_to_action" />
+    </Series>
+  </Network>
+
+  <Network title="Lift Request" comment="3. Lift Request">
+    <Fork>
+      <Series>
+        <Contact var="is_lift_async" negated="true" />
+        <Contact var="ext_switch" negated="true" />
+        <Contact var="ok_to_action" />
+        <Parallel>
+          <Contact var="pb_up_a" />
+          <Contact var="pb_up_b" />
+        </Parallel>
+        <Coil var="lift_action.Up.both" />
+      </Series>
+      <Series>
+        <Contact var="is_lift_async" negated="true" />
+        <Contact var="ext_switch" negated="true" />
+        <Contact var="ok_to_action" />
+        <Parallel>
+          <Contact var="pb_down_a" />
+          <Contact var="pb_down_b" />
+        </Parallel>
+        <Coil var="lift_action.Down.both" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_lift_async" />
+          <Contact var="ext_switch" />
+        </Parallel>
+        <Contact var="enable" />
+        <Contact var="pb_up_a" />
+        <Contact var="pb_down_a" negated="true" />
+        <Coil var="lift_action.Up.A" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_lift_async" />
+          <Contact var="ext_switch" />
+        </Parallel>
+        <Contact var="enable" />
+        <Contact var="pb_down_a" />
+        <Contact var="pb_up_a" negated="true" />
+        <Coil var="lift_action.Down.A" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_lift_async" />
+          <Contact var="ext_switch" />
+        </Parallel>
+        <Contact var="enable" />
+        <Contact var="pb_up_b" />
+        <Contact var="pb_down_b" negated="true" />
+        <Coil var="lift_action.Up.B" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_lift_async" />
+          <Contact var="ext_switch" />
+        </Parallel>
+        <Contact var="enable" />
+        <Contact var="pb_down_b" />
+        <Contact var="pb_up_b" negated="true" />
+        <Coil var="lift_action.Down.B" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_lift_async" />
+          <Contact var="ext_switch" />
+        </Parallel>
+        <Coil var="lift_individual_act" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="Lift Up Action" comment="4. Lift Up Action">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="lift_action.Up.both" />
+          <Contact var="lift_action.Up.A" />
+        </Parallel>
+        <Contact var="snr_up_a" />
+        <Coil var="q_up_a" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="lift_action.Up.both" />
+          <Contact var="lift_action.Up.B" />
+        </Parallel>
+        <Contact var="snr_up_b" />
+        <Coil var="q_up_b" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="Lift Down Action" comment="5. Lift Down Action">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="lift_action.Down.both" />
+          <Contact var="lift_action.Down.A" />
+        </Parallel>
+        <Contact var="snr_down_a" />
+        <Coil var="q_down_a" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="lift_action.Down.both" />
+          <Contact var="lift_action.Down.B" />
+        </Parallel>
+        <Contact var="snr_down_b" />
+        <Coil var="q_down_b" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="bobbin lock and unlock" comment="6. bobbin lock and unlock">
+    <Fork>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="pb_lock" />
+        <Contact var="pb_unlock" negated="true" />
+        <Contact var="snr_locked" />
+        <Contact var="snr_min_width" />
+        <Coil var="q_lock" />
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="pb_unlock" />
+        <Contact var="pb_lock" negated="true" />
+        <Contact var="snr_max_w1" />
+        <Contact var="snr_max_w2" />
+        <Contact var="snr_rail_a" />
+        <Contact var="snr_rail_b" />
+        <Coil var="q_unlock" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

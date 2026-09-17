@@ -2,6 +2,15 @@
 
 鎖定 **TIA Portal V21**。安裝路徑與副檔名 → [reference/tia_v21.md](../reference/tia_v21.md)。必守 → [rules/tia-openness-rules.md](../rules/tia-openness-rules.md)。
 
+**西門子官方 PDF（原文，非本隊手冊）** → [reference/TIAPortalOpenness-enUS.pdf](../reference/TIAPortalOpenness-enUS.pdf)（Siemens [109477163](https://support.industry.siemens.com/cs/document/109477163)）。  
+**讀手冊心得（Classic vs Unified、HMI Tag；Basic Absolute 見 §10）** → [OPENNESS_NOTES.md](OPENNESS_NOTES.md)。  
+**踩雷筆記（已證實走不通）** → [OPENNESS_PITFALLS.md](OPENNESS_PITFALLS.md)。  
+**Basic Softkey／圖形清單／Discrete 解法** → [OPENNESS_NOTES.md §12](OPENNESS_NOTES.md)、[OPENNESS_PITFALLS.md §六.10](OPENNESS_PITFALLS.md)、[HOW-TO-DISCRETE.md](HOW-TO-DISCRETE.md)。  
+**Basic HMI↔PLC 實測包** → [doc/notes/OPENNESS-BASIC-HMI-TAG-HANDOFF.md](notes/OPENNESS-BASIC-HMI-TAG-HANDOFF.md)。  
+**實戰 host** → [host/](../host/)（`Build.ps1`）。Basic HMI 連 PLC：Absolute → [OPENNESS_NOTES.md §10](OPENNESS_NOTES.md)。
+
+分工（見 [README 目錄](../README.md)）：本隊手冊／心得／踩雷只寫在 **`doc/`**；`reference/` 只放 V21 **路徑表**與西門子 **官方 PDF 原文**，不放心得正文。
+
 ---
 
 ## 本機需要什麼
