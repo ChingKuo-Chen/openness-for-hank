@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hold button with normal/fast/ultra-fast adjustment rates. -->
+<Lad kind="FB" name="Hold_Adj_Btn" number="54" comment="Hold button with normal/fast/ultra-fast adjustment rates.">
+  <Interface>
+    <Section name="Input">
+      <Member name="pb" type="Bool"  comment="按鈕" />
+      <Member name="negative" type="Bool"  comment="靜態：negative（Bool）" />
+      <Member name="slice" type="Real"  comment="靜態：slice（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="reading" type="Real"  comment="靜態：reading（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="adj_norm_p" type="Bool"  comment="靜態：adj_norm_p（Bool）" />
+      <Member name="adj_ultra_p" type="Bool"  comment="靜態：adj_ultra_p（Bool）" />
+      <Member name="normal" type="Bool"  comment="靜態：normal（Bool）" />
+      <Member name="fast" type="Bool"  comment="靜態：fast（Bool）" />
+      <Member name="ultra_fast" type="Bool"  comment="靜態：ultra_fast（Bool）" />
+      <Member name="adj" type="Real"  comment="靜態：adj（Real）" />
+      <Member name="adj_x10" type="Real"  comment="靜態：adj_x10（Real）" />
+      <Member name="normal_time" type="Time" start="T#3s"  comment="靜態：normal_time（Time）" />
+      <Member name="ultra_time" type="Time" start="T#10s"  comment="靜態：ultra_time（Time）" />
+      <Member name="adj_normal_time" type="Time" start="T#1s"  comment="靜態：adj_normal_time（Time）" />
+      <Member name="adj_fast_time" type="Time" start="T#100ms"  comment="靜態：adj_fast_time（Time）" />
+      <Member name="fast_TON" type="TON_TIME"  comment="靜態：fast_TON（TON_TIME）" />
+      <Member name="ultra_TON" type="TON_TIME"  comment="靜態：ultra_TON（TON_TIME）" />
+      <Member name="Normal_TON" type="TON_TIME"  comment="靜態：Normal_TON（TON_TIME）" />
+      <Member name="Ultra_Fast_TON" type="TON_TIME"  comment="靜態：Ultra_Fast_TON（TON_TIME）" />
+    </Section>
+  </Interface>
+  <Network title="Hold key for fast / ultra fast modification" comment="1. Hold key for fast / ultra fast modification">
+    <Series>
+      <Contact var="pb" />
+      <Fork>
+        <Series>
+          <Contact var="fast" negated="true" />
+          <Contact var="ultra_fast" negated="true" />
+          <Coil var="normal" />
+        </Series>
+        <Series>
+          <Box name="TON" instance="fast_TON" time_type="Time">
+            <In port="PT" var="normal_time" />
+            <Open port="ET" />
+          </Box>
+          <Contact var="ultra_fast" negated="true" />
+          <Coil var="fast" />
+        </Series>
+        <Series>
+          <Box name="Gt" SrcType="Time">
+            <In port="in1" var="ultra_time" />
+            <In port="in2" var="normal_time" />
+          </Box>
+          <Box name="TON" instance="ultra_TON" time_type="Time">
+            <In port="PT" var="ultra_time" />
+            <Open port="ET" />
+          </Box>
+          <Coil var="ultra_fast" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="Calculate adjustment" comment="2. Calculate adjustment">
+    <Fork>
+      <Series>
+        <Contact var="negative" />
+        <Box name="Neg" SrcType="Real" eno="false">
+          <In port="in" var="slice" />
+          <Out port="out" var="adj" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="negative" />
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" var="slice" />
+          <Out port="out1" var="adj" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Mul" SrcType="Real" eno="false">
+          <In port="in1" var="adj" />
+          <In port="in2" const="10.0" type="Real" />
+          <Out port="out" var="adj_x10" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="adjust according to pressing time" comment="3. adjust according to pressing time">
+    <Series>
+      <Contact var="pb" />
+      <Fork>
+        <Series>
+          <Parallel>
+            <Contact var="normal" />
+            <Contact var="fast" />
+          </Parallel>
+          <Contact var="adj_norm_p" negated="true" />
+          <Box name="TON" instance="Normal_TON" time_type="Time">
+            <In port="PT" var="adj_normal_time" />
+            <Open port="ET" />
+          </Box>
+          <Fork>
+            <Series>
+              <Coil var="adj_norm_p" />
+            </Series>
+            <Series>
+              <Contact var="normal" />
+              <Box name="Add" SrcType="Real" eno="false">
+                <In port="in1" var="reading" />
+                <In port="in2" var="adj" />
+                <Out port="out" var="reading" />
+              </Box>
+            </Series>
+            <Series>
+              <Contact var="fast" />
+              <Box name="Add" SrcType="Real" eno="false">
+                <In port="in1" var="reading" />
+                <In port="in2" var="adj_x10" />
+                <Out port="out" var="reading" />
+              </Box>
+            </Series>
+          </Fork>
+        </Series>
+        <Series>
+          <Contact var="ultra_fast" />
+          <Contact var="adj_ultra_p" negated="true" />
+          <Box name="TON" instance="Ultra_Fast_TON" time_type="Time">
+            <In port="PT" var="adj_fast_time" />
+            <Open port="ET" />
+          </Box>
+          <Fork>
+            <Series>
+              <Coil var="adj_ultra_p" />
+            </Series>
+            <Series>
+              <Box name="Add" SrcType="Real" eno="false">
+                <In port="in1" var="reading" />
+                <In port="in2" var="adj_x10" />
+                <Out port="out" var="reading" />
+              </Box>
+            </Series>
+          </Fork>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

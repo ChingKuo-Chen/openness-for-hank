@@ -1,0 +1,36 @@
+// =============================================================================
+// 區塊：Interpolation_Lookup_adv（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Interpolation_Lookup_adv.txt
+// =============================================================================
+
+FUNCTION "Interpolation_Lookup_adv" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    p1 : Real;
+    v1 : Real;
+    p2 : Real;
+    v2 : Real;
+    expect : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    out : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    span : Real;
+    t : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Interpolation_Lookup_adv.txt
+BEGIN
+    span := p2 - p1;
+    IF span <> 0.0 THEN
+        t := (expect - p1) / span;
+        out := v1 + (v2 - v1) * t;
+    ELSE
+        out := v1;
+    END_IF;
+END_FUNCTION

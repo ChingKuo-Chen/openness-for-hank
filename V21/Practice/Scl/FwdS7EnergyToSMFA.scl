@@ -1,0 +1,42 @@
+// =============================================================================
+// 區塊：FwdS7EnergyToSMFA（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\FwdS7EnergyToSMFA.txt
+// =============================================================================
+
+FUNCTION "FwdS7EnergyToSMFA" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    uL1N : Real;
+    uL2N : Real;
+    uL3N : Real;
+    iL1 : Real;
+    iL2 : Real;
+    iL3 : Real;
+    frequency : Real;
+    actPowerTotal : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    voltage_UL1 : Real;
+    voltage_UL2 : Real;
+    voltage_UL3 : Real;
+    current_L1 : Real;
+    current_L2 : Real;
+    current_L3 : Real;
+    frequency_out : Real;
+    active_power : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\FwdS7EnergyToSMFA.txt
+BEGIN
+    voltage_UL1 := uL1N;
+    voltage_UL2 := uL2N;
+    voltage_UL3 := uL3N;
+    current_L1 := iL1;
+    current_L2 := iL2;
+    current_L3 := iL3;
+    frequency_out := frequency;
+    active_power := actPowerTotal;
+END_FUNCTION

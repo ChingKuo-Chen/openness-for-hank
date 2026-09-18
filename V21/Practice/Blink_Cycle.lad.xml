@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One blink cycle, then hand off activate to next. -->
+<Lad kind="FC" name="Blink_Cycle" number="32" comment="One blink cycle, then hand off activate to next.">
+  <Interface>
+    <Section name="Input">
+      <Member name="s_in" type="Bool"  comment="閃爍使能輸入" />
+    </Section>
+    <Section name="InOut">
+      <Member name="cur" type="Struct">
+        <Member name="activate" type="Bool"  comment="InOut：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="InOut：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="InOut：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="InOut：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="InOut：TON_2（IEC_TIMER）" />
+      </Member>
+      <Member name="next" type="Struct">
+        <Member name="activate" type="Bool"  comment="InOut：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="InOut：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="InOut：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="InOut：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="InOut：TON_2（IEC_TIMER）" />
+      </Member>
+      <Member name="s_out" type="Bool"  comment="閃爍輸出" />
+    </Section>
+  </Interface>
+  <Network title="Blink for 1 cycle only" comment="1. Blink for 1 cycle only">
+    <Fork>
+      <Series>
+        <Contact var="cur.activate" />
+        <Contact var="s_in" />
+        <Fork>
+          <Series>
+            <Contact var="cur.TON_2.Q" negated="true" />
+            <Box name="TON" instance="cur.TON_1" time_type="Time">
+              <In port="PT" var="cur.tm_off" />
+              <Open port="ET" />
+            </Box>
+            <Coil var="cur.signal" />
+            <CoilTON var="cur.TON_2" time_type="Time">
+              <In port="value" var="cur.tm_on" />
+            </CoilTON>
+          </Series>
+          <Series>
+            <Contact var="cur.signal" />
+            <NBox mem="cur.signal_m" />
+            <Fork>
+              <Series>
+                <RCoil var="cur.activate" />
+              </Series>
+              <Series>
+                <SCoil var="next.activate" />
+              </Series>
+            </Fork>
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="cur.activate" />
+        <Contact var="s_in" negated="true" />
+        <Fork>
+          <Series>
+            <RCoil var="cur.activate" />
+          </Series>
+          <Series>
+            <SCoil var="next.activate" />
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Four Blink_Cycle stages in a ring; rising s_in starts stage 1. -->
+<Lad kind="FB" name="BlinkCycles" number="79" comment="Four Blink_Cycle stages in a ring; rising s_in starts stage 1.">
+  <Interface>
+    <Section name="Input">
+      <Member name="s_in" type="Bool"  comment="閃爍使能輸入" />
+      <Member name="tm1_on" type="Time"  comment="靜態：tm1_on（Time）" />
+      <Member name="tm1_off" type="Time"  comment="靜態：tm1_off（Time）" />
+      <Member name="tm2_on" type="Time"  comment="靜態：tm2_on（Time）" />
+      <Member name="tm2_off" type="Time"  comment="靜態：tm2_off（Time）" />
+      <Member name="tm3_on" type="Time"  comment="靜態：tm3_on（Time）" />
+      <Member name="tm3_off" type="Time"  comment="靜態：tm3_off（Time）" />
+      <Member name="tm4_on" type="Time"  comment="靜態：tm4_on（Time）" />
+      <Member name="tm4_off" type="Time"  comment="靜態：tm4_off（Time）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="s_out" type="Bool"  comment="閃爍輸出" />
+    </Section>
+    <Section name="Static">
+      <Member name="in_m" type="Bool"  comment="靜態：in_m（Bool）" />
+      <Member name="b1" type="Struct">
+        <Member name="activate" type="Bool"  comment="靜態：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="靜態：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="靜態：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="靜態：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="靜態：TON_2（IEC_TIMER）" />
+      </Member>
+      <Member name="b2" type="Struct">
+        <Member name="activate" type="Bool"  comment="靜態：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="靜態：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="靜態：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="靜態：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="靜態：TON_2（IEC_TIMER）" />
+      </Member>
+      <Member name="b3" type="Struct">
+        <Member name="activate" type="Bool"  comment="靜態：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="靜態：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="靜態：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="靜態：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="靜態：TON_2（IEC_TIMER）" />
+      </Member>
+      <Member name="b4" type="Struct">
+        <Member name="activate" type="Bool"  comment="靜態：activate（Bool）" />
+        <Member name="signal" type="Bool"  comment="靜態：signal（Bool）" />
+        <Member name="signal_m" type="Bool"  comment="靜態：signal_m（Bool）" />
+        <Member name="tm_on" type="Time"  comment="導通時間" />
+        <Member name="tm_off" type="Time"  comment="關斷時間" />
+        <Member name="TON_1" type="IEC_TIMER"  comment="靜態：TON_1（IEC_TIMER）" />
+        <Member name="TON_2" type="IEC_TIMER"  comment="靜態：TON_2（IEC_TIMER）" />
+      </Member>
+    </Section>
+  </Interface>
+
+  <Network title="load on/off times" comment="1. load on/off times">
+    <Fork>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm1_on" /><Out port="out1" var="b1.tm_on" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm1_off" /><Out port="out1" var="b1.tm_off" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm2_on" /><Out port="out1" var="b2.tm_on" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm2_off" /><Out port="out1" var="b2.tm_off" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm3_on" /><Out port="out1" var="b3.tm_on" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm3_off" /><Out port="out1" var="b3.tm_off" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm4_on" /><Out port="out1" var="b4.tm_on" /></Box></Series>
+      <Series><Box name="Move" eno="false"><In port="in" var="tm4_off" /><Out port="out1" var="b4.tm_off" /></Box></Series>
+    </Fork>
+  </Network>
+
+  <Network title="start at stage 1" comment="2. start at stage 1">
+    <Series>
+      <PContact var="s_in" mem="in_m" />
+      <SCoil var="b1.activate" />
+    </Series>
+  </Network>
+
+  <Network title="run four Blink_Cycle stages" comment="3. run four Blink_Cycle stages">
+    <Fork>
+      <Series>
+        <Call name="Blink_Cycle" type="FC">
+          <Param name="s_in" section="Input" type="Bool" var="s_in" />
+          <Param name="cur" section="InOut" type="Struct" var="b1" />
+          <Param name="next" section="InOut" type="Struct" var="b2" />
+          <Param name="s_out" section="InOut" type="Bool" var="s_out" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Blink_Cycle" type="FC">
+          <Param name="s_in" section="Input" type="Bool" var="s_in" />
+          <Param name="cur" section="InOut" type="Struct" var="b2" />
+          <Param name="next" section="InOut" type="Struct" var="b3" />
+          <Param name="s_out" section="InOut" type="Bool" var="s_out" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Blink_Cycle" type="FC">
+          <Param name="s_in" section="Input" type="Bool" var="s_in" />
+          <Param name="cur" section="InOut" type="Struct" var="b3" />
+          <Param name="next" section="InOut" type="Struct" var="b4" />
+          <Param name="s_out" section="InOut" type="Bool" var="s_out" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Blink_Cycle" type="FC">
+          <Param name="s_in" section="Input" type="Bool" var="s_in" />
+          <Param name="cur" section="InOut" type="Struct" var="b4" />
+          <Param name="next" section="InOut" type="Struct" var="b1" />
+          <Param name="s_out" section="InOut" type="Bool" var="s_out" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

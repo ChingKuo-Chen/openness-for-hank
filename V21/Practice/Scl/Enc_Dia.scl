@@ -1,0 +1,92 @@
+// =============================================================================
+// 區塊：Enc_Dia（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Enc_Dia.txt
+// =============================================================================
+
+FUNCTION_BLOCK "Enc_Dia"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    enabled : Bool;
+    reset : Bool;
+    length_adj : Real;
+    dia_full : Real;
+    dia_empty : Real;
+    enc_bobbin : DInt;
+    enc_length : DInt;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    idle : Bool;
+    serial_no : Int;
+END_VAR
+VAR
+    valid : Bool;
+    ack : Bool;
+    takeup : Bool;
+    dia_cur : Real;
+    dia_average : Real;
+    dia_max : Real;
+    dia_min : Real;
+    ppr : Real := 4096.0;
+    ppmm : Real := 100.0;
+    enc_rev_old : DInt;
+    enc_len_old : DInt;
+    enc_rev_acc : LReal;
+    enc_len_acc : LReal;
+    is_idle : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    rev_diff : DInt;
+    len_diff : DInt;
+    triggered : Bool;
+END_VAR
+VAR CONSTANT
+    pi : Real := 3.14159265;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Enc_Dia.txt
+BEGIN
+    IF dia_full > 0.01 THEN
+        dia_max := dia_full;
+    END_IF;
+    IF dia_empty > 0.01 THEN
+        dia_min := dia_empty;
+    END_IF;
+    IF reset THEN
+        enc_len_acc := 0.0;
+        enc_rev_acc := 0.0;
+        IF NOT takeup THEN
+            dia_cur := dia_max;
+            dia_average := dia_max;
+        ELSE
+            dia_cur := dia_min;
+            dia_average := dia_min;
+        END_IF;
+        serial_no := 0;
+    END_IF;
+    valid := enabled AND (enc_bobbin >= enc_rev_old) AND (enc_length >= enc_len_old);
+    IF valid THEN
+        rev_diff := enc_bobbin - enc_rev_old;
+        len_diff := enc_length - enc_len_old;
+        enc_rev_acc := enc_rev_acc + DINT_TO_LREAL(rev_diff);
+        enc_len_acc := enc_len_acc + DINT_TO_LREAL(len_diff);
+    END_IF;
+    enc_rev_old := enc_bobbin;
+    enc_len_old := enc_length;
+    triggered := (enc_rev_acc > 0.0) AND (enc_len_acc > 0.0) AND (ppr <> 0.0) AND (ppmm <> 0.0);
+    IF triggered THEN
+        dia_cur := LREAL_TO_REAL((enc_len_acc / ppmm) / (enc_rev_acc / ppr) / pi * length_adj);
+        dia_average := dia_cur;
+        enc_len_acc := 0.0;
+        enc_rev_acc := 0.0;
+        serial_no := serial_no + 1;
+    END_IF;
+    IF ack THEN
+        is_idle := FALSE;
+        ack := FALSE;
+    END_IF;
+    idle := enabled AND is_idle;
+END_FUNCTION_BLOCK

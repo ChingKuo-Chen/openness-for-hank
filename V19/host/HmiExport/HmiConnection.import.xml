@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Document>
+  <Engineering version="V19" />
+  <Hmi.Communication.Connection ID="0">
+    <AttributeList>
+      <Driver>SMART_S7_1200_OMS</Driver>
+      <InterfaceType>ETHERNET</InterfaceType>
+      <Name>HMI_Connection_1</Name>
+      <Online>true</Online>
+      <PhysicId>S7_ETHERNET_IP4</PhysicId>
+      <ProtocolId>S7_ETHERNET_IP4</ProtocolId>
+    </AttributeList>
+    <ObjectList>
+      <Hmi.Communication.NameValuePair ID="1" CompositionName="PhysicValues">
+        <AttributeList><Name>LocAddress</Name><Value>192.168.0.2</Value></AttributeList>
+      </Hmi.Communication.NameValuePair>
+      <Hmi.Communication.NameValuePair ID="2" CompositionName="ProtocolValues">
+        <AttributeList><Name>RemStAddress</Name><Value>192.168.0.1</Value></AttributeList>
+      </Hmi.Communication.NameValuePair>
+    </ObjectList>
+  </Hmi.Communication.Connection>
+</Document>

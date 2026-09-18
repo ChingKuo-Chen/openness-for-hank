@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Conveyor start/stop with ramp delay, speed pass-through and fault latch.
+     Written from the instruction rules, not copied from any existing block. -->
+<Lad kind="FB" name="Conveyor_Ctrl" number="901">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="start" type="Bool" />
+      <Member name="jog" type="Bool" />
+      <Member name="stop" type="Bool" />
+      <Member name="estop" type="Bool" />
+      <Member name="fault_in" type="Bool" />
+      <Member name="speed_set" type="Real" />
+    </Section>
+    <Section name="Output">
+      <Member name="run" type="Bool" />
+      <Member name="ready" type="Bool" />
+      <Member name="at_speed" type="Bool" />
+      <Member name="fault" type="Bool" />
+      <Member name="speed_out" type="Real" />
+    </Section>
+    <Section name="Static">
+      <Member name="latch" type="Bool" />
+      <Member name="t_ramp" type="IEC_TIMER" />
+      <Member name="t_fault" type="IEC_TIMER" />
+    </Section>
+  </Interface>
+
+  <Network title="start or jog, blocked by stop and estop">
+    <Series>
+      <Parallel>
+        <Contact var="start" />
+        <Contact var="jog" />
+      </Parallel>
+      <Contact var="stop" negated="true" />
+      <Contact var="estop" negated="true" />
+      <SCoil var="latch" />
+    </Series>
+  </Network>
+
+  <Network title="any stop condition drops the latch">
+    <Series>
+      <Parallel>
+        <Contact var="stop" />
+        <Contact var="estop" />
+        <Contact var="fault_in" />
+      </Parallel>
+      <RCoil var="latch" />
+    </Series>
+  </Network>
+
+  <Network title="run output">
+    <Series>
+      <Contact var="latch" />
+      <Coil var="run" />
+    </Series>
+  </Network>
+
+  <Network title="ramp delay before ready">
+    <Series>
+      <Contact var="latch" />
+      <Box name="TON" instance="t_ramp" time_type="Time">
+        <In port="PT" time="t#2s" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="ready" />
+    </Series>
+  </Network>
+
+  <Network title="pass the setpoint through once ready">
+    <Series>
+      <Contact var="ready" />
+      <Box name="Move">
+        <In port="in" var="speed_set" />
+        <Out port="out1" var="speed_out" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="at speed when output passes 90 percent">
+    <Series>
+      <Box name="Gt" SrcType="Real">
+        <In port="in1" var="speed_out" />
+        <In port="in2" const="90.0" type="Real" />
+      </Box>
+      <Coil var="at_speed" />
+    </Series>
+  </Network>
+
+  <Network title="fault must persist before it is reported">
+    <Series>
+      <Contact var="fault_in" />
+      <Box name="TON" instance="t_fault" time_type="Time">
+        <In port="PT" time="t#5s" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="fault" />
+    </Series>
+  </Network>
+
+</Lad>

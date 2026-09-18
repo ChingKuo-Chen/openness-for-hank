@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debounced under / in-range / over thresholds. -->
+<Lad kind="FB" name="Threshold_Timer" number="14" comment="Debounced under / in-range / over thresholds.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enabled" type="Bool"  comment="靜態：enabled（Bool）" />
+      <Member name="cur" type="Real"  comment="靜態：cur（Real）" />
+      <Member name="min" type="Real"  comment="靜態：min（Real）" />
+      <Member name="max" type="Real"  comment="靜態：max（Real）" />
+      <Member name="tm" type="Time" start="T#3S"  comment="靜態：tm（Time）" />
+    </Section>
+    <Section name="Output">
+      <Member name="under" type="Bool"  comment="靜態：under（Bool）" />
+      <Member name="in_range" type="Bool"  comment="靜態：in_range（Bool）" />
+      <Member name="over" type="Bool"  comment="靜態：over（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="under_TON" type="IEC_TIMER"  comment="靜態：under_TON（IEC_TIMER）" />
+      <Member name="range_TON" type="IEC_TIMER"  comment="靜態：range_TON（IEC_TIMER）" />
+      <Member name="over_TON" type="IEC_TIMER"  comment="靜態：over_TON（IEC_TIMER）" />
+    </Section>
+  </Interface>
+  <Network title="Motor OverSpeed" comment="1. Motor OverSpeed">
+    <Series>
+      <Contact var="enabled" />
+      <Fork>
+        <Series>
+          <Box name="Lt" SrcType="Real">
+            <In port="in1" var="cur" />
+            <In port="in2" var="min" />
+          </Box>
+          <Box name="TON" instance="under_TON" time_type="Time">
+            <In port="PT" var="tm" />
+            <Open port="ET" />
+          </Box>
+          <Coil var="under" />
+        </Series>
+        <Series>
+          <Box name="Ge" SrcType="Real">
+            <In port="in1" var="cur" />
+            <In port="in2" var="min" />
+          </Box>
+          <Box name="Le" SrcType="Real">
+            <In port="in1" var="cur" />
+            <In port="in2" var="max" />
+          </Box>
+          <Box name="TON" instance="range_TON" time_type="Time">
+            <In port="PT" var="tm" />
+            <Open port="ET" />
+          </Box>
+          <Coil var="in_range" />
+        </Series>
+        <Series>
+          <Box name="Gt" SrcType="Real">
+            <In port="in1" var="cur" />
+            <In port="in2" var="max" />
+          </Box>
+          <Box name="TON" instance="over_TON" time_type="Time">
+            <In port="PT" var="tm" />
+            <Open port="ET" />
+          </Box>
+          <Coil var="over" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

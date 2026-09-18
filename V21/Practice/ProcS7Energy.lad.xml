@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Read/write S7 energy meter records via RDREC / WRREC.
+     en stays on the rail; REQ is gated by contacts (as in 23019). -->
+<Lad kind="FB" name="ProcS7Energy" number="174" comment="Read/write S7 energy meter records via RDREC / WRREC. en stays on the rail; REQ is gated by contacts (as in 23019).">
+  <Interface>
+    <Section name="Input">
+      <Member name="hw_ID" type="HW_IO"  comment="靜態：hw_ID（HW_IO）" />
+      <Member name="resetEnCnt" type="Bool"  comment="靜態：resetEnCnt（Bool）" />
+      <Member name="procID_R" type="DInt"  comment="靜態：procID_R（DInt）" />
+      <Member name="procID_W" type="DInt"  comment="靜態：procID_W（DInt）" />
+    </Section>
+    <Section name="Output">
+      <Member name="proc_W_busy" type="Bool"  comment="靜態：proc_W_busy（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="readRaw" type="Variant"  comment="靜態：readRaw（Variant）" />
+      <Member name="writeRaw" type="Variant"  comment="靜態：writeRaw（Variant）" />
+    </Section>
+    <Section name="Static">
+      <Member name="RDREC" type="RDREC"  comment="靜態：RDREC（RDREC）" />
+      <Member name="WRREC" type="WRREC"  comment="靜態：WRREC（WRREC）" />
+      <Member name="req_rd" type="Bool"  comment="靜態：req_rd（Bool）" />
+      <Member name="req_wr" type="Bool"  comment="靜態：req_wr（Bool）" />
+    </Section>
+  </Interface>
+
+  <Network title="read energy meter record" comment="1. read energy meter record">
+    <Fork>
+      <Series>
+        <Contact var="WRREC.BUSY" negated="true" />
+        <Contact var="RDREC.BUSY" negated="true" />
+        <Coil var="req_rd" />
+      </Series>
+      <Series>
+        <Box name="RDREC" instance="RDREC"
+             ptr_type="Variant" id_type="HW_IO" index_type="DInt" len_type="UInt">
+          <In port="REQ" var="req_rd" />
+          <In port="ID" var="hw_ID" />
+          <In port="INDEX" var="procID_R" />
+          <In port="RECORD" var="readRaw" />
+          <Open port="MLEN" />
+          <Open port="VALID" />
+          <Open port="BUSY" />
+          <Open port="ERROR" />
+          <Open port="STATUS" />
+          <Open port="LEN" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="reset energy counter" comment="2. reset energy counter">
+    <Fork>
+      <Series>
+        <Contact var="resetEnCnt" />
+        <Coil var="req_wr" />
+      </Series>
+      <Series>
+        <Box name="WRREC" instance="WRREC"
+             ptr_type="Variant" id_type="HW_IO" index_type="DInt" len_type="UInt">
+          <In port="REQ" var="req_wr" />
+          <In port="ID" var="hw_ID" />
+          <In port="INDEX" var="procID_W" />
+          <In port="RECORD" var="writeRaw" />
+          <Out port="BUSY" var="proc_W_busy" />
+          <Open port="LEN" />
+          <Open port="DONE" />
+          <Open port="ERROR" />
+          <Open port="STATUS" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

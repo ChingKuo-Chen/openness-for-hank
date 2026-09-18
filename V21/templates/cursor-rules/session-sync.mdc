@@ -1,0 +1,27 @@
+---
+description: >-
+  Cursor chat 跨機備份：使用者說「回家備份」「sync session」等時執行；
+  需專案內 plan/daily_chat_sync_policy.md
+alwaysApply: false
+---
+
+# Session 備份與跨機接續（Daily Chat Sync）
+
+Cursor chat **不會**跨電腦同步。使用者要離開 Lab／回家／換機時，可能說：
+
+- 「我要回家了，幫我備份雲端」
+- 「我要出門了，幫我 push 一下」
+- 「收工備份」「sync 到 github」「session 備份」等同義句
+
+**一經觸發，必讀並完整執行** [`plan/daily_chat_sync_policy.md`](plan/daily_chat_sync_policy.md)（若不存在，依 [`project-local.mdc`](project-local.mdc) 所列政策檔）。
+
+典型步驟：
+
+1. 依 `plan/session_template.md` 撰寫 `plan/session_YYYY-MM-DD_<tag>.md`（只寫 session 增量，勿複製主計劃全文）
+2. 若有新定案，更新主計劃對應章節（路徑見 `project-local.mdc`）
+3. `git status` → `git add`（排除 `.gitignore` 項目）→ `git commit` → **`git push`**（觸發語即視為授權 push，除非使用者另說不要 push）
+4. 回覆 session 路徑、commit 訊息、push 結果，以及 **Resume prompt** 供下一 chat 使用
+
+下一台電腦接續：使用者 `git pull` 後開**新 chat**，`@plan/session_*.md` + 主計劃檔。
+
+**注意：** 不要把 `.ap21`、Siemens DLL、秘密推進 Git。

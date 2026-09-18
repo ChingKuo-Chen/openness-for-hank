@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reset HSC on homing, then load offset; count home events. -->
+<Lad kind="FB" name="HSC_Reset" number="50" comment="Reset HSC on homing, then load offset; count home events.">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_run" type="Bool"  comment="靜態：line_run（Bool）" />
+      <Member name="port" type="HW_HSC"  comment="靜態：port（HW_HSC）" />
+      <Member name="cnt" type="DInt"  comment="靜態：cnt（DInt）" />
+    </Section>
+    <Section name="Static">
+      <Member name="HSC" type="CTRL_HSC"  comment="靜態：HSC（CTRL_HSC）" />
+      <Member name="st" type="Struct">
+        <Member name="busy" type="Bool"  comment="靜態：busy（Bool）" />
+        <Member name="status" type="Word"  comment="靜態：status（Word）" />
+      </Member>
+      <Member name="cnt_offset" type="DInt"  comment="靜態：cnt_offset（DInt）" />
+      <Member name="homing_done" type="Bool"  comment="靜態：homing_done（Bool）" />
+      <Member name="enable_cnt_offset" type="Bool"  comment="靜態：enable_cnt_offset（Bool）" />
+      <Member name="home_cnt" type="DInt"  comment="靜態：home_cnt（DInt）" />
+    </Section>
+  </Interface>
+  <Network title="homing flag" comment="1. homing flag">
+    <Fork>
+      <Series>
+        <Contact var="line_run" />
+        <Coil var="homing_done" />
+      </Series>
+      <Series>
+        <Contact var="line_run" negated="true" />
+        <RCoil var="enable_cnt_offset" />
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="reset then offset" comment="2. reset then offset">
+    <Fork>
+      <Series>
+        <Contact var="homing_done" />
+        <Box name="CTRL_HSC" instance="HSC">
+          <In port="HSC" var="port" />
+          <In port="CV" const="true" type="Bool" />
+          <In port="NEW_CV" const="0" type="DInt" />
+          <Out port="BUSY" var="st.busy" />
+          <Out port="STATUS" var="st.status" />
+          <Open port="DIR" />
+          <Open port="RV" />
+          <Open port="PERIOD" />
+          <Open port="NEW_DIR" />
+          <Open port="NEW_RV" />
+          <Open port="NEW_PERIOD" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="homing_done" />
+        <Contact var="enable_cnt_offset" negated="true" />
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="cnt" />
+              <Out port="out1" var="cnt_offset" />
+            </Box>
+          </Series>
+          <Series>
+            <SCoil var="enable_cnt_offset" />
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="enable_cnt_offset" />
+        <Box name="CTRL_HSC" instance="HSC">
+          <In port="HSC" var="port" />
+          <In port="CV" const="true" type="Bool" />
+          <In port="NEW_CV" var="cnt_offset" />
+          <Out port="BUSY" var="st.busy" />
+          <Out port="STATUS" var="st.status" />
+          <Open port="DIR" />
+          <Open port="RV" />
+          <Open port="PERIOD" />
+          <Open port="NEW_DIR" />
+          <Open port="NEW_RV" />
+          <Open port="NEW_PERIOD" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="home counter" comment="3. home counter">
+    <Series>
+      <Box name="Inc" DestType="DInt" eno="false">
+        <In port="operand" var="home_cnt" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

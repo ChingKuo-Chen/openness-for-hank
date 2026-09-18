@@ -1,0 +1,36 @@
+// =============================================================================
+// 區塊：SMFA_Data（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\SMFA_Data.txt
+// =============================================================================
+
+FUNCTION "SMFA_Data" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    machine_status : Int;
+    total_hours : Real;
+    odo : Real;
+    line_speed : Real;
+    ramped : Real;
+    target : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    smfa_status : Int;
+    smfa_hours : Real;
+    smfa_odo : Real;
+    smfa_line_speed : Real;
+    smfa_ramped : Real;
+    smfa_target : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\SMFA_Data.txt
+BEGIN
+    smfa_status := machine_status;
+    smfa_hours := total_hours;
+    smfa_odo := odo;
+    smfa_line_speed := line_speed / 10.0;
+    smfa_ramped := ramped;
+    smfa_target := target;
+END_FUNCTION

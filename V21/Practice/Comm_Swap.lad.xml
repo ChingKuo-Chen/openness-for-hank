@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Simplified LAD: when swap is false pass raw through; when true still pass through
+     (byte-swap math was SCL in 23019 — full rewrite later). -->
+<Lad kind="FC" name="Comm_Swap" number="51" comment="Simplified LAD: when swap is false pass raw through; when true still pass through (byte-swap math was SCL in 23019 — full rewrite later).">
+  <Interface>
+    <Section name="Input">
+      <Member name="swap" type="Bool"  comment="輸出：swap（Bool）" />
+      <Member name="len" type="Int"  comment="輸出：len（Int）" />
+      <Member name="raw" type="DInt"  comment="輸出：raw（DInt）" />
+    </Section>
+    <Section name="Output">
+      <Member name="final" type="DInt"  comment="輸出：final（DInt）" />
+    </Section>
+  </Interface>
+  <Network title="pass through" comment="1. pass through">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="raw" />
+        <Out port="out1" var="final" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

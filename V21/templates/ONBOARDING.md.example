@@ -1,0 +1,23 @@
+# `<repo-name>` — onboarding 進度
+
+> Agent 維護。首次 **加入專案** 時由 Agent 建立；之後每完成一項就更新 ✅/⬜。  
+> 使用者問 **「`<repo>` 進度為何」** 時，Agent 讀此檔回答。
+
+| 項目 | 狀態 | 備註 |
+|------|------|------|
+| TIA Portal V21 本機確認 | ⬜ | |
+| Openness DLL 路徑 | ⬜ | 見 doc/REFERENCE_PATHS.md |
+| 找到 openness-standard | ⬜ | 路徑寫在 project-local；可尚未加入 workspace |
+| find-standard.mdc | ⬜ | 機台 `.cursor/rules/` 必留 |
+| Cursor rules（其餘路由） | ⬜ | 見 cursor_rules_trim_sop |
+| doc/REFERENCE_PATHS.md | ⬜ | 含 standard 根目錄 |
+| project-local.mdc 人工確認 | ⬜ | 使用者檢查定位/CPU/DLL/standard |
+| .ap21 本機位置已知 | ⬜ | 不強制進 Git |
+| 參考程式 2～3 個 | ⬜ | 問路徑；沒給則用本樹 `Practice/`，摘錄放 `reference/` |
+| `<name>.code-workspace` | ⬜ | 機台 + `../openness-standard`；請 Open Workspace |
+| Openness compile 曾 PASS | ⬜ | 跑 **standard** `host/TiaOpennessCheck.exe` |
+
+## 下一步（Agent / 人類）
+
+- 請打開 `.cursor/rules/project-local.mdc` 確認專案定位、TIA V21、CPU、station、DLL、**standard 路徑**
+- 請 **File → Open Workspace** 選 `<name>.code-workspace`（含 `openness-standard`，全隊 skill 才會掛上）

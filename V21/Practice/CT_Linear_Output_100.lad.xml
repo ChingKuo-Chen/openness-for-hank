@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same as CT_Linear_Output but divides by 10000. -->
+<Lad kind="FC" name="CT_Linear_Output_100" number="24" comment="Same as CT_Linear_Output but divides by 10000.">
+  <Interface>
+    <Section name="Input">
+      <Member name="sync_ramp" type="Real"  comment="暫存：sync_ramp（Real）" />
+      <Member name="ratio" type="Real"  comment="暫存：ratio（Real）" />
+      <Member name="ref_max" type="Real"  comment="暫存：ref_max（Real）" />
+      <Member name="mul" type="Real"  comment="暫存：mul（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="cmd_ref" type="DInt"  comment="暫存：cmd_ref（DInt）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="norm_out" type="Real"  comment="暫存：norm_out（Real）" />
+      <Member name="cmd" type="Real"  comment="暫存：cmd（Real）" />
+      <Member name="cmd_mul" type="Real"  comment="暫存：cmd_mul（Real）" />
+      <Member name="fixed_norm_out" type="Real"  comment="暫存：fixed_norm_out（Real）" />
+    </Section>
+  </Interface>
+  <Network title="ct linear x100" comment="1. ct linear x100">
+    <Fork>
+      <Series>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1 * IN2  / IN3" eno="false">
+          <In port="in1" var="sync_ramp" />
+          <In port="in2" var="ratio" />
+          <In port="in3" const="10000.0" type="Real" />
+          <Out port="out" var="norm_out" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="norm_out" />
+          <In port="max" var="ref_max" />
+          <Out port="out" var="cmd" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Mul" SrcType="Real" eno="false">
+          <In port="in1" var="cmd" />
+          <In port="in2" var="mul" />
+          <Out port="out" var="cmd_mul" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Convert" SrcType="Real" DestType="DInt" eno="false">
+          <In port="in" var="cmd_mul" />
+          <Out port="out" var="cmd_ref" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -1,0 +1,31 @@
+// =============================================================================
+// 區塊：Switch_ExtBtn（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Switch_ExtBtn.txt
+// =============================================================================
+
+FUNCTION "Switch_ExtBtn" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    ext_btn : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    ext_out : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    pb : Bool;
+    pb_edge : Bool;
+    sw : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Switch_ExtBtn.txt
+BEGIN
+    IF (ext_btn OR pb) AND (NOT pb_edge) THEN
+        sw := NOT sw;
+    END_IF;
+    pb_edge := ext_btn OR pb;
+    ext_out := sw;
+END_FUNCTION

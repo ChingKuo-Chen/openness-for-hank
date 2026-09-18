@@ -1,0 +1,38 @@
+// =============================================================================
+// 區塊：SMFA_code_Pioneer_Status（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\SMFA_code_Pioneer_Status.txt
+// =============================================================================
+
+FUNCTION "SMFA_code_Pioneer_Status" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    isRunning : Bool;
+    rawStatus : Int;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    newStatus : Int;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\SMFA_code_Pioneer_Status.txt
+BEGIN
+    CASE rawStatus OF
+        0:
+            newStatus := 3000;
+        1:
+            newStatus := 3000;
+        2:
+            newStatus := 2001;
+        3:
+            newStatus := 3000;
+        4:
+            newStatus := 3002;
+        ELSE
+            newStatus := 3000;
+    END_CASE;
+    IF (rawStatus = 3) AND isRunning THEN
+        newStatus := 2002;
+    END_IF;
+END_FUNCTION

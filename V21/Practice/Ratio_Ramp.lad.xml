@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ratio ramp: approach Target_Ref by slices; direct mode jumps; stop zeroes.
+     Simplified Ramp.Now as a Real (23019 uses indexed Ramp.tm[]). -->
+<Lad kind="FB" name="Ratio_Ramp" number="77" comment="Ratio ramp: approach Target_Ref by slices; direct mode jumps; stop zeroes. Simplified Ramp.Now as a Real (23019 uses indexed Ramp.tm[]).">
+  <Interface>
+    <Section name="Input">
+      <Member name="isRUN_ramp" type="Bool"  comment="暫存：isRUN_ramp（Bool）" />
+      <Member name="isRUN_direct" type="Bool"  comment="暫存：isRUN_direct（Bool）" />
+      <Member name="isStop" type="Bool"  comment="暫存：isStop（Bool）" />
+      <Member name="ratio" type="Real"  comment="暫存：ratio（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ok_to_stop" type="Bool"  comment="暫存：ok_to_stop（Bool）" />
+      <Member name="ratio_out" type="Real"  comment="暫存：ratio_out（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="Cur_Ratio_Val" type="Real"  comment="暫存：Cur_Ratio_Val（Real）" />
+      <Member name="Ramp_Now" type="Real" start="1.0"  comment="暫存：Ramp_Now（Real）" />
+      <Member name="Slice_Time" type="Real" start="5.0"  comment="暫存：Slice_Time（Real）" />
+      <Member name="Stablized" type="Bool"  comment="暫存：Stablized（Bool）" />
+      <Member name="SpdChg_DelayOff" type="IEC_TIMER"  comment="暫存：SpdChg_DelayOff（IEC_TIMER）" />
+      <Member name="SpdChg_Threshold" type="Real" start="1.0"  comment="暫存：SpdChg_Threshold（Real）" />
+      <Member name="Stable_time" type="Time" start="T#10s"  comment="暫存：Stable_time（Time）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="slice" type="Real"  comment="暫存：slice（Real）" />
+      <Member name="ramp_slice" type="Real"  comment="暫存：ramp_slice（Real）" />
+      <Member name="diff_slice" type="Real"  comment="暫存：diff_slice（Real）" />
+      <Member name="ratio_diff" type="Real"  comment="暫存：ratio_diff（Real）" />
+      <Member name="Target_Ref" type="Real"  comment="暫存：Target_Ref（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="clamp ramp time" comment="1. clamp ramp time">
+    <Series>
+      <Box name="LIMIT" value_type="Real" eno="false">
+        <In port="MN" const="1.0" type="Real" />
+        <In port="IN" var="Ramp_Now" />
+        <In port="MX" const="6000.0" type="Real" />
+        <Out port="OUT" var="Ramp_Now" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="target = 0 when stop else ratio" comment="2. target = 0 when stop else ratio">
+    <Fork>
+      <Series>
+        <Contact var="isStop" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="Target_Ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isStop" />
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" var="ratio" />
+          <Out port="out1" var="Target_Ref" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="ok to stop when near zero" comment="3. ok to stop when near zero">
+    <Series>
+      <Contact var="isStop" />
+      <Box name="Le" SrcType="Real">
+        <In port="in1" var="Cur_Ratio_Val" />
+        <In port="in2" const="0.001" type="Real" />
+      </Box>
+      <Coil var="ok_to_stop" />
+    </Series>
+  </Network>
+
+  <Network title="signed diff and absolute distance" comment="4. signed diff and absolute distance">
+    <Series>
+      <Box name="Sub" SrcType="Real">
+        <In port="in1" var="Target_Ref" />
+        <In port="in2" var="Cur_Ratio_Val" />
+        <Out port="out" var="ratio_diff" />
+      </Box>
+      <Box name="Abs" SrcType="Real" eno="false">
+        <In port="in" var="ratio_diff" />
+        <Out port="out" var="diff_slice" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="clear stabilized when jump is large" comment="5. clear stabilized when jump is large">
+    <Series>
+      <Box name="Gt" SrcType="Real">
+        <In port="in1" var="diff_slice" />
+        <In port="in2" var="SpdChg_Threshold" />
+      </Box>
+      <Box name="TOF" instance="SpdChg_DelayOff" time_type="Time">
+        <In port="PT" var="Stable_time" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="Stablized" negated="true" />
+    </Series>
+  </Network>
+
+  <Network title="ramp slice from time" comment="6. ramp slice from time">
+    <Fork>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="diff_slice" />
+          <In port="in2" const="0.001" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="Ramp_Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="Ramp_Now" />
+          <In port="in2" const="0.01" type="Real" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1/(IN2*IN3)" eno="false">
+          <In port="in1" var="Slice_Time" />
+          <In port="in2" var="Ramp_Now" />
+          <In port="in3" const="10.0" type="Real" />
+          <Out port="out" var="ramp_slice" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="Ramp_Now" />
+          <In port="in2" const="0.01" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="ramp_slice" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="slice = min(diff, ramp_slice)" comment="7. slice = min(diff, ramp_slice)">
+    <Series>
+      <Box name="MIN" value_type="Real" card="2" eno="false">
+        <In port="IN1" var="diff_slice" />
+        <In port="IN2" var="ramp_slice" />
+        <Out port="OUT" var="slice" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="apply slice / direct / idle" comment="8. apply slice / direct / idle">
+    <Fork>
+      <Series>
+        <Contact var="isRUN_ramp" />
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="ratio_diff" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="Cur_Ratio_Val" />
+          <In port="in2" var="slice" />
+          <Out port="out" var="Cur_Ratio_Val" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_ramp" />
+        <Box name="Le" SrcType="Real">
+          <In port="in1" var="ratio_diff" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="Cur_Ratio_Val" />
+          <In port="in2" var="slice" />
+          <Out port="out" var="Cur_Ratio_Val" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_direct" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Target_Ref" />
+          <Out port="out1" var="Cur_Ratio_Val" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_ramp" negated="true" />
+        <Contact var="isRUN_direct" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="Cur_Ratio_Val" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="clamp output 0..100" comment="9. clamp output 0..100">
+    <Series>
+      <Box name="LIMIT" value_type="Real" eno="false">
+        <In port="MN" const="0.0" type="Real" />
+        <In port="IN" var="Cur_Ratio_Val" />
+        <In port="MX" const="100.0" type="Real" />
+        <Out port="OUT" var="ratio_out" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

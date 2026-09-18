@@ -1,0 +1,39 @@
+// =============================================================================
+// 區塊：Low_Pass_Filter（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Low_Pass_Filter.txt
+// =============================================================================
+
+FUNCTION_BLOCK "Low_Pass_Filter"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    OB_cycle : Real;
+    enable : Bool;
+    in_val : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    out_val : Real;
+END_VAR
+VAR
+    time_const : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    filter_const : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Low_Pass_Filter.txt
+BEGIN
+    IF (OB_cycle + time_const) <> 0.0 THEN
+        filter_const := OB_cycle / (OB_cycle + time_const);
+    ELSE
+        filter_const := 1.0;
+    END_IF;
+    IF enable THEN
+        out_val := (1.0 - filter_const) * out_val + filter_const * in_val;
+    ELSE
+        out_val := in_val;
+    END_IF;
+END_FUNCTION_BLOCK

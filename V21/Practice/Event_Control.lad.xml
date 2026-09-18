@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portable Event_Control: reset latch, WatchDog, Latch_v2 groups, SR stops.
+     (23019 used FirstScan + global M-bits / DBs; practice takes them as pins.) -->
+<Lad kind="FB" name="Event_Control" number="89" comment="Portable Event_Control: reset latch, WatchDog, Latch_v2 groups, SR stops. (23019 used FirstScan + global M-bits / DBs; practice takes them as pins.)">
+  <Interface>
+    <Section name="Input">
+      <Member name="pb_reset" type="Bool"  comment="靜態：pb_reset（Bool）" />
+      <Member name="first_scan" type="Bool"  comment="靜態：first_scan（Bool）" />
+      <Member name="wd_cnt_zigbee" type="DInt"  comment="靜態：wd_cnt_zigbee（DInt）" />
+    </Section>
+    <Section name="Output">
+      <Member name="comm_err_zigbee" type="Bool"  comment="靜態：comm_err_zigbee（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="clear_latch" type="Bool"  comment="靜態：clear_latch（Bool）" />
+      <Member name="coil" type="Struct">
+        <Member name="a" type="Bool"  comment="靜態：a（Bool）" />
+        <Member name="e" type="Bool"  comment="靜態：e（Bool）" />
+        <Member name="n" type="Bool"  comment="靜態：n（Bool）" />
+        <Member name="q" type="Bool"  comment="靜態：q（Bool）" />
+      </Member>
+      <Member name="set" type="Struct">
+        <Member name="a" type="Bool"  comment="靜態：a（Bool）" />
+        <Member name="e" type="Bool"  comment="靜態：e（Bool）" />
+        <Member name="n" type="Bool"  comment="靜態：n（Bool）" />
+        <Member name="q" type="Bool"  comment="靜態：q（Bool）" />
+      </Member>
+      <Member name="stop" type="Struct">
+        <Member name="eStop" type="Bool"  comment="急停" />
+        <Member name="nStop" type="Bool"  comment="靜態：nStop（Bool）" />
+        <Member name="qStop" type="Bool"  comment="靜態：qStop（Bool）" />
+      </Member>
+      <Member name="watchdog_zigbee" type="WatchDog"  comment="靜態：watchdog_zigbee（WatchDog）" />
+      <Member name="AErr" type="Latch_v2"  comment="靜態：AErr（Latch_v2）" />
+      <Member name="EErr" type="Latch_v2"  comment="靜態：EErr（Latch_v2）" />
+      <Member name="NErr" type="Latch_v2"  comment="靜態：NErr（Latch_v2）" />
+      <Member name="QErr" type="Latch_v2"  comment="靜態：QErr（Latch_v2）" />
+    </Section>
+  </Interface>
+
+  <Network title="reset / clear" comment="1. reset / clear">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="first_scan" />
+          <Contact var="pb_reset" />
+        </Parallel>
+        <Coil var="reset" />
+      </Series>
+      <Series>
+        <Contact var="first_scan" />
+        <Coil var="clear_latch" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="modbus watchdog" comment="2. modbus watchdog">
+    <Series>
+      <Call name="WatchDog" type="FB" instance="watchdog_zigbee" scope="LocalVariable">
+        <Param name="cnt" section="Input" type="DInt" var="wd_cnt_zigbee" />
+        <Param name="time_out" section="Input" type="Time" time="T#3s" />
+        <Param name="comm_err" section="Output" type="Bool" var="comm_err_zigbee" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="A / E / N / Q latches" comment="3. A / E / N / Q latches">
+    <Fork>
+      <Series>
+        <Call name="Latch_v2" type="FB" instance="AErr" scope="LocalVariable">
+          <Param name="ack" section="Input" type="Bool" var="reset" />
+          <Param name="clear" section="Input" type="Bool" var="clear_latch" />
+          <Param name="err_set" section="Output" type="Bool" var="set.a" />
+          <Param name="err_coil" section="Output" type="Bool" var="coil.a" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Latch_v2" type="FB" instance="EErr" scope="LocalVariable">
+          <Param name="ack" section="Input" type="Bool" var="reset" />
+          <Param name="clear" section="Input" type="Bool" var="clear_latch" />
+          <Param name="err_set" section="Output" type="Bool" var="set.e" />
+          <Param name="err_coil" section="Output" type="Bool" var="coil.e" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Latch_v2" type="FB" instance="NErr" scope="LocalVariable">
+          <Param name="ack" section="Input" type="Bool" var="reset" />
+          <Param name="clear" section="Input" type="Bool" var="clear_latch" />
+          <Param name="err_set" section="Output" type="Bool" var="set.n" />
+          <Param name="err_coil" section="Output" type="Bool" var="coil.n" />
+        </Call>
+      </Series>
+      <Series>
+        <Call name="Latch_v2" type="FB" instance="QErr" scope="LocalVariable">
+          <Param name="ack" section="Input" type="Bool" var="reset" />
+          <Param name="clear" section="Input" type="Bool" var="clear_latch" />
+          <Param name="err_set" section="Output" type="Bool" var="set.q" />
+          <Param name="err_coil" section="Output" type="Bool" var="coil.q" />
+        </Call>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="stop SRs" comment="4. stop SRs">
+    <Fork>
+      <Series>
+        <Contact var="coil.e" />
+        <Sr var="stop.eStop">
+          <In port="r1" var="reset" />
+        </Sr>
+      </Series>
+      <Series>
+        <Contact var="coil.n" />
+        <Sr var="stop.nStop">
+          <In port="r1" var="reset" />
+        </Sr>
+      </Series>
+      <Series>
+        <Contact var="coil.q" />
+        <Sr var="stop.qStop">
+          <In port="r1" var="reset" />
+        </Sr>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

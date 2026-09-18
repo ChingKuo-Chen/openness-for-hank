@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Two-button VR% adjuster: hold for accel, optional LIMIT, Round for HMI bar. -->
+<Lad kind="FB" name="Btn_Ratio" number="70" comment="Two-button VR% adjuster: hold for accel, optional LIMIT, Round for HMI bar.">
+  <Interface>
+    <Section name="Input">
+      <Member name="inc_expb" type="Bool"  comment="靜態：inc_expb（Bool）" />
+      <Member name="dec_expb" type="Bool"  comment="靜態：dec_expb（Bool）" />
+      <Member name="limit_range" type="Bool"  comment="靜態：limit_range（Bool）" />
+      <Member name="adj_slice" type="Real" start="0.01"  comment="靜態：adj_slice（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="VR_value" type="Real"  comment="靜態：VR_value（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="inc_intpb" type="Bool"  comment="靜態：inc_intpb（Bool）" />
+      <Member name="dec_intpb" type="Bool"  comment="靜態：dec_intpb（Bool）" />
+      <Member name="max_VR_value" type="Real" start="100.0"  comment="靜態：max_VR_value（Real）" />
+      <Member name="VR_bar" type="Int"  comment="靜態：VR_bar（Int）" />
+      <Member name="inc_or" type="Bool"  comment="靜態：inc_or（Bool）" />
+      <Member name="dec_or" type="Bool"  comment="靜態：dec_or（Bool）" />
+      <Member name="Hold_SpdUp" type="Hold_Adj_Btn"  comment="靜態：Hold_SpdUp（Hold_Adj_Btn）" />
+      <Member name="Hold_SpdDown" type="Hold_Adj_Btn"  comment="靜態：Hold_SpdDown（Hold_Adj_Btn）" />
+    </Section>
+  </Interface>
+
+  <Network title="hold buttons and manual slice" comment="1. hold buttons and manual slice">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="inc_expb" />
+          <Contact var="inc_intpb" />
+        </Parallel>
+        <Coil var="inc_or" />
+      </Series>
+      <Series>
+        <Call name="Hold_Adj_Btn" type="FB" instance="Hold_SpdUp" scope="LocalVariable">
+          <Param name="pb" section="Input" type="Bool" var="inc_or" />
+          <Param name="negative" section="Input" type="Bool" const="false" />
+          <Param name="slice" section="Input" type="Real" var="adj_slice" />
+          <Param name="reading" section="InOut" type="Real" var="VR_value" />
+        </Call>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="dec_expb" />
+          <Contact var="dec_intpb" />
+        </Parallel>
+        <Coil var="dec_or" />
+      </Series>
+      <Series>
+        <Call name="Hold_Adj_Btn" type="FB" instance="Hold_SpdDown" scope="LocalVariable">
+          <Param name="pb" section="Input" type="Bool" var="dec_or" />
+          <Param name="negative" section="Input" type="Bool" const="true" />
+          <Param name="slice" section="Input" type="Real" var="adj_slice" />
+          <Param name="reading" section="InOut" type="Real" var="VR_value" />
+        </Call>
+      </Series>
+      <Series>
+        <Contact var="inc_intpb" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="VR_value" />
+          <In port="in2" var="adj_slice" />
+          <Out port="out" var="VR_value" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="dec_intpb" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="VR_value" />
+          <In port="in2" var="adj_slice" />
+          <Out port="out" var="VR_value" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="optional 0..max clamp" comment="2. optional 0..max clamp">
+    <Fork>
+      <Series>
+        <Contact var="limit_range" />
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="VR_value" />
+          <In port="MX" var="max_VR_value" />
+          <Out port="OUT" var="VR_value" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="limit_range" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="VR_value" />
+          <Out port="out1" var="VR_value" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="VR bar for HMI" comment="3. VR bar for HMI">
+    <Series>
+      <Box name="Round" SrcType="Real" DestType="Int" eno="false">
+        <In port="in" var="VR_value" />
+        <Out port="out" var="VR_bar" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

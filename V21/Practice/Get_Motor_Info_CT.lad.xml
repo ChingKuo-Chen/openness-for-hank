@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Unpack a few CT drive fields (23019 was SCL over UDTs). -->
+<Lad kind="FC" name="Get_Motor_Info_CT" number="106" comment="Unpack a few CT drive fields (23019 was SCL over UDTs).">
+  <Interface>
+    <Section name="Input">
+      <Member name="rpm_raw" type="Int"  comment="輸出：rpm_raw（Int）" />
+      <Member name="current_raw" type="Int"  comment="輸出：current_raw（Int）" />
+      <Member name="torque_raw" type="Int"  comment="輸出：torque_raw（Int）" />
+    </Section>
+    <Section name="Output">
+      <Member name="rpm" type="Real"  comment="輸出：rpm（Real）" />
+      <Member name="current" type="Real"  comment="輸出：current（Real）" />
+      <Member name="torque" type="Real"  comment="輸出：torque（Real）" />
+    </Section>
+  </Interface>
+  <Network title="raw Int → Real" comment="1. raw Int → Real">
+    <Fork>
+      <Series>
+        <Box name="Convert" SrcType="Int" DestType="Real" eno="false">
+          <In port="in" var="rpm_raw" />
+          <Out port="out" var="rpm" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Convert" SrcType="Int" DestType="Real" eno="false">
+          <In port="in" var="current_raw" />
+          <Out port="out" var="current" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Convert" SrcType="Int" DestType="Real" eno="false">
+          <In port="in" var="torque_raw" />
+          <Out port="out" var="torque" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

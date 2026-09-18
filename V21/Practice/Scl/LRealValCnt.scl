@@ -1,0 +1,41 @@
+// =============================================================================
+// 區塊：LRealValCnt（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\LRealValCnt.txt
+// =============================================================================
+
+FUNCTION_BLOCK "LRealValCnt"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    rst_cnt_busy : Bool;
+    gain : Real;
+    input : LReal;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    rst_cnt : Bool;
+    output_cnt : LReal := 0.0;
+END_VAR
+VAR
+    prev_cnt : LReal;
+    started : Bool;
+END_VAR
+VAR CONSTANT
+    OVERFLOW_MAX : LReal := 1.0E12;
+    UNDERFLOW_MIN : LReal := -1.0E12;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\LRealValCnt.txt
+BEGIN
+    IF rst_cnt_busy OR NOT started THEN
+        prev_cnt := input;
+        started := TRUE;
+        rst_cnt := FALSE;
+        output_cnt := 0.0;
+    ELSE
+        output_cnt := output_cnt + ((input - prev_cnt) * gain);
+        rst_cnt := (input > OVERFLOW_MAX) OR (input < UNDERFLOW_MIN);
+        prev_cnt := input;
+    END_IF;
+END_FUNCTION_BLOCK

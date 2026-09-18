@@ -1,0 +1,31 @@
+// =============================================================================
+// 區塊：Aliasing（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Aliasing.txt
+// =============================================================================
+
+FUNCTION "Aliasing" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    in_val : Real;
+    revolution : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    out_val : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    units : DInt;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Aliasing.txt
+BEGIN
+    IF revolution <> 0.0 THEN
+        units := REAL_TO_DINT(in_val / revolution);
+        out_val := revolution * DINT_TO_REAL(units);
+    ELSE
+        out_val := 0.0;
+    END_IF;
+END_FUNCTION

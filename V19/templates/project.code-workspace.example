@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "name": "<repo-name>",
+      "path": "."
+    },
+    {
+      "name": "openness-standard",
+      "path": "../openness-standard"
+    }
+  ],
+  "settings": {}
+}

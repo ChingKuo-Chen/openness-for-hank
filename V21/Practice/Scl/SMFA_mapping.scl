@@ -1,0 +1,40 @@
+// =============================================================================
+// 區塊：SMFA_mapping（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\SMFA_mapping.txt
+// =============================================================================
+
+FUNCTION "SMFA_mapping" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    is_run : Bool;
+    trv_pos : Real;
+    spool_speed : Real;
+    motor_rpm : Real;
+    motor_kw : Real;
+    motor_amp : Real;
+    motor_torque_pct : Real;
+    torque_max : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    smfa_run : Bool;
+    smfa_trv_pos : Real;
+    smfa_spool_speed : Real;
+    smfa_rpm : Real;
+    smfa_kw : Real;
+    smfa_amp : Real;
+    smfa_torque : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\SMFA_mapping.txt
+BEGIN
+    smfa_run := is_run;
+    smfa_trv_pos := trv_pos;
+    smfa_spool_speed := spool_speed;
+    smfa_rpm := motor_rpm;
+    smfa_kw := motor_kw;
+    smfa_amp := motor_amp;
+    smfa_torque := torque_max * motor_torque_pct / 100.0;
+END_FUNCTION

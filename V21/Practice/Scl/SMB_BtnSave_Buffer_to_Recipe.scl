@@ -1,0 +1,27 @@
+// =============================================================================
+// 區塊：SMB_BtnSave_Buffer_to_Recipe（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\SMB_BtnSave_Buffer_to_Recipe.txt
+// =============================================================================
+
+FUNCTION "SMB_BtnSave_Buffer_to_Recipe" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_IN_OUT
+    src_a : Real;
+    src_b : Real;
+    src_c : Real;
+    src_d : Real;
+    dst_a : Real;
+    dst_b : Real;
+    dst_c : Real;
+    dst_d : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\SMB_BtnSave_Buffer_to_Recipe.txt
+BEGIN
+    dst_a := src_a;
+    dst_b := src_b;
+    dst_c := src_c;
+    dst_d := src_d;
+END_FUNCTION

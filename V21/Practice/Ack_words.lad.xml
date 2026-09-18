@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LAD nets only: set ACK on Reset; clear when all_zero or is_different. -->
+<Lad kind="FB" name="Ack_words" number="64" comment="LAD nets only: set ACK on Reset; clear when all_zero or is_different.">
+  <Interface>
+    <Section name="Input">
+      <Member name="Reset" type="Bool" start="false"  comment="復位" />
+    </Section>
+    <Section name="InOut">
+      <Member name="ACK" type="Bool"  comment="確認" />
+    </Section>
+    <Section name="Static">
+      <Member name="all_zero" type="Bool"  comment="靜態：all_zero（Bool）" />
+      <Member name="is_different" type="Bool"  comment="靜態：is_different（Bool）" />
+      <Member name="cur" type="Array[0..15] of Word"  comment="靜態：cur（Array[0..15] of Word）" />
+      <Member name="prev" type="Array[0..15] of Word"  comment="靜態：prev（Array[0..15] of Word）" />
+    </Section>
+  </Interface>
+  <Network title="acknowledge" comment="1. acknowledge">
+    <Series>
+      <Contact var="Reset" />
+      <SCoil var="ACK" />
+    </Series>
+  </Network>
+  <Network title="reset acknowledge" comment="2. reset acknowledge">
+    <Series>
+      <Parallel>
+        <Contact var="all_zero" />
+        <Contact var="is_different" />
+      </Parallel>
+      <Contact var="Reset" negated="true" />
+      <RCoil var="ACK" />
+    </Series>
+  </Network>
+  <Network title="update previous words" comment="3. update previous words">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="cur" />
+        <Out port="out1" var="prev" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

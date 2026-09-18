@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sync speed ramp: pick target, brake when low, slice toward ref. -->
+<Lad kind="FB" name="Sync_Ramp" number="95" comment="Sync speed ramp: pick target, brake when low, slice toward ref.">
+  <Interface>
+    <Section name="Input">
+      <Member name="isRUN_ramp" type="Bool"  comment="常數：isRUN_ramp（Bool）" />
+      <Member name="isRUN_direct" type="Bool"  comment="常數：isRUN_direct（Bool）" />
+      <Member name="isNStop" type="Bool"  comment="常數：isNStop（Bool）" />
+      <Member name="isQStop" type="Bool"  comment="常數：isQStop（Bool）" />
+      <Member name="isEStop" type="Bool"  comment="常數：isEStop（Bool）" />
+      <Member name="isPower" type="Bool"  comment="常數：isPower（Bool）" />
+      <Member name="drvFault" type="Bool"  comment="常數：drvFault（Bool）" />
+      <Member name="ref" type="Real"  comment="常數：ref（Real）" />
+    </Section>
+    <Section name="Output">
+      <Member name="ref_out" type="Real"  comment="常數：ref_out（Real）" />
+      <Member name="brake_now" type="Bool"  comment="常數：brake_now（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="spd" type="Struct">
+        <Member name="Up" type="Bool"  comment="常數：Up（Bool）" />
+        <Member name="Down" type="Bool"  comment="常數：Down（Bool）" />
+        <Member name="Reached" type="Bool"  comment="常數：Reached（Bool）" />
+        <Member name="Stablized" type="Bool"  comment="常數：Stablized（Bool）" />
+      </Member>
+      <Member name="cur" type="Struct">
+        <Member name="Ref" type="Real"  comment="常數：Ref（Real）" />
+        <Member name="Slice" type="Real"  comment="常數：Slice（Real）" />
+      </Member>
+      <Member name="Ramp" type="Struct">
+        <Member name="Inc" type="Real" start="5.0"  comment="常數：Inc（Real）" />
+        <Member name="Dec" type="Real" start="5.0"  comment="常數：Dec（Real）" />
+        <Member name="NStop" type="Real" start="5.0"  comment="常數：NStop（Real）" />
+        <Member name="QStop" type="Real" start="5.0"  comment="常數：QStop（Real）" />
+        <Member name="EStop" type="Real" start="5.0"  comment="急停" />
+        <Member name="PowerLess" type="Real" start="5.0"  comment="常數：PowerLess（Real）" />
+        <Member name="Now" type="Real"  comment="常數：Now（Real）" />
+      </Member>
+      <Member name="BrakeSpeed" type="Struct">
+        <Member name="NStop" type="Real" start="1.0"  comment="常數：NStop（Real）" />
+        <Member name="QStop" type="Real" start="1.0"  comment="常數：QStop（Real）" />
+        <Member name="EStop" type="Real" start="1.0"  comment="急停" />
+        <Member name="Power_Less" type="Real" start="1.0"  comment="常數：Power_Less（Real）" />
+      </Member>
+      <Member name="SpdChg" type="Struct">
+        <Member name="Threshold" type="Real" start="1.0"  comment="常數：Threshold（Real）" />
+        <Member name="Stable_time" type="Time" start="T#10s"  comment="常數：Stable_time（Time）" />
+        <Member name="Stable_TOF" type="IEC_TIMER"  comment="常數：Stable_TOF（IEC_TIMER）" />
+      </Member>
+    </Section>
+    <Section name="Temp">
+      <Member name="ramp_slice" type="Real"  comment="常數：ramp_slice（Real）" />
+      <Member name="diff_slice" type="Real"  comment="常數：diff_slice（Real）" />
+      <Member name="spd_diff" type="Real"  comment="常數：spd_diff（Real）" />
+      <Member name="Target_Ref" type="Real"  comment="常數：Target_Ref（Real）" />
+    </Section>
+    <Section name="Constant">
+      <Member name="Slice_Time" type="Real" start="5.0"  comment="常數：Slice_Time（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="target is 0 when stopping" comment="1. target is 0 when stopping">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="isNStop" />
+          <Contact var="isQStop" />
+          <Contact var="isEStop" />
+          <Contact var="isPower" negated="true" />
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="Target_Ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="isNStop" />
+          <Contact var="isQStop" />
+          <Contact var="isEStop" />
+          <Contact var="isPower" negated="true" />
+        </Parallel>
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" var="ref" />
+          <Out port="out1" var="Target_Ref" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="brake when slow enough" comment="2. brake when slow enough">
+    <Series>
+      <Parallel>
+        <Series>
+          <Contact var="isNStop" />
+          <Box name="Lt" SrcType="Real">
+            <In port="in1" var="cur.Ref" />
+            <In port="in2" var="BrakeSpeed.NStop" />
+          </Box>
+        </Series>
+        <Series>
+          <Contact var="isQStop" />
+          <Box name="Lt" SrcType="Real">
+            <In port="in1" var="cur.Ref" />
+            <In port="in2" var="BrakeSpeed.QStop" />
+          </Box>
+        </Series>
+        <Series>
+          <Contact var="isPower" />
+          <Contact var="isEStop" />
+          <Box name="Lt" SrcType="Real">
+            <In port="in1" var="cur.Ref" />
+            <In port="in2" var="BrakeSpeed.EStop" />
+          </Box>
+        </Series>
+        <Series>
+          <Contact var="isPower" negated="true" />
+          <Box name="Lt" SrcType="Real">
+            <In port="in1" var="cur.Ref" />
+            <In port="in2" var="BrakeSpeed.Power_Less" />
+          </Box>
+        </Series>
+        <Contact var="drvFault" negated="true" />
+      </Parallel>
+      <Coil var="brake_now" />
+    </Series>
+  </Network>
+
+  <Network title="signed diff and distance" comment="3. signed diff and distance">
+    <Series>
+      <Box name="Sub" SrcType="Real">
+        <In port="in1" var="Target_Ref" />
+        <In port="in2" var="cur.Ref" />
+        <Out port="out" var="spd_diff" />
+      </Box>
+      <Box name="Abs" SrcType="Real" eno="false">
+        <In port="in" var="spd_diff" />
+        <Out port="out" var="diff_slice" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="clear stabilized on jump" comment="4. clear stabilized on jump">
+    <Series>
+      <Box name="Gt" SrcType="Real">
+        <In port="in1" var="diff_slice" />
+        <In port="in2" var="SpdChg.Threshold" />
+      </Box>
+      <Box name="TOF" instance="SpdChg.Stable_TOF" time_type="Time">
+        <In port="PT" var="SpdChg.Stable_time" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="spd.Stablized" negated="true" />
+    </Series>
+  </Network>
+
+  <Network title="clamp ramp times" comment="5. clamp ramp times">
+    <Fork>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.Inc" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.Inc" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.Dec" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.Dec" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.NStop" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.NStop" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.QStop" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.QStop" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.EStop" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.EStop" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="5.0" type="Real" />
+          <In port="IN" var="Ramp.PowerLess" />
+          <In port="MX" const="6000.0" type="Real" />
+          <Out port="OUT" var="Ramp.PowerLess" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="pick ramp and slice" comment="6. pick ramp and slice">
+    <Fork>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="diff_slice" />
+          <In port="in2" const="0.001" type="Real" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="Ramp.Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="diff_slice" />
+          <In port="in2" const="0.001" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="Target_Ref" />
+          <In port="in2" var="cur.Ref" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="Ramp.Inc" />
+              <Out port="out1" var="Ramp.Now" />
+            </Box>
+          </Series>
+          <Series>
+            <Coil var="spd.Up" />
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="diff_slice" />
+          <In port="in2" const="0.001" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="Target_Ref" />
+          <In port="in2" var="cur.Ref" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="Ramp.Dec" />
+              <Out port="out1" var="Ramp.Now" />
+            </Box>
+          </Series>
+          <Series>
+            <Coil var="spd.Down" />
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Box name="Lt" SrcType="Real">
+          <In port="in1" var="diff_slice" />
+          <In port="in2" const="0.001" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Eq" SrcType="Real">
+          <In port="in1" var="Target_Ref" />
+          <In port="in2" var="cur.Ref" />
+        </Box>
+        <Coil var="spd.Reached" />
+      </Series>
+      <Series>
+        <Contact var="isNStop" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Ramp.NStop" />
+          <Out port="out1" var="Ramp.Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isQStop" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Ramp.QStop" />
+          <Out port="out1" var="Ramp.Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isEStop" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Ramp.EStop" />
+          <Out port="out1" var="Ramp.Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isPower" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Ramp.PowerLess" />
+          <Out port="out1" var="Ramp.Now" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="Ramp.Now" />
+          <In port="in2" const="0.01" type="Real" />
+        </Box>
+        <Box name="Calc" SrcType="Real" card="3" equation="IN1/(IN2*IN3)" eno="false">
+          <In port="in1" var="Slice_Time" />
+          <In port="in2" var="Ramp.Now" />
+          <In port="in3" const="10.0" type="Real" />
+          <Out port="out" var="ramp_slice" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Ge" SrcType="Real">
+          <In port="in1" var="Ramp.Now" />
+          <In port="in2" const="0.01" type="Real" />
+        </Box>
+        <Not />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="ramp_slice" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="slice = min(diff, ramp_slice)" comment="7. slice = min(diff, ramp_slice)">
+    <Series>
+      <Box name="MIN" value_type="Real" card="2" eno="false">
+        <In port="IN1" var="diff_slice" />
+        <In port="IN2" var="ramp_slice" />
+        <Out port="OUT" var="cur.Slice" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="apply slice" comment="8. apply slice">
+    <Fork>
+      <Series>
+        <Contact var="isRUN_ramp" />
+        <Contact var="spd.Up" />
+        <Box name="Add" SrcType="Real" eno="false">
+          <In port="in1" var="cur.Ref" />
+          <In port="in2" var="cur.Slice" />
+          <Out port="out" var="cur.Ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_ramp" />
+        <Contact var="spd.Down" />
+        <Box name="Sub" SrcType="Real" eno="false">
+          <In port="in1" var="cur.Ref" />
+          <In port="in2" var="cur.Slice" />
+          <Out port="out" var="cur.Ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_direct" />
+        <Box name="Move" eno="false">
+          <In port="in" var="Target_Ref" />
+          <Out port="out1" var="cur.Ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="isRUN_ramp" negated="true" />
+        <Contact var="isRUN_direct" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="cur.Ref" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="clamp 0..100" comment="9. clamp 0..100">
+    <Series>
+      <Box name="LIMIT" value_type="Real" eno="false">
+        <In port="MN" const="0.0" type="Real" />
+        <In port="IN" var="cur.Ref" />
+        <In port="MX" const="100.0" type="Real" />
+        <Out port="OUT" var="ref_out" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

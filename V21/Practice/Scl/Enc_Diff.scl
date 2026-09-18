@@ -1,0 +1,50 @@
+// =============================================================================
+// 區塊：Enc_Diff（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Enc_Diff.txt
+// =============================================================================
+
+FUNCTION "Enc_Diff" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    bipolar : Bool;
+    enabled : Bool;
+    cur_cnt : DInt;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    prev_cnt : DInt;
+    diff : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    diff_cnt : DInt;
+END_VAR
+VAR CONSTANT
+    overflow_max : DInt := 999999;
+    underflow_min : DInt := -999999;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Enc_Diff.txt
+BEGIN
+    IF enabled THEN
+        diff_cnt := cur_cnt - prev_cnt;
+    ELSE
+        diff_cnt := 0;
+    END_IF;
+    prev_cnt := cur_cnt;
+    IF NOT bipolar THEN
+        IF (diff_cnt > overflow_max) OR (diff_cnt < 0) THEN
+            diff := 0.0;
+        ELSE
+            diff := DINT_TO_REAL(diff_cnt);
+        END_IF;
+    ELSE
+        IF (diff_cnt > overflow_max) OR (diff_cnt < underflow_min) THEN
+            diff := 0.0;
+        ELSE
+            diff := DINT_TO_REAL(diff_cnt);
+        END_IF;
+    END_IF;
+END_FUNCTION

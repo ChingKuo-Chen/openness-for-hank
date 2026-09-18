@@ -1,0 +1,47 @@
+// =============================================================================
+// 區塊：Conv_Pressure（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Conv_Pressure.txt
+// =============================================================================
+
+FUNCTION "Conv_Pressure" : Real
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    bias : Bool;
+    reading_ai : Int;
+    ohms : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    reading_adj : Real;
+    reading_norm : Real;
+END_VAR
+VAR CONSTANT
+    reading_min : Real := 0.0;
+    reading_bias : Real := 400.0;
+    reading_max : Real := 20000.0;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Conv_Pressure.txt
+BEGIN
+    IF ohms <> 0.0 THEN
+        reading_adj := INT_TO_REAL(reading_ai) * 500.0 / ohms;
+    ELSE
+        reading_adj := 0.0;
+    END_IF;
+    IF bias THEN
+        IF (reading_max - reading_bias) <> 0.0 THEN
+            reading_norm := (reading_adj - reading_bias) / (reading_max - reading_bias);
+        ELSE
+            reading_norm := 0.0;
+        END_IF;
+    ELSE
+        IF (reading_max - reading_min) <> 0.0 THEN
+            reading_norm := (reading_adj - reading_min) / (reading_max - reading_min);
+        ELSE
+            reading_norm := 0.0;
+        END_IF;
+    END_IF;
+    Conv_Pressure := reading_norm;
+END_FUNCTION

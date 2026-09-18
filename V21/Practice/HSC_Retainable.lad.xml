@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- On first scan reload HSC from retained enc_prev; always remember enc_cur. -->
+<Lad kind="FB" name="HSC_Retainable" number="65" comment="On first scan reload HSC from retained enc_prev; always remember enc_cur.">
+  <Interface>
+    <Section name="Input">
+      <Member name="enc_cur" type="DInt"  comment="靜態：enc_cur（DInt）" />
+      <Member name="port" type="HW_HSC"  comment="靜態：port（HW_HSC）" />
+    </Section>
+    <Section name="Static">
+      <Member name="cv" type="Bool"  comment="靜態：cv（Bool）" />
+      <Member name="enc_prev" type="DInt"  comment="靜態：enc_prev（DInt）" />
+      <Member name="hsc" type="CTRL_HSC"  comment="靜態：hsc（CTRL_HSC）" />
+      <Member name="st" type="Struct">
+        <Member name="busy" type="Bool"  comment="靜態：busy（Bool）" />
+        <Member name="status" type="Word"  comment="靜態：status（Word）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="call CTRL_HSC to reset value" comment="1. call CTRL_HSC to reset value">
+    <Fork>
+      <Series>
+        <Box name="CTRL_HSC" instance="hsc">
+          <In port="HSC" var="port" />
+          <In port="CV" var="cv" />
+          <In port="NEW_CV" var="enc_prev" />
+          <Out port="BUSY" var="st.busy" />
+          <Out port="STATUS" var="st.status" />
+          <Open port="DIR" />
+          <Open port="RV" />
+          <Open port="PERIOD" />
+          <Open port="NEW_DIR" />
+          <Open port="NEW_RV" />
+          <Open port="NEW_PERIOD" />
+          <Open port="eno" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="enc_cur" />
+          <Out port="out1" var="enc_prev" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>
+

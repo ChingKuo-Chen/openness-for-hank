@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tape3 stop pulse, speed threshold, option word. -->
+<Lad kind="FB" name="Tape3_Control" number="117" comment="Tape3 stop pulse, speed threshold, option word.">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_run" type="Bool"  comment="靜態：line_run（Bool）" />
+      <Member name="run_rev" type="Bool"  comment="靜態：run_rev（Bool）" />
+      <Member name="line_speed" type="Real"  comment="靜態：line_speed（Real）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="sw_enabled" type="Bool"  comment="靜態：sw_enabled（Bool）" />
+      <Member name="sw_direction" type="Bool"  comment="靜態：sw_direction（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="is_stopping" type="Bool"  comment="靜態：is_stopping（Bool）" />
+      <Member name="is_stopping_m" type="Bool"  comment="靜態：is_stopping_m（Bool）" />
+      <Member name="having_speed" type="Bool"  comment="靜態：having_speed（Bool）" />
+      <Member name="opt_tape1" type="Word"  comment="靜態：opt_tape1（Word）" />
+      <Member name="Stop_DelayOn" type="IEC_TIMER"  comment="靜態：Stop_DelayOn（IEC_TIMER）" />
+      <Member name="Run_DelayOn" type="Threshold_Timer"  comment="靜態：Run_DelayOn（Threshold_Timer）" />
+      <Member name="Stat_T1" type="B2W"  comment="靜態：Stat_T1（B2W）" />
+    </Section>
+  </Interface>
+  <Network title="is stopping 3s" comment="1. is stopping 3s">
+    <Fork>
+      <Series>
+        <NContact var="line_run" mem="is_stopping_m" />
+        <SCoil var="is_stopping" />
+      </Series>
+      <Series>
+        <Contact var="is_stopping" />
+        <CoilTON var="Stop_DelayOn" time_type="Time">
+          <In port="value" time="T#3s" />
+        </CoilTON>
+      </Series>
+      <Series>
+        <Contact var="is_stopping" />
+        <Contact var="Stop_DelayOn.Q" />
+        <RCoil var="is_stopping" />
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="having speed" comment="2. having speed">
+    <Series>
+      <Call name="Threshold_Timer" type="FB" instance="Run_DelayOn" scope="LocalVariable">
+        <Param name="enabled" section="Input" type="Bool" var="line_run" />
+        <Param name="cur" section="Input" type="Real" var="line_speed" />
+        <Param name="min" section="Input" type="Real" const="0.0" />
+        <Param name="max" section="Input" type="Real" const="0.1" />
+        <Param name="over" section="Output" type="Bool" var="having_speed" />
+      </Call>
+    </Series>
+  </Network>
+  <Network title="option word" comment="3. option word">
+    <Series>
+      <Call name="B2W" type="FB" instance="Stat_T1" scope="LocalVariable">
+        <Param name="b0" section="Input" type="Bool" const="false" />
+        <Param name="b1" section="Input" type="Bool" var="sw_direction" />
+        <Param name="b2" section="Input" type="Bool" var="sw_enabled" />
+        <Param name="b3" section="Input" type="Bool" const="false" />
+        <Param name="b4" section="Input" type="Bool" const="false" />
+        <Param name="b5" section="Input" type="Bool" const="false" />
+        <Param name="b6" section="Input" type="Bool" const="false" />
+        <Param name="b7" section="Input" type="Bool" const="false" />
+        <Param name="w" section="Output" type="Word" var="opt_tape1" />
+      </Call>
+    </Series>
+  </Network>
+</Lad>

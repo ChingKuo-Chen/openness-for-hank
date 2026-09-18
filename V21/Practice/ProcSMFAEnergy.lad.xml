@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SMFA energy post-process: GWh, kWh pulse, daily max, operating hours.
+     LRealValCnt was a nested FB; GWh is a Calc here. -->
+<Lad kind="FB" name="ProcSMFAEnergy" number="90" comment="SMFA energy post-process: GWh, kWh pulse, daily max, operating hours. LRealValCnt was a nested FB; GWh is a Calc here.">
+  <Interface>
+    <Section name="Input">
+      <Member name="resetEnCntBusy" type="Bool"  comment="暫存：resetEnCntBusy（Bool）" />
+      <Member name="sysDay" type="USInt"  comment="暫存：sysDay（USInt）" />
+      <Member name="actPower" type="Real"  comment="暫存：actPower（Real）" />
+      <Member name="actEnTotalGain" type="Real"  comment="暫存：actEnTotalGain（Real）" />
+      <Member name="actEnTotal_Wh_LR" type="LReal"  comment="暫存：actEnTotal_Wh_LR（LReal）" />
+    </Section>
+    <Section name="Output">
+      <Member name="resetEnCnt" type="Bool"  comment="暫存：resetEnCnt（Bool）" />
+      <Member name="dayPowerMax" type="Real"  comment="暫存：dayPowerMax（Real）" />
+      <Member name="dayEnergyMax" type="Real"  comment="暫存：dayEnergyMax（Real）" />
+      <Member name="actEnergy_kWh" type="Real"  comment="暫存：actEnergy_kWh（Real）" />
+      <Member name="operatingCntHours" type="Real"  comment="暫存：operatingCntHours（Real）" />
+      <Member name="actEnTotal_GWh" type="LReal"  comment="暫存：actEnTotal_GWh（LReal）" />
+    </Section>
+    <Section name="Static">
+      <Member name="accSec" type="Int"  comment="暫存：accSec（Int）" />
+      <Member name="prev" type="Struct">
+        <Member name="kWh_p" type="Bool"  comment="暫存：kWh_p（Bool）" />
+        <Member name="sec_p" type="Bool"  comment="暫存：sec_p（Bool）" />
+        <Member name="total_energy" type="LReal"  comment="暫存：total_energy（LReal）" />
+        <Member name="day" type="USInt"  comment="暫存：day（USInt）" />
+      </Member>
+      <Member name="kWh_pls" type="IEC_TIMER"  comment="暫存：kWh_pls（IEC_TIMER）" />
+      <Member name="sec_pls" type="IEC_TIMER"  comment="暫存：sec_pls（IEC_TIMER）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="gain_lr" type="LReal"  comment="暫存：gain_lr（LReal）" />
+      <Member name="one_e9" type="LReal"  comment="暫存：one_e9（LReal）" />
+    </Section>
+  </Interface>
+
+  <Network title="Wh → GWh and request reset when busy" comment="1. Wh → GWh and request reset when busy">
+    <Fork>
+      <Series>
+        <Contact var="resetEnCntBusy" />
+        <Coil var="resetEnCnt" />
+      </Series>
+      <Series>
+        <Box name="Convert" SrcType="Real" DestType="LReal">
+          <In port="in" var="actEnTotalGain" />
+          <Out port="out" var="gain_lr" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1000000000.0" type="LReal" />
+          <Out port="out1" var="one_e9" />
+        </Box>
+        <Box name="Calc" SrcType="LReal" card="3" equation="IN1*IN2/IN3" eno="false">
+          <In port="in1" var="actEnTotal_Wh_LR" />
+          <In port="in2" var="gain_lr" />
+          <In port="in3" var="one_e9" />
+          <Out port="out" var="actEnTotal_GWh" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="kWh each second while power nonzero" comment="2. kWh each second while power nonzero">
+    <Series>
+      <Box name="Ne" SrcType="Real">
+        <In port="in1" var="actPower" />
+        <In port="in2" const="0.0" type="Real" />
+      </Box>
+      <Contact var="prev.kWh_p" negated="true" />
+      <Box name="TON" instance="kWh_pls" time_type="Time">
+        <In port="PT" time="T#1s" />
+        <Open port="ET" />
+      </Box>
+      <Fork>
+        <Series>
+          <Coil var="prev.kWh_p" />
+        </Series>
+        <Series>
+          <Box name="Calc" SrcType="LReal" card="3" equation="(IN1-IN2)/IN3" eno="false">
+            <In port="in1" var="actEnTotal_Wh_LR" />
+            <In port="in2" var="prev.total_energy" />
+            <In port="in3" const="1000.0" type="LReal" />
+            <Out port="out" var="actEnergy_kWh" />
+          </Box>
+        </Series>
+        <Series>
+          <Box name="Move" eno="false">
+            <In port="in" var="actEnTotal_Wh_LR" />
+            <Out port="out1" var="prev.total_energy" />
+          </Box>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="daily max power / energy" comment="3. daily max power / energy">
+    <Fork>
+      <Series>
+        <Box name="Ne" SrcType="USInt">
+          <In port="in1" var="sysDay" />
+          <In port="in2" var="prev.day" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Move" eno="false">
+              <In port="in" var="sysDay" />
+              <Out port="out1" var="prev.day" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Move" card="2" eno="false">
+              <In port="in" const="0.0" type="Real" />
+              <Out port="out1" var="dayPowerMax" />
+              <Out port="out2" var="dayEnergyMax" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="actPower" />
+          <In port="in2" var="dayPowerMax" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" var="actPower" />
+          <Out port="out1" var="dayPowerMax" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Gt" SrcType="Real">
+          <In port="in1" var="actEnergy_kWh" />
+          <In port="in2" var="dayEnergyMax" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" var="actEnergy_kWh" />
+          <Out port="out1" var="dayEnergyMax" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="operating hours" comment="4. operating hours">
+    <Fork>
+      <Series>
+        <Box name="Ne" SrcType="Real">
+          <In port="in1" var="actPower" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Contact var="prev.sec_p" negated="true" />
+        <Box name="TON" instance="sec_pls" time_type="Time">
+          <In port="PT" time="T#360ms" />
+          <Open port="ET" />
+        </Box>
+        <Fork>
+          <Series>
+            <Coil var="prev.sec_p" />
+          </Series>
+          <Series>
+            <Box name="Inc" DestType="Int" eno="false">
+              <In port="operand" var="accSec" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Box name="Ne" SrcType="Real">
+          <In port="in1" var="actPower" />
+          <In port="in2" const="0.0" type="Real" />
+        </Box>
+        <Box name="Gt" SrcType="Int">
+          <In port="in1" var="accSec" />
+          <In port="in2" const="5" type="Int" />
+        </Box>
+        <Fork>
+          <Series>
+            <Box name="Add" SrcType="Real" eno="false">
+              <In port="in1" var="operatingCntHours" />
+              <In port="in2" const="0.0005" type="Real" />
+              <Out port="out" var="operatingCntHours" />
+            </Box>
+          </Series>
+          <Series>
+            <Box name="Sub" SrcType="Int" eno="false">
+              <In port="in1" var="accSec" />
+              <In port="in2" const="5" type="Int" />
+              <Out port="out" var="accSec" />
+            </Box>
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

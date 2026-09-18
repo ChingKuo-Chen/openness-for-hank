@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Charge air while pressure is low, plus an overcharge pulse; track sustained recovery. -->
+<Lad kind="FB" name="Charge_Air" number="11" comment="Charge air while pressure is low, plus an overcharge pulse; track sustained recovery.">
+  <Interface>
+    <Section name="Input">
+      <Member name="low" type="Bool"  comment="靜態：low（Bool）" />
+      <Member name="Low_tm" type="Time" start="T#2m"  comment="靜態：Low_tm（Time）" />
+      <Member name="ovrchg_tm" type="Time" start="T#2s"  comment="靜態：ovrchg_tm（Time）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="charge_air" type="Bool"  comment="靜態：charge_air（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="charge_TOF" type="IEC_TIMER"  comment="靜態：charge_TOF（IEC_TIMER）" />
+      <Member name="low_TON" type="IEC_TIMER"  comment="靜態：low_TON（IEC_TIMER）" />
+      <Member name="Pressure_Low" type="Bool"  comment="靜態：Pressure_Low（Bool）" />
+    </Section>
+  </Interface>
+  <Network title="chage if pressure low" comment="1. chage if pressure low">
+    <Series>
+      <Contact var="low" />
+      <Box name="TOF" instance="charge_TOF" time_type="Time">
+        <In port="PT" var="ovrchg_tm" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="charge_air" />
+    </Series>
+  </Network>
+  <Network title="pressure recovered for Low_tm" comment="2. pressure recovered for Low_tm">
+    <Series>
+      <Contact var="low" negated="true" />
+      <Box name="TON" instance="low_TON" time_type="Time">
+        <In port="PT" var="Low_tm" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="Pressure_Low" />
+    </Series>
+  </Network>
+</Lad>

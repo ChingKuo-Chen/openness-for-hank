@@ -1,0 +1,77 @@
+// =============================================================================
+// 區塊：PID_Rotor_Sync（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\PID_Rotor_Sync.txt
+// =============================================================================
+
+FUNCTION_BLOCK "PID_Rotor_Sync"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    FeedForward : Real;
+    follower_angle : Real;
+    Target_angle : Real;
+    is_S_Twist : Bool;
+    OB_cycle : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    sync_err_angle : Real;
+END_VAR
+VAR
+    apply_angle_diff : Bool;
+    enable : Bool;
+    Kc : Real := 1.0;
+    Ti : Real := 1.0;
+    Td : Real;
+    Kf : Real;
+    Ts : Real;
+    angle_cur : Real;
+    err_now : Real;
+    err_acc : Real;
+    P : Real;
+    I : Real;
+    D : Real;
+    FF : Real;
+    Out : Real;
+    windup : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\PID_Rotor_Sync.txt
+BEGIN
+    Ts := OB_cycle;
+    IF NOT enable AND apply_angle_diff THEN
+        IF is_S_Twist THEN
+            sync_err_angle := Target_angle - follower_angle;
+        ELSE
+            sync_err_angle := follower_angle - Target_angle;
+        END_IF;
+        apply_angle_diff := FALSE;
+    END_IF;
+    IF is_S_Twist THEN
+        angle_cur := Target_angle - follower_angle;
+    ELSE
+        angle_cur := follower_angle - Target_angle;
+    END_IF;
+    err_now := angle_cur / 360.0;
+    IF enable AND NOT windup THEN
+        err_acc := err_acc + err_now;
+    END_IF;
+    P := Kc * err_now;
+    IF (Ti <> 0.0) THEN
+        I := Kc * (Ts / Ti) * err_acc;
+    ELSE
+        I := 0.0;
+    END_IF;
+    D := 0.0;
+    FF := Kf * FeedForward;
+    IF enable THEN
+        Out := P + I - D + FF;
+    ELSE
+        Out := FF;
+        err_acc := 0.0;
+    END_IF;
+    windup := (Out <= -1.0) OR (Out >= 1.0);
+    IF Out > 1.0 THEN Out := 1.0; END_IF;
+    IF Out < -1.0 THEN Out := -1.0; END_IF;
+END_FUNCTION_BLOCK

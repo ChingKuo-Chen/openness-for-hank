@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tape head run/dir handshake without plant SMFA tags. -->
+<Lad kind="FB" name="Tape_Head_Control" number="96" comment="Tape head run/dir handshake without plant SMFA tags.">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_run" type="Bool"  comment="靜態：line_run（Bool）" />
+      <Member name="run_rev" type="Bool"  comment="靜態：run_rev（Bool）" />
+      <Member name="has_alarm" type="Bool"  comment="靜態：has_alarm（Bool）" />
+      <Member name="line_speed" type="Real"  comment="靜態：line_speed（Real）" />
+      <Member name="tape_enable" type="Bool"  comment="靜態：tape_enable（Bool）" />
+      <Member name="tape_direction" type="Bool"  comment="靜態：tape_direction（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="q_run" type="Bool"  comment="靜態：q_run（Bool）" />
+      <Member name="q_dir" type="Bool"  comment="靜態：q_dir（Bool）" />
+      <Member name="q_fan" type="Bool"  comment="靜態：q_fan（Bool）" />
+      <Member name="q_lamp_run" type="Bool"  comment="靜態：q_lamp_run（Bool）" />
+      <Member name="q_lamp_warn" type="Bool"  comment="靜態：q_lamp_warn（Bool）" />
+      <Member name="smfa_enable" type="Bool"  comment="靜態：smfa_enable（Bool）" />
+      <Member name="smfa_direction" type="Bool"  comment="靜態：smfa_direction（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="sw_PLC" type="Struct">
+        <Member name="Enabled" type="Bool"  comment="靜態：Enabled（Bool）" />
+        <Member name="Direction" type="Bool"  comment="靜態：Direction（Bool）" />
+      </Member>
+      <Member name="Tape_Fan_TOF" type="IEC_TIMER"  comment="靜態：Tape_Fan_TOF（IEC_TIMER）" />
+    </Section>
+  </Interface>
+
+  <Network title="handshake enable/dir when idle vs running" comment="1. handshake enable/dir when idle vs running">
+    <Fork>
+      <Series>
+        <Contact var="line_run" negated="true" />
+        <Contact var="tape_enable" />
+        <SCoil var="sw_PLC.Enabled" />
+      </Series>
+      <Series>
+        <Contact var="line_run" negated="true" />
+        <Contact var="tape_enable" negated="true" />
+        <RCoil var="sw_PLC.Enabled" />
+      </Series>
+      <Series>
+        <Contact var="line_run" negated="true" />
+        <Contact var="tape_direction" />
+        <SCoil var="sw_PLC.Direction" />
+      </Series>
+      <Series>
+        <Contact var="line_run" negated="true" />
+        <Contact var="tape_direction" negated="true" />
+        <RCoil var="sw_PLC.Direction" />
+      </Series>
+      <Series>
+        <Contact var="line_run" />
+        <Contact var="sw_PLC.Enabled" />
+        <SCoil var="smfa_enable" />
+      </Series>
+      <Series>
+        <Contact var="line_run" />
+        <Contact var="sw_PLC.Enabled" negated="true" />
+        <RCoil var="smfa_enable" />
+      </Series>
+      <Series>
+        <Contact var="line_run" />
+        <Contact var="sw_PLC.Direction" />
+        <SCoil var="smfa_direction" />
+      </Series>
+      <Series>
+        <Contact var="line_run" />
+        <Contact var="sw_PLC.Direction" negated="true" />
+        <RCoil var="smfa_direction" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="outputs" comment="2. outputs">
+    <Fork>
+      <Series>
+        <Contact var="sw_PLC.Enabled" />
+        <Contact var="has_alarm" negated="true" />
+        <Contact var="line_run" />
+        <Coil var="q_run" />
+      </Series>
+      <Series>
+        <Contact var="sw_PLC.Direction" />
+        <Contact var="run_rev" />
+        <Coil var="q_dir" />
+      </Series>
+      <Series>
+        <Contact var="q_run" />
+        <Box name="TOF" instance="Tape_Fan_TOF" time_type="Time">
+          <In port="PT" time="T#30s" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="q_fan" />
+      </Series>
+      <Series>
+        <Contact var="q_run" />
+        <Coil var="q_lamp_run" />
+      </Series>
+      <Series>
+        <Contact var="has_alarm" />
+        <Coil var="q_lamp_warn" />
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

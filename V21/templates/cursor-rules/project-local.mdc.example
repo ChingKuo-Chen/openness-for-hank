@@ -1,0 +1,55 @@
+---
+description: >-
+  【每專案填寫】TIA V21、CPU、station、DLL、standard 路徑、驗證命令
+alwaysApply: true
+---
+
+# 專案本地化（複製後必改）
+
+> 由 `openness-standard/templates/cursor-rules/project-local.mdc.example` 複製。  
+> **本檔只放本 repo 差異**。找 standard → [`find-standard.mdc`](find-standard.mdc)。法典在 standard 的 `rules/`。
+
+## TIA / CPU / 專案
+
+| 項目 | 填寫 |
+|------|------|
+| TIA | V21 |
+| CPU / MLFB | <!-- 例：6ES7 511-… --> |
+| Station | <!-- 例：line-a-tap --> |
+| 本機專案檔 | <!-- 例：D:\tia\line-a-tap\line-a-tap.ap21 --> |
+| **openness-standard 根目錄** | <!-- 例：C:\Users\…\pioneerm-automation\openness-standard --> |
+| 主計劃 | [`plan/project_scope.md`](plan/project_scope.md) |
+
+## Siemens Openness DLL（V21 net48）
+
+```
+<!-- 本機完整路徑，禁止留占位符。例：C:\Program Files\Siemens\Automation\Portal V21\PublicAPI\V21\net48\ -->
+```
+
+## 專案範圍（摘要）
+
+- <!-- 機台／產線、Openness 要做的事 -->
+- <!-- 已完成 / 不在範圍內 -->
+
+## 文件與計劃路徑
+
+| 用途 | 路徑 |
+|------|------|
+| 進度紀錄 | <!-- 例：handoffs/HANDOFF-*.md --> |
+| 參考路徑表 | `doc/REFERENCE_PATHS.md` |
+
+## 驗證命令
+
+| 用途 | 命令 |
+|------|------|
+| Compile | <!-- 例：<standard>\host\TiaOpennessCheck.exe --project:"….ap21" --plc:<名> --compile --> |
+| 允許的 compile warning | <!-- 無則寫 0 --> |
+
+## Vendor 目錄
+
+勿改路徑見 [`skip-vendor-tree.mdc`](skip-vendor-tree.mdc)。
+
+## Lab / 特殊限制
+
+- <!-- 例：禁止對實體 PLC 下載，僅 PLCSIM -->
+- （無則刪除本節）

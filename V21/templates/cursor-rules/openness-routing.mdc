@@ -1,0 +1,29 @@
+---
+description: >-
+  TIA V21 Openness 路由：DLL、開啟專案、編譯、匯出。
+  改 host 或 Portal 專案時讀取。
+alwaysApply: true
+---
+
+# Openness 路由
+
+**DLL、CPU、專案檔、standard 根目錄的真實路徑只寫在 [`project-local.mdc`](project-local.mdc)。**  
+先依 [`find-standard.mdc`](find-standard.mdc) 找到 standard，再跑那邊的 `host/`。
+
+## 做什麼用哪裡
+
+| 意圖 | 入口 |
+|------|------|
+| 開啟／attach Portal | `<standard>/host/TiaOpennessCheck.exe`（見 find-standard） |
+| Compile／匯入 SCL／LAD | 同上；`--compile` 後 `--save` |
+| 新電腦環境 | `<standard>/host/INSTALL.md` |
+| 出貨 archive | `<standard>/rules/release-sop.md` |
+
+## 禁止
+
+- 使用 V15/V16 `Siemens.Engineering.dll`
+- 把 DLL 推進 Git
+- MCU：isptool、pyocd、`make install`
+- 在本機台 repo 另養一份實戰 `host/*.cs`
+
+找不到 DLL → 停，讀 `<standard>/reference/tia_v21.md` 的查詢命令，請使用者確認安裝。

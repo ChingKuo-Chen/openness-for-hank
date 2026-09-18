@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Hold a key (or external button) for 'wait'; busy while holding, done when timed out.
+     Hold_Key_Type is inlined as a Struct for practice (same members). -->
+<Lad kind="FC" name="Hold_Key" number="31" comment="Hold a key (or external button) for 'wait'; busy while holding, done when timed out. Hold_Key_Type is inlined as a Struct for practice (same members).">
+  <Interface>
+    <Section name="Input">
+      <Member name="wait" type="Time"  comment="InOut：wait（Time）" />
+      <Member name="ext_btn" type="Bool"  comment="InOut：ext_btn（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="key" type="Struct">
+        <Member name="btn" type="Bool"  comment="InOut：btn（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="wait_timer" type="IEC_TIMER"  comment="InOut：wait_timer（IEC_TIMER）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="hold until wait expires" comment="1. hold until wait expires">
+    <Series>
+      <Parallel>
+        <Contact var="key.btn" />
+        <Contact var="ext_btn" />
+      </Parallel>
+      <Fork>
+        <Series>
+          <CoilTON var="key.wait_timer" time_type="Time">
+            <In port="value" var="wait" />
+          </CoilTON>
+        </Series>
+        <Series>
+          <Contact var="key.wait_timer.Q" negated="true" />
+          <Coil var="key.busy" />
+        </Series>
+        <Series>
+          <Contact var="key.wait_timer.Q" />
+          <Coil var="key.done" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

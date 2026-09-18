@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="Step_Join" number="37" comment="練習區塊 Step_Join（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="InOut">
+      <Member name="current_step_1" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+      <Member name="current_step_2" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+      <Member name="next_step" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="If both current steps finish, process to the next one" comment="1. If both current steps finish, process to the next one">
+    <Series>
+      <Contact var="current_step_1.exec" />
+      <Contact var="current_step_2.exec" />
+      <Contact var="current_step_1.done" />
+      <Contact var="current_step_2.done" />
+      <Fork>
+        <Series>
+          <RCoil var="current_step_1.exec" />
+        </Series>
+        <Series>
+          <RCoil var="current_step_2.exec" />
+        </Series>
+        <Series>
+          <SCoil var="next_step.exec" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="initialize next step" comment="2. initialize next step">
+    <Series>
+      <PContact var="next_step.exec" mem="next_step.exec_edge" />
+      <Fork>
+        <Series>
+          <SCoil var="next_step.busy" />
+        </Series>
+        <Series>
+          <RCoil var="next_step.done" />
+        </Series>
+        <Series>
+          <RCoil var="next_step.error" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

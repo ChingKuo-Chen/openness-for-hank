@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- PN report/update handshake (23019 SCL copied DB attrs). -->
+<Lad kind="FC" name="Sync_Profinet" number="114" comment="PN report/update handshake (23019 SCL copied DB attrs).">
+  <Interface>
+    <Section name="Input">
+      <Member name="rpt_in" type="DInt"  comment="輸出：rpt_in（DInt）" />
+      <Member name="upd_in" type="DInt"  comment="輸出：upd_in（DInt）" />
+    </Section>
+    <Section name="Output">
+      <Member name="rpt_out" type="DInt"  comment="輸出：rpt_out（DInt）" />
+      <Member name="upd_out" type="DInt"  comment="輸出：upd_out（DInt）" />
+    </Section>
+  </Interface>
+  <Network title="pass through" comment="1. pass through">
+    <Fork>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="rpt_in" />
+          <Out port="out1" var="rpt_out" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="upd_in" />
+          <Out port="out1" var="upd_out" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

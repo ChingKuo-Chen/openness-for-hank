@@ -1,0 +1,402 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Z/S positioning handshake, pin, clutch, speed (no plant tags). -->
+<Lad kind="FB" name="Rotor_Positioning" number="125" comment="Z/S positioning handshake, pin, clutch, speed (no plant tags).">
+  <Interface>
+    <Section name="Input">
+      <Member name="line_in_action" type="Bool"  comment="暫存：line_in_action（Bool）" />
+      <Member name="ok_to_pos" type="Bool"  comment="暫存：ok_to_pos（Bool）" />
+      <Member name="pb_pos_Z" type="Bool"  comment="暫存：pb_pos_Z（Bool）" />
+      <Member name="pb_pos_S" type="Bool"  comment="暫存：pb_pos_S（Bool）" />
+      <Member name="pb_stop" type="Bool"  comment="暫存：pb_stop（Bool）" />
+      <Member name="snr_pin_lock" type="Bool"  comment="暫存：snr_pin_lock（Bool）" />
+      <Member name="snr_pin_unlock" type="Bool"  comment="暫存：snr_pin_unlock（Bool）" />
+      <Member name="pos_snr_1" type="Bool"  comment="暫存：pos_snr_1（Bool）" />
+      <Member name="pos_snr_2" type="Bool"  comment="暫存：pos_snr_2（Bool）" />
+      <Member name="pos_snr_3" type="Bool"  comment="暫存：pos_snr_3（Bool）" />
+      <Member name="pos_snr_4" type="Bool"  comment="暫存：pos_snr_4（Bool）" />
+      <Member name="pos_snr_5" type="Bool"  comment="暫存：pos_snr_5（Bool）" />
+      <Member name="pos_snr_6" type="Bool"  comment="暫存：pos_snr_6（Bool）" />
+      <Member name="any_err" type="Bool"  comment="暫存：any_err（Bool）" />
+      <Member name="reset" type="Bool"  comment="復位" />
+    </Section>
+    <Section name="Output">
+      <Member name="is_pos_Z" type="Bool"  comment="暫存：is_pos_Z（Bool）" />
+      <Member name="is_pos_S" type="Bool"  comment="暫存：is_pos_S（Bool）" />
+      <Member name="pos_ok" type="Bool"  comment="暫存：pos_ok（Bool）" />
+      <Member name="clutch_on" type="Bool"  comment="暫存：clutch_on（Bool）" />
+      <Member name="pin_lock" type="Bool"  comment="暫存：pin_lock（Bool）" />
+      <Member name="spd_out" type="Int"  comment="暫存：spd_out（Int）" />
+      <Member name="cur_section" type="Int"  comment="暫存：cur_section（Int）" />
+    </Section>
+    <Section name="Static">
+      <Member name="decelerating" type="Bool"  comment="暫存：decelerating（Bool）" />
+      <Member name="pos_snr_reached" type="Bool"  comment="暫存：pos_snr_reached（Bool）" />
+      <Member name="pos_done" type="Bool"  comment="暫存：pos_done（Bool）" />
+      <Member name="snr_reached" type="Bool"  comment="暫存：snr_reached（Bool）" />
+      <Member name="pos_snr_not_in_place" type="Bool"  comment="暫存：pos_snr_not_in_place（Bool）" />
+      <Member name="pos_snr_in_place" type="Bool"  comment="暫存：pos_snr_in_place（Bool）" />
+      <Member name="chk_dly" type="IEC_TIMER"  comment="暫存：chk_dly（IEC_TIMER）" />
+      <Member name="pos_done_dly" type="IEC_TIMER"  comment="暫存：pos_done_dly（IEC_TIMER）" />
+      <Member name="clutch_off_dly" type="IEC_TIMER"  comment="暫存：clutch_off_dly（IEC_TIMER）" />
+      <Member name="dec_dly" type="IEC_TIMER"  comment="暫存：dec_dly（IEC_TIMER）" />
+      <Member name="pin_unlock_chk" type="IEC_TIMER"  comment="暫存：pin_unlock_chk（IEC_TIMER）" />
+      <Member name="conf" type="Struct">
+        <Member name="pos_spd_max" type="Real" start="80.0"  comment="暫存：pos_spd_max（Real）" />
+        <Member name="pos_spd_min" type="Real" start="10.0"  comment="暫存：pos_spd_min（Real）" />
+        <Member name="pos_spd_home" type="Real" start="20.0"  comment="暫存：pos_spd_home（Real）" />
+        <Member name="pos_done_delay" type="Time" start="T#500ms"  comment="暫存：pos_done_delay（Time）" />
+      </Member>
+      <Member name="err_w" type="Byte"  comment="暫存：err_w（Byte）" />
+      <Member name="spd_ref" type="Real"  comment="暫存：spd_ref（Real）" />
+      <Member name="spd_ramped" type="Real"  comment="暫存：spd_ramped（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="spd_norm" type="Real"  comment="暫存：spd_norm（Real）" />
+    </Section>
+  </Interface>
+
+  <Network title="latch Z or S" comment="1. latch Z or S">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="ok_to_pos" />
+            <Contact var="pb_pos_Z" />
+          </Series>
+          <Contact var="is_pos_Z" />
+        </Parallel>
+        <Contact var="pb_stop" negated="true" />
+        <Box name="Eq" SrcType="Byte">
+          <In port="in1" var="err_w" />
+          <In port="in2" const="0" type="Byte" />
+        </Box>
+        <Contact var="pos_done" negated="true" />
+        <Contact var="any_err" negated="true" />
+        <Coil var="is_pos_Z" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Series>
+            <Contact var="ok_to_pos" />
+            <Contact var="pb_pos_S" />
+          </Series>
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <Contact var="pb_stop" negated="true" />
+        <Box name="Eq" SrcType="Byte">
+          <In port="in1" var="err_w" />
+          <In port="in2" const="0" type="Byte" />
+        </Box>
+        <Contact var="pos_done" negated="true" />
+        <Contact var="any_err" negated="true" />
+        <Coil var="is_pos_S" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="check rotor position" comment="2. check rotor position">
+    <Fork>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Parallel>
+          <Contact var="pos_snr_1" />
+          <Contact var="pos_snr_2" />
+          <Contact var="pos_snr_3" />
+          <Contact var="pos_snr_4" />
+          <Contact var="pos_snr_5" />
+          <Contact var="pos_snr_6" />
+        </Parallel>
+        <Coil var="snr_reached" />
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_1" />
+        <Box name="Move" eno="false">
+          <In port="in" const="1" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_2" />
+        <Box name="Move" eno="false">
+          <In port="in" const="2" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_3" />
+        <Box name="Move" eno="false">
+          <In port="in" const="3" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_4" />
+        <Box name="Move" eno="false">
+          <In port="in" const="4" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_5" />
+        <Box name="Move" eno="false">
+          <In port="in" const="5" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="line_in_action" negated="true" />
+        <Contact var="snr_pin_lock" />
+        <Contact var="pos_snr_6" />
+        <Box name="Move" eno="false">
+          <In port="in" const="6" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="snr_reached" negated="true" />
+          <Contact var="snr_pin_lock" negated="true" />
+          <Contact var="line_in_action" />
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="Int" />
+          <Out port="out1" var="cur_section" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="is_pos_Z" negated="true" />
+        <Contact var="is_pos_S" negated="true" />
+        <Contact var="snr_reached" />
+        <Contact var="snr_pin_lock" />
+        <Coil var="pos_ok" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="positioning has done" comment="3. positioning has done">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <Box name="TON" instance="chk_dly" time_type="Time">
+          <In port="PT" time="T#5s" />
+          <Open port="ET" />
+        </Box>
+        <Contact var="snr_reached" />
+        <Coil var="pos_snr_reached" />
+      </Series>
+      <Series>
+        <Contact var="pos_snr_reached" />
+        <Box name="TON" instance="pos_done_dly" time_type="Time">
+          <In port="PT" var="conf.pos_done_delay" />
+          <Open port="ET" />
+        </Box>
+        <Coil var="pos_done" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="pos sensor in place when starting" comment="4. pos sensor in place when starting">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <Contact var="snr_reached" negated="true" />
+        <Contact var="pos_snr_in_place" negated="true" />
+        <SCoil var="pos_snr_not_in_place" />
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <Contact var="snr_reached" />
+        <Contact var="pos_snr_not_in_place" negated="true" />
+        <SCoil var="pos_snr_in_place" />
+      </Series>
+      <Series>
+        <Contact var="is_pos_Z" negated="true" />
+        <Contact var="is_pos_S" negated="true" />
+        <Fork>
+          <Series><RCoil var="pos_snr_not_in_place" /></Series>
+          <Series><RCoil var="pos_snr_in_place" /></Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="clutch control" comment="5. clutch control">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <SCoil var="clutch_on" />
+      </Series>
+      <Series>
+        <Contact var="is_pos_Z" negated="true" />
+        <Contact var="is_pos_S" negated="true" />
+        <Box name="TON" instance="clutch_off_dly" time_type="Time">
+          <In port="PT" time="T#1s" />
+          <Open port="ET" />
+        </Box>
+        <RCoil var="clutch_on" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="lock pin control" comment="6. lock pin control">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="pb_stop" />
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+          <Contact var="any_err" />
+          <Series>
+            <Box name="Ne" SrcType="Byte">
+              <In port="in1" var="err_w" />
+              <In port="in2" const="0" type="Byte" />
+            </Box>
+          </Series>
+        </Parallel>
+        <RCoil var="pin_lock" />
+      </Series>
+      <Series>
+        <Contact var="pos_done" />
+        <SCoil var="pin_lock" />
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="when start decelerating" comment="7. when start decelerating">
+    <Series>
+      <Parallel>
+        <Contact var="is_pos_Z" />
+        <Contact var="is_pos_S" />
+      </Parallel>
+      <Contact var="snr_pin_unlock" />
+      <Contact var="pos_snr_in_place" />
+      <Box name="TON" instance="dec_dly" time_type="Time">
+        <In port="PT" time="T#200ms" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="decelerating" />
+    </Series>
+  </Network>
+
+  <Network title="speed control" comment="8. speed control">
+    <Fork>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="conf.pos_spd_max" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="conf.pos_spd_max" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="conf.pos_spd_min" />
+          <In port="MX" const="100.0" type="Real" />
+          <Out port="OUT" var="conf.pos_spd_min" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="decelerating" />
+        <Box name="Move" eno="false">
+          <In port="in" var="conf.pos_spd_min" />
+          <Out port="out1" var="spd_ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="decelerating" negated="true" />
+        <Box name="Move" eno="false">
+          <In port="in" var="conf.pos_spd_max" />
+          <Out port="out1" var="spd_ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="pos_snr_not_in_place" />
+        <Box name="Move" eno="false">
+          <In port="in" var="conf.pos_spd_home" />
+          <Out port="out1" var="spd_ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Parallel>
+          <Contact var="snr_pin_unlock" negated="true" />
+          <Series>
+            <Contact var="is_pos_Z" negated="true" />
+            <Contact var="is_pos_S" negated="true" />
+          </Series>
+        </Parallel>
+        <Box name="Move" eno="false">
+          <In port="in" const="0.0" type="Real" />
+          <Out port="out1" var="spd_ref" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="spd_ref" />
+          <Out port="out1" var="spd_ramped" />
+        </Box>
+        <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+          <In port="min" const="0.0" type="Real" />
+          <In port="value" var="spd_ramped" />
+          <In port="max" const="100.0" type="Real" />
+          <Out port="out" var="spd_norm" />
+        </Box>
+        <Box name="Scale_X" SrcType="Real" DestType="Int" eno="false">
+          <In port="min" const="0" type="Int" />
+          <In port="value" var="spd_norm" />
+          <In port="max" const="27648" type="Int" />
+          <Out port="out" var="spd_out" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+
+  <Network title="error" comment="9. error">
+    <Fork>
+      <Series>
+        <Parallel>
+          <Contact var="is_pos_Z" />
+          <Contact var="is_pos_S" />
+        </Parallel>
+        <Contact var="snr_pin_unlock" negated="true" />
+        <Box name="TON" instance="pin_unlock_chk" time_type="Time">
+          <In port="PT" time="T#10s" />
+          <Open port="ET" />
+        </Box>
+        <Box name="Move" eno="false">
+          <In port="in" const="1" type="Byte" />
+          <Out port="out1" var="err_w" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="reset" />
+        <Box name="Move" eno="false">
+          <In port="in" const="0" type="Byte" />
+          <Out port="out1" var="err_w" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

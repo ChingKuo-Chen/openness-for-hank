@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Interpolation table controller: generate-on-PB, load/save id (Generate FC later). -->
+<Lad kind="FB" name="Interpolation_Controler_adv" number="102" comment="Interpolation table controller: generate-on-PB, load/save id (Generate FC later).">
+  <Interface>
+    <Section name="Input">
+      <Member name="select_id" type="Int" start="0"  comment="靜態：select_id（Int）" />
+    </Section>
+    <Section name="Static">
+      <Member name="mid" type="Int"  comment="靜態：mid（Int）" />
+      <Member name="pb" type="Struct">
+        <Member name="gen_intp" type="Bool"  comment="靜態：gen_intp（Bool）" />
+        <Member name="load" type="Bool"  comment="靜態：load（Bool）" />
+        <Member name="save" type="Bool"  comment="靜態：save（Bool）" />
+      </Member>
+      <Member name="min_id" type="Int" start="0"  comment="靜態：min_id（Int）" />
+      <Member name="max_id" type="Int" start="3"  comment="靜態：max_id（Int）" />
+    </Section>
+  </Interface>
+
+  <Network title="external id" comment="1. external id">
+    <Series>
+      <Box name="Ge" SrcType="Int">
+        <In port="in1" var="select_id" />
+        <In port="in2" var="min_id" />
+      </Box>
+      <Box name="Le" SrcType="Int">
+        <In port="in1" var="select_id" />
+        <In port="in2" var="max_id" />
+      </Box>
+      <Box name="Move" eno="false">
+        <In port="in" var="select_id" />
+        <Out port="out1" var="mid" />
+      </Box>
+    </Series>
+  </Network>
+
+  <Network title="load id clamp" comment="2. load id clamp">
+    <Series>
+      <Contact var="pb.load" />
+      <Box name="LIMIT" value_type="Int" eno="false">
+        <In port="MN" var="min_id" />
+        <In port="IN" var="mid" />
+        <In port="MX" var="max_id" />
+        <Out port="OUT" var="mid" />
+      </Box>
+      <RCoil var="pb.load" />
+    </Series>
+  </Network>
+
+  <Network title="save id clamp" comment="3. save id clamp">
+    <Series>
+      <Contact var="pb.save" />
+      <Box name="LIMIT" value_type="Int" eno="false">
+        <In port="MN" var="min_id" />
+        <In port="IN" var="mid" />
+        <In port="MX" var="max_id" />
+        <Out port="OUT" var="mid" />
+      </Box>
+      <RCoil var="pb.save" />
+    </Series>
+  </Network>
+
+  <Network title="consume generate PB (table FC later)" comment="4. consume generate PB (table FC later)">
+    <Series>
+      <Contact var="pb.gen_intp" />
+      <RCoil var="pb.gen_intp" />
+    </Series>
+  </Network>
+</Lad>

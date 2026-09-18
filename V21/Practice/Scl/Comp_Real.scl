@@ -1,0 +1,19 @@
+// =============================================================================
+// 區塊：Comp_Real（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Comp_Real.txt
+// =============================================================================
+
+FUNCTION "Comp_Real" : Real
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    H : Word;
+    L : Word;
+    unit : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Comp_Real.txt
+BEGIN
+    Comp_Real := DINT_TO_REAL(WORD_TO_DINT(H) * 65536 + WORD_TO_DINT(L)) * unit;
+END_FUNCTION

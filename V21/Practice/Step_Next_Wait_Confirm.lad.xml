@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Advance on confirm; blink wait_lamp from Clock_0.5Hz while waiting. -->
+<Lad kind="FC" name="Step_Next_Wait_Confirm" number="40" comment="Advance on confirm; blink wait_lamp from Clock_0.5Hz while waiting.">
+  <Interface>
+    <Section name="Input">
+      <Member name="confirm" type="Bool"  comment="InOut：confirm（Bool）" />
+      <Member name="clock_half" type="Bool"  comment="InOut：clock_half（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="wait_lamp" type="Bool"  comment="InOut：wait_lamp（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="current_step" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+      <Member name="next_step" type="Struct">
+        <Member name="exec" type="Bool"  comment="InOut：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="error" type="Bool"  comment="InOut：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="InOut：exec_edge（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="wait for confirm" comment="1. wait for confirm">
+    <Series>
+      <Contact var="current_step.exec" />
+      <Contact var="current_step.done" />
+      <Fork>
+        <Series>
+          <Contact var="confirm" />
+          <Fork>
+            <Series>
+              <RCoil var="current_step.exec" />
+            </Series>
+            <Series>
+              <SCoil var="next_step.exec" />
+            </Series>
+          </Fork>
+        </Series>
+        <Series>
+          <Contact var="clock_half" />
+          <Coil var="wait_lamp" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="initialize next step" comment="2. initialize next step">
+    <Series>
+      <PContact var="next_step.exec" mem="next_step.exec_edge" />
+      <Fork>
+        <Series>
+          <SCoil var="next_step.busy" />
+        </Series>
+        <Series>
+          <RCoil var="next_step.done" />
+        </Series>
+        <Series>
+          <RCoil var="next_step.error" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

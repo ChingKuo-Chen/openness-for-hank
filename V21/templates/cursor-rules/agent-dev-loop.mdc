@@ -1,0 +1,58 @@
+---
+description: >-
+  Agent 硬性閉環：改 TIA／Openness 後 compile→讀結果 一體迭代；
+  不是 MCU flash。下載 PLC 僅在使用者明說時。
+alwaysApply: true
+---
+
+# Agent 開發閉環（硬性規定）
+
+**適用：** 任何會影響 **Portal 專案或 PLC 行為** 的修改（SCL、DB、硬體組態、Openness host）。  
+**工具：** 依 [`openness-routing.mdc`](openness-routing.mdc)。  
+**專案邊界：** [`project-local.mdc`](project-local.mdc)。  
+**法典：** `../openness-standard/rules/tia-openness-rules.md`（勿把全文貼進本檔）。
+
+## 核心義務
+
+使用者**未明確說「只改檔不編譯」「docs only」**時，Agent **必須**自動執行完整閉環，**不得**在只完成編輯後就結束回合。
+
+```text
+implement → TIA Openness compile → 匯出/讀結果 → (PASS? done : fix → 回到 compile)
+```
+
+## 標準步驟（每輪必做）
+
+| # | 步驟 | 動作 |
+|---|------|------|
+| 1 | **Compile** | 依 `openness-routing.mdc` 對目標 PLC 編譯 |
+| 2 | **Judge** | 0 error 為 PASS；warning 對照 `project-local.mdc` |
+| 3 | **Export**（若本輪改了塊／DB） | 匯出到 repo 約定目錄 |
+| 4 | **Fix** | FAIL → 改 → **回到 1** |
+| 5 | **Record** | 有 `plan/*_progress.md` 時更新 PASS/FAIL |
+
+**Download to PLC / PLCSIM 不是預設。** 僅當使用者明說。
+
+## 自動迭代規則
+
+- **至少自行重試 3 輪**（compile→fix）才可在仍 FAIL 時向使用者報告 blocker。
+- **勿問**「要不要編譯？」— 實機／專案任務 → **直接做**。
+- 編譯失敗 → 先修，再談下載。
+- GitHub Actions 不能跑 Portal；不要假裝 CI 已驗證。
+
+## 僅下列情況可暫停並請示
+
+| Blocker | 說明 |
+|---------|------|
+| 找不到 V21 DLL 或 Portal | 見 `project-local.mdc`；請使用者安裝／授權 Openness |
+| 連續 3 輪 compile 連不上 Portal | 授權對話框、專案被占用 |
+| 需下載到實體 PLC | 等使用者明確要求 |
+| 計劃明寫 SKIP / HUMAN ONLY | 遵守 `project-local.mdc` |
+| 使用者明說「只 review」「不要編譯」 | 本 rule 不適用 |
+
+## 回報格式
+
+```text
+[Cycle N] compile: OK/FAIL | export: OK/SKIP | judge: PASS/FAIL
+Evidence: <編譯錯誤摘要 / log 路徑>
+Next: <fix 摘要 或 PASS 結案>
+```

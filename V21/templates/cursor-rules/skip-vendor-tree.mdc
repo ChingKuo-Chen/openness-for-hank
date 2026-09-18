@@ -1,0 +1,18 @@
+---
+description: >-
+  勿修改 Siemens PublicAPI、vendor、大型 TIA 二進位；安裝時請改 globs
+globs: vendor/**,host/lib/**
+alwaysApply: false
+---
+
+# 跳過 vendor / 產生檔
+
+**安裝時請改 frontmatter `globs`** 為本 repo 實際路徑（常見：`vendor/**`、本機複製的 `Siemens.Engineering*`）。
+
+進行重構、加註解、格式化時：
+
+- **不要**修改 glob 涵蓋的檔案
+- **不要**修改 `C:\Program Files\Siemens\**`
+- 僅修改專案自有 `host/`、匯出的 SCL、`doc/`
+
+`.ap21` / `.zap21` 預設不在 Git；若專案例外入庫，仍勿做無關格式化。

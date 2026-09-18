@@ -1,0 +1,24 @@
+// =============================================================================
+// 區塊：Switch_IntBtn（FB）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Switch_IntBtn.txt
+// =============================================================================
+
+FUNCTION_BLOCK "Switch_IntBtn"
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_IN_OUT
+    sw : Bool;
+END_VAR
+VAR
+    pb : Bool;
+    prev_pb : Bool;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Switch_IntBtn.txt
+BEGIN
+    IF pb AND NOT prev_pb THEN
+        sw := NOT sw;
+    END_IF;
+    prev_pb := pb;
+END_FUNCTION_BLOCK

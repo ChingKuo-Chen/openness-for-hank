@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enc reset hold-key plus zeroing accu/reading when forced or done. -->
+<Lad kind="FC" name="Enc_Reset" number="33" comment="Enc reset hold-key plus zeroing accu/reading when forced or done.">
+  <Interface>
+    <Section name="Input">
+      <Member name="force" type="Bool"  comment="InOut：force（Bool）" />
+      <Member name="rst_hold_time" type="Time"  comment="InOut：rst_hold_time（Time）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="rst" type="Struct">
+        <Member name="btn" type="Bool"  comment="InOut：btn（Bool）" />
+        <Member name="busy" type="Bool"  comment="InOut：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="InOut：done（Bool）" />
+        <Member name="wait_timer" type="IEC_TIMER"  comment="InOut：wait_timer（IEC_TIMER）" />
+      </Member>
+      <Member name="accu" type="LReal"  comment="累加值" />
+      <Member name="reading" type="LReal"  comment="InOut：reading（LReal）" />
+    </Section>
+  </Interface>
+  <Network title="hold key until timeout" comment="1. hold key until timeout">
+    <Series>
+      <Contact var="rst.btn" />
+      <Fork>
+        <Series>
+          <CoilTON var="rst.wait_timer" time_type="Time">
+            <In port="value" var="rst_hold_time" />
+          </CoilTON>
+        </Series>
+        <Series>
+          <Contact var="rst.wait_timer.Q" negated="true" />
+          <Coil var="rst.busy" />
+        </Series>
+        <Series>
+          <Contact var="rst.wait_timer.Q" />
+          <Coil var="rst.done" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="Reset accu and reading" comment="2. Reset accu and reading">
+    <Series>
+      <Parallel>
+        <Contact var="force" />
+        <Contact var="rst.done" />
+      </Parallel>
+      <Box name="Move" card="2" eno="false">
+        <In port="in" const="0.0" type="LReal" />
+        <Out port="out1" var="accu" />
+        <Out port="out2" var="reading" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

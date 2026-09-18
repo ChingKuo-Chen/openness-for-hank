@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Encoder counts → 0..360° (23019 body was SCL). -->
+<Lad kind="FB" name="Rotor_Angle" number="93" comment="Encoder counts → 0..360° (23019 body was SCL).">
+  <Interface>
+    <Section name="Input">
+      <Member name="enc" type="DInt"  comment="暫存：enc（DInt）" />
+    </Section>
+    <Section name="Static">
+      <Member name="angle" type="Struct">
+        <Member name="cur" type="Real"  comment="暫存：cur（Real）" />
+      </Member>
+      <Member name="conf" type="Struct">
+        <Member name="pulses_per_rev" type="Real" start="4096.0"  comment="暫存：pulses_per_rev（Real）" />
+      </Member>
+    </Section>
+    <Section name="Temp">
+      <Member name="enc_r" type="Real"  comment="暫存：enc_r（Real）" />
+      <Member name="raw_angle" type="Real"  comment="暫存：raw_angle（Real）" />
+    </Section>
+  </Interface>
+  <Network title="degrees then wrap 0..360" comment="1. degrees then wrap 0..360">
+    <Series>
+      <Box name="Convert" SrcType="DInt" DestType="Real">
+        <In port="in" var="enc" />
+        <Out port="out" var="enc_r" />
+      </Box>
+      <Box name="Calc" SrcType="Real" card="3" equation="IN1*IN2/IN3" eno="false">
+        <In port="in1" var="enc_r" />
+        <In port="in2" const="360.0" type="Real" />
+        <In port="in3" var="conf.pulses_per_rev" />
+        <Out port="out" var="raw_angle" />
+      </Box>
+      <Box name="LIMIT" value_type="Real" eno="false">
+        <In port="MN" const="0.0" type="Real" />
+        <In port="IN" var="raw_angle" />
+        <In port="MX" const="360.0" type="Real" />
+        <Out port="OUT" var="angle.cur" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

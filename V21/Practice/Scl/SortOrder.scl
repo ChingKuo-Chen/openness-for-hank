@@ -1,0 +1,26 @@
+// =============================================================================
+// 區塊：SortOrder（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\SortOrder.txt
+// =============================================================================
+
+FUNCTION "SortOrder" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_IN_OUT
+    small : Real;
+    big : Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    tmp : Real;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\SortOrder.txt
+BEGIN
+    IF small > big THEN
+        tmp := small;
+        small := big;
+        big := tmp;
+    END_IF;
+END_FUNCTION

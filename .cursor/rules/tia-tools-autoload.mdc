@@ -10,8 +10,9 @@ alwaysApply: true
 
 ## Host
 
-- 編譯：`host/Build.ps1`。重編 exe 後 TIA Openness **AllowList 會再問** → 按 **Yes to all**（不要只按 Yes）。
+- 編譯：V21 用 `V21/host/Build.ps1`；V19 用 `V19/host/Build.ps1`。重編 exe 後 TIA Openness **AllowList 會再問** → 按 **Yes to all**（不要只按 Yes）。
 - 長跑 `TiaOpennessCheck` log／CPU 不動 = 卡住。自己殺了重跑，不要等使用者問。
+- Portal 閃退／沒開：用**同一條** Portal exe + `--project:` 那份 `.ap19`／`.ap21` 重開，不要空開再手動找檔。V19 實驗場：`C:\Program Files\Siemens\Automation\Portal V19\Bin\Siemens.Automation.Portal.exe` `"C:\Users\David\Desktop\Test V19 Standard\Test V19 Standard.ap19"`。host `EnsureTargetPortalProcess` 也是這條路。
 - Override 後舊物件常 **disposed** → 用名稱重新 Find。
 - `Import(..., Override)` = 整份蓋掉同名，不是合併。先 Export 備份。只改工作副本。
 - XML `ID="18B"` 是 hex，不要整份字串取代。
@@ -19,16 +20,17 @@ alwaysApply: true
 
 ## IO／參考
 
-- 寫新機先要 **2～3 個**參考。參考只讀，不要 Openness attach。
+- 加入專案／寫新機：先問 **2～3 個**參考 TIA 路徑。沒給 → 用該樹 `Practice/`。
+- 實際用到的塊／硬體／IO 放機台 **`reference/`**。不要整包 `.ap19`／`.ap21`，不要 Openness attach 參考。
 - Hardware Tag **名不改**。≥80% 對上：名留程式底、址改 C 表。C 表沒寫仍在用的舊 Tag 不要刪。
 - 不要自己開下一項 C 表新點。
 
 ## 小工具位置
 
-- Openness host：`host/`（`INSTALL.md`、`Build.ps1`、`GrantAllowListAccess.ps1`）。新電腦把 `host/INSTALL.md` 丟給 Cursor。
-- LAD／GUI／IO：`tools/`
-- 已驗證 LAD／SCL：`Practice/`（說明 `doc/LAD_PRACTICE.md`）
-- Discrete 怎麼點：`doc/HOW-TO-DISCRETE.md`
-- 寫專案注意卡：`doc/notes/OPENNESS-BASIC-HMI-TAG-HANDOFF.md`
+- Openness host：`V21/host/` 或 `V19/host/`（看機台 TIA 版本）。新電腦丟對應樹的 `host/INSTALL.md`。
+- LAD／GUI／IO：`V21/tools/` 或 `V19/tools/`
+- 已驗證 LAD／SCL：`V21/Practice/` 或 `V19/Practice/`
+- Discrete：`V21/doc/HOW-TO-DISCRETE.md`（V19 若測出差異寫進 `V19/doc/`）
+- 寫專案注意卡：`V21/doc/notes/OPENNESS-BASIC-HMI-TAG-HANDOFF.md`
 
 TIA 可短暫置頂來點；點完拿掉。不要對整棵 TIA 做 UIA Descendants。

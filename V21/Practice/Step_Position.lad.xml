@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FB" name="Step_Position" number="42" comment="練習區塊 Step_Position（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="Sensor" type="Bool"  comment="靜態：Sensor（Bool）" />
+      <Member name="stop" type="Bool"  comment="停止" />
+      <Member name="Reset" type="Bool"  comment="復位" />
+      <Member name="Stable_Timer" type="Time" start="t#3s"  comment="靜態：Stable_Timer（Time）" />
+      <Member name="clear_done" type="Bool"  comment="靜態：clear_done（Bool）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="step" type="Struct">
+        <Member name="exec" type="Bool"  comment="靜態：exec（Bool）" />
+        <Member name="busy" type="Bool"  comment="靜態：busy（Bool）" />
+        <Member name="done" type="Bool"  comment="靜態：done（Bool）" />
+        <Member name="error" type="Bool"  comment="靜態：error（Bool）" />
+        <Member name="exec_edge" type="Bool"  comment="靜態：exec_edge（Bool）" />
+        <Member name="max_time" type="Time"  comment="靜態：max_time（Time）" />
+        <Member name="max_timer" type="IEC_TIMER"  comment="靜態：max_timer（IEC_TIMER）" />
+      </Member>
+    </Section>
+    <Section name="Static">
+      <Member name="delay_on" type="IEC_TIMER"  comment="靜態：delay_on（IEC_TIMER）" />
+    </Section>
+  </Interface>
+  <Network title="abort" comment="1. abort">
+    <Fork>
+      <Series>
+        <Contact var="stop" />
+        <Fork>
+          <Series>
+            <RCoil var="step.exec" />
+          </Series>
+          <Series>
+            <RCoil var="step.busy" />
+          </Series>
+        </Fork>
+      </Series>
+      <Series>
+        <Contact var="Reset" />
+        <Fork>
+          <Series>
+            <RCoil var="step.exec" />
+          </Series>
+          <Series>
+            <RCoil var="step.busy" />
+          </Series>
+          <Series>
+            <RCoil var="step.done" />
+          </Series>
+          <Series>
+            <RCoil var="step.error" />
+          </Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="timers while busy" comment="2. timers while busy">
+    <Series>
+      <Contact var="step.busy" />
+      <Fork>
+        <Series>
+          <CoilTON var="step.max_timer" time_type="Time">
+            <In port="value" var="step.max_time" />
+          </CoilTON>
+        </Series>
+        <Series>
+          <CoilTON var="delay_on" time_type="Time">
+            <In port="value" var="Stable_Timer" />
+          </CoilTON>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="stable sensor ends step" comment="3. stable sensor ends step">
+    <Series>
+      <Contact var="delay_on.Q" />
+      <Contact var="Sensor" />
+      <Fork>
+        <Series>
+          <RCoil var="step.busy" />
+        </Series>
+        <Series>
+          <SCoil var="step.done" />
+        </Series>
+        <Series>
+          <RCoil var="step.error" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="max time is error" comment="4. max time is error">
+    <Series>
+      <Contact var="step.max_timer.Q" />
+      <Fork>
+        <Series>
+          <RCoil var="step.busy" />
+        </Series>
+        <Series>
+          <RCoil var="step.done" />
+        </Series>
+        <Series>
+          <SCoil var="step.error" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+  <Network title="clear done" comment="5. clear done">
+    <Series>
+      <Contact var="clear_done" />
+      <RCoil var="step.done" />
+    </Series>
+  </Network>
+</Lad>

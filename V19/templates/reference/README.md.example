@@ -1,0 +1,16 @@
+# 本機參考摘錄
+
+加入專案／寫新機時，Agent 會問 **2～3 個** TIA 專案路徑（只讀）。
+
+| 情況 | 做法 |
+|------|------|
+| 使用者給了路徑 | 不要整包 copy `.ap19`／`.ap21`，不要 Openness attach。實際用到的塊、硬體 XML、IO 列放到 `reference/<簡稱>/` |
+| 使用者不給 | 用 openness-standard 對應 TIA 版本的 `Practice/`。用到哪份就 copy 哪份到 `reference/Practice/` |
+
+路徑表：`doc/REFERENCE_PATHS.md`、`handoffs/HANDOFF-*.md`。讀完心得：`doc/notes/REF-*.md`。
+
+## 來源
+
+| 簡稱 | 原路徑 | 備註 |
+|------|--------|------|
+| （例）Practice | `<standard>/V19/Practice/` | 未提供機台參考時 |

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Scale value <-> VR% via Enc_Ratio + Conv_SetValue_ToScale. -->
+<Lad kind="FB" name="Scale_Ratio" number="78" comment="Scale value &lt;-> VR% via Enc_Ratio + Conv_SetValue_ToScale.">
+  <Interface>
+    <Section name="Input">
+      <Member name="pb_inc" type="Bool"  comment="靜態：pb_inc（Bool）" />
+      <Member name="pb_dec" type="Bool"  comment="靜態：pb_dec（Bool）" />
+      <Member name="enable_cnt" type="Bool"  comment="靜態：enable_cnt（Bool）" />
+      <Member name="Scale_Max" type="Real" start="100.0"  comment="靜態：Scale_Max（Real）" />
+      <Member name="enc_cnt" type="DInt"  comment="靜態：enc_cnt（DInt）" />
+      <Member name="adj_slice" type="Real"  comment="靜態：adj_slice（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="VR_Value" type="Real"  comment="靜態：VR_Value（Real）" />
+    </Section>
+    <Section name="Static">
+      <Member name="Scale_Value" type="Real"  comment="靜態：Scale_Value（Real）" />
+      <Member name="Scale_Prev" type="Real"  comment="靜態：Scale_Prev（Real）" />
+      <Member name="Enc_Ratio_VR" type="Enc_Ratio"  comment="靜態：Enc_Ratio_VR（Enc_Ratio）" />
+    </Section>
+  </Interface>
+
+  <Network title="Enc_Ratio on VR%" comment="1. Enc_Ratio on VR%">
+    <Series>
+      <Call name="Enc_Ratio" type="FB" instance="Enc_Ratio_VR" scope="LocalVariable">
+        <Param name="enable_cnt" section="Input" type="Bool" var="enable_cnt" />
+        <Param name="limit_range" section="Input" type="Bool" const="true" />
+        <Param name="inc_pb" section="Input" type="Bool" var="pb_inc" />
+        <Param name="dec_pb" section="Input" type="Bool" var="pb_dec" />
+        <Param name="adj_slice" section="Input" type="Real" var="adj_slice" />
+        <Param name="cnt_value" section="Input" type="DInt" var="enc_cnt" />
+        <Param name="multiply_cnt" section="Input" type="DInt" const="1" />
+        <Param name="VR_value" section="InOut" type="Real" var="VR_Value" />
+      </Call>
+    </Series>
+  </Network>
+
+  <Network title="scale changed vs refresh from VR" comment="2. scale changed vs refresh from VR">
+    <Series>
+      <Box name="Ne" SrcType="Real">
+        <In port="in1" var="Scale_Value" />
+        <In port="in2" var="Scale_Prev" />
+      </Box>
+      <Fork>
+        <Series>
+          <Call name="Conv_SetValue_ToScale" type="FC">
+            <Param name="maxSetValue" section="Input" type="Real" var="Scale_Max" />
+            <Param name="scaleTo" section="Input" type="Real" const="100.0" />
+            <Param name="setValue" section="Input" type="Real" var="Scale_Value" />
+            <Param name="scaleValue" section="Output" type="Real" var="VR_Value" />
+          </Call>
+          <Box name="Move" eno="false">
+            <In port="in" var="Scale_Value" />
+            <Out port="out1" var="Scale_Prev" />
+          </Box>
+        </Series>
+        <Series>
+          <Not />
+          <Call name="Conv_SetValue_ToScale" type="FC">
+            <Param name="maxSetValue" section="Input" type="Real" const="100.0" />
+            <Param name="scaleTo" section="Input" type="Real" var="Scale_Max" />
+            <Param name="setValue" section="Input" type="Real" var="VR_Value" />
+            <Param name="scaleValue" section="Output" type="Real" var="Scale_Value" />
+          </Call>
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+</Lad>

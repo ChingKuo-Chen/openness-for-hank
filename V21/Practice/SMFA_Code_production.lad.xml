@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="SMFA_Code_production" number="52" comment="練習區塊 SMFA_Code_production（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="Line_Run" type="Bool"  comment="暫存：Line_Run（Bool）" />
+      <Member name="Line_Error" type="Bool"  comment="暫存：Line_Error（Bool）" />
+      <Member name="Line_Warm" type="Bool"  comment="暫存：Line_Warm（Bool）" />
+    </Section>
+    <Section name="Output">
+      <Member name="SMFA_Code" type="Int"  comment="暫存：SMFA_Code（Int）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="Status_Code" type="Int"  comment="暫存：Status_Code（Int）" />
+    </Section>
+  </Interface>
+  <Network title="maps to status word" comment="1. maps to status word">
+    <Fork>
+      <Series>
+        <Contact var="Line_Run" />
+        <Contact var="Line_Warm" negated="true" />
+        <Box name="Move" eno="false"><In port="in" const="2001" type="Int" /><Out port="out1" var="SMFA_Code" /></Box>
+      </Series>
+      <Series>
+        <Contact var="Line_Run" />
+        <Contact var="Line_Warm" />
+        <Box name="Move" eno="false"><In port="in" const="2002" type="Int" /><Out port="out1" var="SMFA_Code" /></Box>
+      </Series>
+      <Series>
+        <Contact var="Line_Run" negated="true" />
+        <Contact var="Line_Warm" negated="true" />
+        <Box name="Move" eno="false"><In port="in" const="3000" type="Int" /><Out port="out1" var="SMFA_Code" /></Box>
+      </Series>
+      <Series>
+        <Contact var="Line_Run" negated="true" />
+        <Contact var="Line_Warm" />
+        <Box name="Move" eno="false"><In port="in" const="3000" type="Int" /><Out port="out1" var="SMFA_Code" /></Box>
+      </Series>
+      <Series>
+        <Contact var="Line_Error" />
+        <Box name="Move" eno="false"><In port="in" const="3002" type="Int" /><Out port="out1" var="SMFA_Code" /></Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

@@ -8,6 +8,8 @@ bin/
 obj/
 [Dd]ebug/
 [Rr]elease/
+*.ap19
+*.zap19
 *.ap21
 *.zap21
 *.ap15
@@ -18,8 +20,10 @@ Siemens.Engineering*.dll
 Siemens.Engineering*.xml
 *.pdb
 *.exe
-Practice/**/*.lad.generated.xml
-Practice/**/*.exported.xml
+**/*.lad.generated.xml
+**/*.exported.xml
+**/import-batch.state.json
+**/TiaOpennessCheck.log
 .env
 .env.*
 .local/

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Map enable/run/warn/error into a status integer (priority: error > warn > run > stop > disabled). -->
+<Lad kind="FC" name="Status_word" number="13" comment="Map enable/run/warn/error into a status integer (priority: error > warn > run > stop > disabled).">
+  <Interface>
+    <Section name="Input">
+      <Member name="enable" type="Bool"  comment="使能" />
+      <Member name="error" type="Bool"  comment="輸出：error（Bool）" />
+      <Member name="warm" type="Bool"  comment="輸出：warm（Bool）" />
+      <Member name="run" type="Bool"  comment="運轉" />
+    </Section>
+    <Section name="Output">
+      <Member name="stat" type="Int"  comment="輸出：stat（Int）" />
+    </Section>
+  </Interface>
+  <Network title="maps to status word" comment="1. maps to status word">
+    <Fork>
+      <Series>
+        <Contact var="enable" negated="true" />
+        <Box name="Move">
+          <In port="in" const="0" type="Int" />
+          <Out port="out1" var="stat" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="run" negated="true" />
+        <Box name="Move">
+          <In port="in" const="1" type="Int" />
+          <Out port="out1" var="stat" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="enable" />
+        <Contact var="run" />
+        <Box name="Move">
+          <In port="in" const="2" type="Int" />
+          <Out port="out1" var="stat" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="warm" />
+        <Box name="Move">
+          <In port="in" const="3" type="Int" />
+          <Out port="out1" var="stat" />
+        </Box>
+      </Series>
+      <Series>
+        <Contact var="error" />
+        <Box name="Move">
+          <In port="in" const="4" type="Int" />
+          <Out port="out1" var="stat" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

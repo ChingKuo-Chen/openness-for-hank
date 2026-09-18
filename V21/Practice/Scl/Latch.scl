@@ -1,0 +1,54 @@
+// =============================================================================
+// 區塊：Latch（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Latch.txt
+// =============================================================================
+
+FUNCTION "Latch" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_INPUT
+    ack : Bool;
+    clear : Bool;
+    cnt : Int;
+    cur_w : Word;
+END_VAR
+// --- 介面腳位 ---
+VAR_OUTPUT
+    err_set : Bool;
+    err_coil : Bool;
+END_VAR
+// --- 介面腳位 ---
+VAR_IN_OUT
+    latched : Array[0..3] of Word;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    is_err_coil : Bool;
+    is_err_set : Bool;
+    max_idx : Int;
+    idx : Int;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Latch.txt
+BEGIN
+    max_idx := cnt;
+    IF max_idx > 4 THEN
+        max_idx := 4;
+    END_IF;
+    is_err_coil := FALSE;
+    is_err_set := FALSE;
+    FOR idx := 0 TO max_idx - 1 DO
+        IF clear THEN
+            latched[idx] := WORD#16#0;
+        ELSIF ack THEN
+            latched[idx] := cur_w;
+        ELSE
+            latched[idx] := latched[idx] OR cur_w;
+        END_IF;
+        is_err_coil := is_err_coil OR (cur_w <> WORD#16#0);
+        is_err_set := is_err_set OR (latched[idx] <> WORD#16#0);
+    END_FOR;
+    err_set := is_err_set;
+    err_coil := is_err_coil;
+END_FUNCTION

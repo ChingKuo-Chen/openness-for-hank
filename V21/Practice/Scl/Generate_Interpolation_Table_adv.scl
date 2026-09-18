@@ -1,0 +1,94 @@
+// =============================================================================
+// 區塊：Generate_Interpolation_Table_adv（FC）
+// 23019 參考：1 個邏輯段。詳見 Practice\SclDump\Generate_Interpolation_Table_adv.txt
+// =============================================================================
+
+FUNCTION "Generate_Interpolation_Table_adv" : Void
+{ S7_Optimized_Access := 'TRUE' }
+VERSION : 1.0
+// --- 介面腳位 ---
+VAR_IN_OUT
+    cmd_array : Array[0..10] of Real;
+    fdbk_array : Array[0..10] of Real;
+    throughput : Real;
+    tbl : Array[0..10] of Real;
+END_VAR
+// --- 介面腳位 ---
+VAR_TEMP
+    i : Int;
+    j : Int;
+    tmp_cmd : Real;
+    tmp_fdbk : Real;
+    max_cmd : Real;
+    max_fdbk : Real;
+    max_cmd_fdbk : Real;
+    idea_fdbk : Real;
+    cur_idx : Int;
+    prev_cmd : Real;
+    prev_fdbk : Real;
+    cur_cmd : Real;
+    cur_fdbk : Real;
+END_VAR
+VAR CONSTANT
+    max_intp : Int := 10;
+END_VAR
+// --- 主要邏輯 ---
+// 依 23019 原版算法改寫；細節見 Practice\SclDump\Generate_Interpolation_Table_adv.txt
+BEGIN
+    FOR i := 0 TO max_intp - 1 DO
+        FOR j := i TO max_intp DO
+            IF cmd_array[i] > cmd_array[j] THEN
+                tmp_cmd := cmd_array[i];
+                tmp_fdbk := fdbk_array[i];
+                cmd_array[i] := cmd_array[j];
+                fdbk_array[i] := fdbk_array[j];
+                cmd_array[j] := tmp_cmd;
+                fdbk_array[j] := tmp_fdbk;
+            END_IF;
+        END_FOR;
+    END_FOR;
+    max_cmd := cmd_array[0];
+    max_fdbk := fdbk_array[0];
+    max_cmd_fdbk := fdbk_array[0];
+    FOR i := 0 TO max_intp DO
+        IF fdbk_array[i] > max_fdbk THEN
+            max_fdbk := fdbk_array[i];
+        END_IF;
+        IF cmd_array[i] > max_cmd THEN
+            max_cmd := cmd_array[i];
+            max_cmd_fdbk := fdbk_array[i];
+        END_IF;
+    END_FOR;
+    IF max_cmd <> 0.0 THEN
+        throughput := max_cmd_fdbk / max_cmd;
+    ELSIF max_fdbk <> 0.0 THEN
+        throughput := 100.0;
+    ELSE
+        throughput := 100.0;
+    END_IF;
+    tbl[0] := 0.0;
+    FOR i := 1 TO max_intp DO
+        idea_fdbk := INT_TO_REAL(i) / INT_TO_REAL(max_intp) * throughput;
+        cur_idx := max_intp;
+        FOR j := 0 TO max_intp DO
+            IF fdbk_array[j] > idea_fdbk THEN
+                cur_idx := j;
+                EXIT;
+            END_IF;
+        END_FOR;
+        cur_cmd := cmd_array[cur_idx];
+        cur_fdbk := fdbk_array[cur_idx];
+        IF cur_idx > 0 THEN
+            prev_cmd := cmd_array[cur_idx - 1];
+            prev_fdbk := fdbk_array[cur_idx - 1];
+        ELSE
+            prev_cmd := 0.0;
+            prev_fdbk := 0.0;
+        END_IF;
+        IF (cur_fdbk - prev_fdbk) <> 0.0 THEN
+            tbl[i] := (cur_cmd - prev_cmd) / (cur_fdbk - prev_fdbk) * (idea_fdbk - prev_fdbk) + prev_cmd;
+        ELSE
+            tbl[i] := cur_cmd;
+        END_IF;
+    END_FOR;
+END_FUNCTION

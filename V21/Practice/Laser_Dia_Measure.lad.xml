@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Laser raw → distance → diameter (Average FC was SCL in 23019; pass-through here). -->
+<Lad kind="FC" name="Laser_Dia_Measure" number="75" comment="Laser raw → distance → diameter (Average FC was SCL in 23019; pass-through here).">
+  <Interface>
+    <Section name="Input">
+      <Member name="Laser_raw" type="Int"  comment="暫存：Laser_raw（Int）" />
+      <Member name="Zero_adjust" type="Real"  comment="暫存：Zero_adjust（Real）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="Diameter_orig" type="Real"  comment="暫存：Diameter_orig（Real）" />
+      <Member name="Diameter_avg" type="Real"  comment="暫存：Diameter_avg（Real）" />
+    </Section>
+    <Section name="Temp">
+      <Member name="norm" type="Real"  comment="暫存：norm（Real）" />
+      <Member name="Laser_Distance" type="Real"  comment="暫存：Laser_Distance（Real）" />
+    </Section>
+  </Interface>
+  <Network title="scale and limit" comment="1. scale and limit">
+    <Series>
+      <Box name="Normalize" SrcType="Int" DestType="Real">
+        <In port="min" const="0" type="Int" />
+        <In port="value" var="Laser_raw" />
+        <In port="max" const="27648" type="Int" />
+        <Out port="out" var="norm" />
+      </Box>
+      <Box name="Scale_X" SrcType="Real" DestType="Real">
+        <In port="min" const="0.0" type="Real" />
+        <In port="value" var="norm" />
+        <In port="max" const="5000.0" type="Real" />
+        <Out port="out" var="Laser_Distance" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="diameter = zero + distance, clamp, copy to avg" comment="2. diameter = zero + distance, clamp, copy to avg">
+    <Fork>
+      <Series>
+        <Box name="Calc" SrcType="Real" card="2" equation="IN1+IN2" eno="false">
+          <In port="in1" var="Zero_adjust" />
+          <In port="in2" var="Laser_Distance" />
+          <Out port="out" var="Diameter_orig" />
+        </Box>
+        <Box name="LIMIT" value_type="Real" eno="false">
+          <In port="MN" const="0.0" type="Real" />
+          <In port="IN" var="Diameter_orig" />
+          <In port="MX" const="1000.0" type="Real" />
+          <Out port="OUT" var="Diameter_orig" />
+        </Box>
+      </Series>
+      <Series>
+        <Box name="Move" eno="false">
+          <In port="in" var="Diameter_orig" />
+          <Out port="out1" var="Diameter_avg" />
+        </Box>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

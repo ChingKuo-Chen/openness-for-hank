@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Lad kind="FC" name="Conv_Fdb_Record" number="61" comment="練習區塊 Conv_Fdb_Record（LAD）。可攜腳位，不依賴廠端全域標籤。">
+  <Interface>
+    <Section name="Input">
+      <Member name="in" type="DInt"  comment="InOut：in（DInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="mtr_info" type="Struct">
+        <Member name="raw_in" type="DInt"  comment="InOut：raw_in（DInt）" />
+        <Member name="raw_value" type="Real"  comment="InOut：raw_value（Real）" />
+        <Member name="raw_min" type="Real"  comment="InOut：raw_min（Real）" />
+        <Member name="raw_max" type="Real"  comment="InOut：raw_max（Real）" />
+        <Member name="norm" type="Real"  comment="InOut：norm（Real）" />
+        <Member name="disp_min" type="Real"  comment="InOut：disp_min（Real）" />
+        <Member name="disp_max" type="Real"  comment="InOut：disp_max（Real）" />
+        <Member name="disp_value" type="Real"  comment="InOut：disp_value（Real）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="Convert RAW to REAL" comment="1. Convert RAW to REAL">
+    <Series>
+      <Box name="Move" eno="false">
+        <In port="in" var="in" />
+        <Out port="out1" var="mtr_info.raw_in" />
+      </Box>
+      <Box name="Convert" SrcType="DInt" DestType="Real" eno="false">
+        <In port="in" var="mtr_info.raw_in" />
+        <Out port="out" var="mtr_info.raw_value" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="Normalize" comment="2. Normalize">
+    <Series>
+      <Box name="Normalize" SrcType="Real" DestType="Real" eno="false">
+        <In port="min" var="mtr_info.raw_min" />
+        <In port="value" var="mtr_info.raw_value" />
+        <In port="max" var="mtr_info.raw_max" />
+        <Out port="out" var="mtr_info.norm" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="Scale to display" comment="3. Scale to display">
+    <Series>
+      <Box name="Scale_X" SrcType="Real" DestType="Real" eno="false">
+        <In port="min" var="mtr_info.disp_min" />
+        <In port="value" var="mtr_info.norm" />
+        <In port="max" var="mtr_info.disp_max" />
+        <Out port="out" var="mtr_info.disp_value" />
+      </Box>
+    </Series>
+  </Network>
+</Lad>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CT_PN: get motor info from raw words (PN copy nets were SCL). -->
+<Lad kind="FC" name="CT_PN" number="107" comment="CT_PN: get motor info from raw words (PN copy nets were SCL).">
+  <Interface>
+    <Section name="Input">
+      <Member name="rpm_raw" type="Int"  comment="輸出：rpm_raw（Int）" />
+      <Member name="current_raw" type="Int"  comment="輸出：current_raw（Int）" />
+      <Member name="torque_raw" type="Int"  comment="輸出：torque_raw（Int）" />
+    </Section>
+    <Section name="Output">
+      <Member name="rpm" type="Real"  comment="輸出：rpm（Real）" />
+      <Member name="current" type="Real"  comment="輸出：current（Real）" />
+      <Member name="torque" type="Real"  comment="輸出：torque（Real）" />
+    </Section>
+  </Interface>
+  <Network title="get motor information" comment="1. get motor information">
+    <Series>
+      <Call name="Get_Motor_Info_CT" type="FC">
+        <Param name="rpm_raw" section="Input" type="Int" var="rpm_raw" />
+        <Param name="current_raw" section="Input" type="Int" var="current_raw" />
+        <Param name="torque_raw" section="Input" type="Int" var="torque_raw" />
+        <Param name="rpm" section="Output" type="Real" var="rpm" />
+        <Param name="current" section="Output" type="Real" var="current" />
+        <Param name="torque" section="Output" type="Real" var="torque" />
+      </Call>
+    </Series>
+  </Network>
+</Lad>

@@ -55,18 +55,18 @@ $boxText = @(
     'First open of openness-standard on this PC.'
     ''
     '1. Root folder must be this repo, not TiaOpennessCheck.'
-    '2. Basic HMI Softkey/Discrete: read doc/OPENNESS_NOTES.md section 12. Do not retry dead paths.'
+    '2. Basic HMI Softkey/Discrete: read V21/doc/OPENNESS_NOTES.md section 12. Do not retry dead paths.'
     '3. Cursor Yes to All is Settings / Agents / Approvals on THIS PC. Clone does not copy it.'
     '4. TIA Openness AllowList is also this PC.'
     ''
     'Yes = confirmed. No = ask again next time. In chat you can also send: I have read this'
-    'See doc/CLONE-CONFIRM.md'
+    'See V21/doc/CLONE-CONFIRM.md'
 ) -join [Environment]::NewLine
 
 $blockText = @(
     'First open of openness-standard on this PC. Confirm first:'
     '1) Root is this repo, not TiaOpennessCheck'
-    '2) HMI Softkey/Discrete: doc/OPENNESS_NOTES.md section 12'
+    '2) HMI Softkey/Discrete: V21/doc/OPENNESS_NOTES.md section 12'
     '3) Cursor Yes to All is Settings / Agents / Approvals (not in git)'
     '4) TIA Openness AllowList is this PC'
     'Reply: I have read this'

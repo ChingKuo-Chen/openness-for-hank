@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Main Modbus: wrap index, load handshake, call Delta, ack. -->
+<Lad kind="FB" name="Modbus_Comm_Main" number="121" comment="Main Modbus: wrap index, load handshake, call Delta, ack.">
+  <Interface>
+    <Section name="Input">
+      <Member name="first_scan" type="Bool"  comment="靜態：first_scan（Bool）" />
+      <Member name="ack" type="Bool"  comment="確認" />
+      <Member name="reset" type="Bool"  comment="復位" />
+      <Member name="mb_addr" type="UInt"  comment="靜態：mb_addr（UInt）" />
+    </Section>
+    <Section name="InOut">
+      <Member name="my_MB_Master" type="MB_MASTER"  comment="靜態：my_MB_Master（MB_MASTER）" />
+    </Section>
+    <Section name="Static">
+      <Member name="comm_load" type="Bool"  comment="靜態：comm_load（Bool）" />
+      <Member name="query_idx" type="UInt"  comment="靜態：query_idx（UInt）" />
+      <Member name="DeltaComm" type="Modbus_Delta_Drive_N1_M"  comment="靜態：DeltaComm（Modbus_Delta_Drive_N1_M）" />
+      <Member name="stat" type="Struct">
+        <Member name="done" type="Bool"  comment="靜態：done（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="wrap index" comment="1. wrap index">
+    <Series>
+      <Box name="Gt" SrcType="UInt">
+        <In port="in1" var="query_idx" />
+        <In port="in2" const="0" type="UInt" />
+      </Box>
+      <Box name="Move" eno="false">
+        <In port="in" const="0" type="UInt" />
+        <Out port="out1" var="query_idx" />
+      </Box>
+    </Series>
+  </Network>
+  <Network title="comm load pulse" comment="2. comm load pulse">
+    <Fork>
+      <Series>
+        <Contact var="first_scan" />
+        <SCoil var="comm_load" />
+      </Series>
+      <Series>
+        <Contact var="stat.done" />
+        <RCoil var="comm_load" />
+      </Series>
+    </Fork>
+  </Network>
+  <Network title="query delta" comment="3. query delta">
+    <Series>
+      <Box name="Eq" SrcType="UInt">
+        <In port="in1" var="query_idx" />
+        <In port="in2" const="0" type="UInt" />
+      </Box>
+      <Call name="Modbus_Delta_Drive_N1_M" type="FB" instance="DeltaComm" scope="LocalVariable">
+        <Param name="enable" section="Input" type="Bool" const="true" />
+        <Param name="reset" section="Input" type="Bool" var="reset" />
+        <Param name="mb_addr" section="Input" type="UInt" var="mb_addr" />
+        <Param name="first_scan" section="Input" type="Bool" var="first_scan" />
+        <Param name="my_MB_Master" section="InOut" type="MB_MASTER" var="my_MB_Master" />
+      </Call>
+    </Series>
+  </Network>
+  <Network title="advance and ack" comment="4. advance and ack">
+    <Fork>
+      <Series>
+        <Contact var="DeltaComm.finish" />
+        <Box name="Inc" DestType="UInt" eno="false">
+          <In port="operand" var="query_idx" />
+        </Box>
+        <RCoil var="DeltaComm.finish" />
+      </Series>
+      <Series>
+        <Contact var="ack" />
+        <Fork>
+          <Series><RCoil var="DeltaComm.had_error" /></Series>
+          <Series><RCoil var="DeltaComm.error" /></Series>
+        </Fork>
+      </Series>
+    </Fork>
+  </Network>
+</Lad>

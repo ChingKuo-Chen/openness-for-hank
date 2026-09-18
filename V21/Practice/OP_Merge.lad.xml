@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LINE OP1/OP2 merge. Hardware I cannot be written, so the names Main_Logic
+     already uses (I_PB_Start …) are memory bits; this OB ORs the two panels
+     into those names and copies OP1 lamps to OP2. -->
+<Lad kind="OB" name="OP_Merge" number="31" secondaryType="CyclicInterrupt"
+     cyclicTime="10000" phaseOffset="0"
+     comment="OP1 or OP2：按鈕 OR 進原 Tag 名；OP1 燈抄到 OP2。">
+
+  <Interface>
+    <Section name="Input">
+      <Member name="Initial_Call" type="Bool" />
+      <Member name="Event_Count" type="Int" />
+    </Section>
+    <Section name="Temp" />
+    <Section name="Constant" />
+  </Interface>
+
+  <Network title="start OP1 or OP2" comment="Main_Logic NW3">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Start_OP1" />
+        <Contact tag="I_PB_Start_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Start" />
+    </Series>
+  </Network>
+
+  <Network title="stop OP1 or OP2" comment="Main_Logic NW3">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Stop_OP1" />
+        <Contact tag="I_PB_Stop_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Stop" />
+    </Series>
+  </Network>
+
+  <Network title="reset OP1 or OP2" comment="Main_Logic NW3">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Reset_OP1" />
+        <Contact tag="I_PB_Reset_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Reset" />
+    </Series>
+  </Network>
+
+  <Network title="jog OP1 or OP2" comment="Main_Logic NW3；預扭 OP LINE 寸動併入">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Jog_OP1" />
+        <Contact tag="I_PB_Jog_OP2" />
+        <Contact tag="I_PB_12B_PreTwist_Jog" />
+        <Contact tag="I_PB_20B_PreTwist_Jog" />
+        <Contact tag="I_PB_24B_PreTwist_Jog" />
+      </Parallel>
+      <Coil tag="I_PB_Jog" />
+    </Series>
+  </Network>
+
+  <Network title="bell button OP1 or OP2" comment="Main_Logic NW3">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Bell_OP1" />
+        <Contact tag="I_PB_Bell_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Bell" />
+    </Series>
+  </Network>
+
+  <Network title="takeup start OP1 or OP2" comment="Main_Logic NW50">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Takeup_Start_OP1" />
+        <Contact tag="I_PB_Takeup_Start_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Takeup_Start" />
+    </Series>
+  </Network>
+
+  <Network title="takeup stop OP1 or OP2" comment="Main_Logic NW50">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_Takeup_Stop_OP1" />
+        <Contact tag="I_PB_Takeup_Stop_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_Takeup_Stop" />
+    </Series>
+  </Network>
+
+  <Network title="estop OP1 or OP2 (NO)" comment="Event_Control NW2">
+    <Series>
+      <Parallel>
+        <Contact tag="I_PB_EStop_OP1" />
+        <Contact tag="I_PB_EStop_OP2" />
+      </Parallel>
+      <Coil tag="I_PB_EStop" />
+    </Series>
+  </Network>
+
+  <Network title="run lamp to OP2" comment="Main_Logic NW45 Q_Lamp_Run">
+    <Series>
+      <Contact tag="Q_Lamp_Run" />
+      <Coil tag="Q_Lamp_Run_OP2" />
+    </Series>
+  </Network>
+
+  <Network title="stop lamp to OP2" comment="Main_Logic NW45 Q_Lamp_Stop">
+    <Series>
+      <Contact tag="Q_Lamp_Stop" />
+      <Coil tag="Q_Lamp_Stop_OP2" />
+    </Series>
+  </Network>
+
+  <Network title="fault lamp tower to OP1 PBL and OP2" comment="Main_Logic NW45 Q_Lamp_Alarm">
+    <Series>
+      <Contact tag="Q_Lamp_Alarm" />
+      <Fork>
+        <Series>
+          <Coil tag="Q_Lamp_Alarm_OP1" />
+        </Series>
+        <Series>
+          <Coil tag="Q_Lamp_Alarm_OP2" />
+        </Series>
+      </Fork>
+    </Series>
+  </Network>
+
+  <Network title="takeup run lamp to OP2" comment="Main_Logic NW50 Q_Lamp_Takeup_Run">
+    <Series>
+      <Contact tag="Q_Lamp_Takeup_Run" />
+      <Coil tag="Q_Lamp_Takeup_Run_OP2" />
+    </Series>
+  </Network>
+
+  <Network title="takeup stop lamp to OP2" comment="restored Q_Lamp_Takeup_Stop">
+    <Series>
+      <Contact tag="Q_Lamp_Takeup_Stop" />
+      <Coil tag="Q_Lamp_Takeup_Stop_OP2" />
+    </Series>
+  </Network>
+
+</Lad>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Portable Main_Logic core: reset PB + AND of lock bits. -->
+<Lad kind="FB" name="Main_Logic" number="101" comment="Portable Main_Logic core: reset PB + AND of lock bits.">
+  <Interface>
+    <Section name="Input">
+      <Member name="pb_reset_in" type="Bool"  comment="靜態：pb_reset_in（Bool）" />
+      <Member name="lock1" type="Bool"  comment="靜態：lock1（Bool）" />
+      <Member name="lock2" type="Bool"  comment="靜態：lock2（Bool）" />
+      <Member name="lock3" type="Bool"  comment="靜態：lock3（Bool）" />
+      <Member name="lock4" type="Bool"  comment="靜態：lock4（Bool）" />
+      <Member name="lock5" type="Bool"  comment="靜態：lock5（Bool）" />
+      <Member name="lock6" type="Bool"  comment="靜態：lock6（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="pb" type="Struct">
+        <Member name="reset" type="Bool"  comment="復位" />
+      </Member>
+      <Member name="flag" type="Struct">
+        <Member name="bobbin_locked" type="Bool"  comment="靜態：bobbin_locked（Bool）" />
+      </Member>
+    </Section>
+  </Interface>
+  <Network title="PB groups" comment="1. PB groups">
+    <Series>
+      <Contact var="pb_reset_in" />
+      <Coil var="pb.reset" />
+    </Series>
+  </Network>
+  <Network title="all bobbins locked" comment="2. all bobbins locked">
+    <Series>
+      <Contact var="lock1" />
+      <Contact var="lock2" />
+      <Contact var="lock3" />
+      <Contact var="lock4" />
+      <Contact var="lock5" />
+      <Contact var="lock6" />
+      <Coil var="flag.bobbin_locked" />
+    </Series>
+  </Network>
+</Lad>

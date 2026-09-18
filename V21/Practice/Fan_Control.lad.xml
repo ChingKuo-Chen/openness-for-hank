@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fan keeps running for TOF_Time after run/wake_up drops. -->
+<Lad kind="FB" name="Fan_Control" number="10" comment="Fan keeps running for TOF_Time after run/wake_up drops.">
+  <Interface>
+    <Section name="Input">
+      <Member name="run" type="Bool"  comment="運轉" />
+      <Member name="wake_up" type="Bool"  comment="靜態：wake_up（Bool）" />
+      <Member name="TOF_Time" type="Time" start="T#30m"  comment="靜態：TOF_Time（Time）" />
+    </Section>
+    <Section name="Output">
+      <Member name="fan" type="Bool"  comment="靜態：fan（Bool）" />
+    </Section>
+    <Section name="Static">
+      <Member name="TOF_Timer" type="IEC_TIMER"  comment="靜態：TOF_Timer（IEC_TIMER）" />
+    </Section>
+  </Interface>
+  <Network title="fan delayed off" comment="1. fan delayed off">
+    <Series>
+      <Parallel>
+        <Contact var="run" />
+        <Contact var="wake_up" />
+      </Parallel>
+      <Box name="TOF" instance="TOF_Timer" time_type="Time">
+        <In port="PT" var="TOF_Time" />
+        <Open port="ET" />
+      </Box>
+      <Coil var="fan" />
+    </Series>
+  </Network>
+</Lad>
