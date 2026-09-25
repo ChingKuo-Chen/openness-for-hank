@@ -37,7 +37,8 @@ Classic Basic／Comfort = `HmiTarget`。**不要**用 Unified 的 `PlcTag =`。
 - 匯入：`HmiTarget.ImportScreenGlobalElements(FileInfo, ImportOptions)`。**沒有** `composition.Import`。
 - 缺畫面：拿掉該鍵 `ActivateScreen`。有的畫面才改名。
 - 畫面名可改；**GraphicList／PictureList 實體名**不要跟畫面一起改字串。
-- **不要批次 `GraphicList.Export`**（會 dispose `HmiTarget`）。
+- **不要批次 `GraphicList.Export`**（會 dispose `HmiTarget`）。要匯就**逐筆**（先 Text 再 Graphic）；目標檔已存在先刪，否則 Export FAIL。
+- Graphic list XML 只有 `<Picture><Name>…</Name>`，沒有像素。圖在 **`Project.Graphics`**（`MultiLingualGraphic`）。`Export` → XML + `Name files/DefaultImageStream.svg|png`。
 
 ## Discrete
 
@@ -53,6 +54,7 @@ WinCC Basic **沒有** Openness `DiscreteAlarms`。走編輯器 xlsx。
 ## Recipe
 
 Openness **刪不掉／匯不出** Recipe 定義。TIA 還能編、還要用 → **不要刪**。  
+`Screen.Export` **沒有** Recipe view。元素 Tag：Recipes 編輯器 Tag 欄＝HMI tag 名，用 tag 表前綴唯一對上；截斷到不唯一 → 不要猜。  
 Softkey／圖形清單／Discrete bit 與 Recipe 元素 Tag／`RecipeView*` **分開修**。
 
 全文：`<standard>/doc/OPENNESS_NOTES.md` §10–§12、`<standard>/doc/HOW-TO-DISCRETE.md`（standard 見 `find-standard.mdc`）。

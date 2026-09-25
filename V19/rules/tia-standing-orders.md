@@ -65,7 +65,7 @@
 - **不要 Compile HMI**（WinCC Basic 常爆一堆錯），除非使用者這輪明說要編譯。
 - Discrete 沒有 Openness API，走編輯器 xlsx。OP1、OP2 同一份。同一 Trigger Word 一個 bit 只能一筆；xlsx zip 路徑用 `/`。
 - Trigger bit：偶數 byte 的 `Mxxx.0` 要選 HMI **`.8`**，不是 IEC `.0`。
-- Softkey 在 `ScreenGlobalElements`；匯入用 `HmiTarget.ImportScreenGlobalElements`。不要 `composition.Import`、不要逐畫面改 Softkey、不要批次 `GraphicList.Export`。
+- Softkey 在 `ScreenGlobalElements`；匯入用 `HmiTarget.ImportScreenGlobalElements`。不要 `composition.Import`、不要逐畫面改 Softkey、不要批次 `GraphicList.Export`。圖在 `Project.Graphics`，不在畫面／list XML。
 - 上列細節：[doc/OPENNESS_NOTES.md](../doc/OPENNESS_NOTES.md) §12、[doc/HOW-TO-DISCRETE.md](../doc/HOW-TO-DISCRETE.md)。
 - 件號先查目錄，不要靠記憶。
 

@@ -24,7 +24,7 @@ This replaces MCU **build → flash+verify**. Never call isptool, pyocd, or `mak
 
 If host still prints `compile not implemented`, report that onboarding is incomplete; do not fake PASS.
 
-HMI compile / Softkey / Discrete 錯：先讀 [V21/doc/OPENNESS_NOTES.md](../../../V21/doc/OPENNESS_NOTES.md) **§12** 與 [V21/doc/HOW-TO-DISCRETE.md](../../../V21/doc/HOW-TO-DISCRETE.md)，再動手。不要逐畫面改 Softkey、不要 `composition.Import`、不要批次 Export GraphicList、不要找 Openness Discrete API。
+HMI compile / Softkey / Discrete 錯：先讀 [V21/doc/OPENNESS_NOTES.md](../../../V21/doc/OPENNESS_NOTES.md) **§12** 與 [V21/doc/HOW-TO-DISCRETE.md](../../../V21/doc/HOW-TO-DISCRETE.md)，再動手。不要逐畫面改 Softkey、不要 `composition.Import`、不要批次 Export GraphicList、不要找 Openness Discrete API。圖在 `Project.Graphics`，不在畫面 XML。
 
 ## Report
 

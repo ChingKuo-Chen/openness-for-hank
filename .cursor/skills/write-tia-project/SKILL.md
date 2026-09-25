@@ -10,7 +10,7 @@ description: >-
 
 先讀對應樹的 `doc/WRITE_PROJECT.md` 與 `rules/tia-write-project.md`、`rules/tia-standing-orders.md`（V21 預設 [V21/doc/WRITE_PROJECT.md](../../../V21/doc/WRITE_PROJECT.md)；V19 機台改 `V19/`）。
 
-改 Basic HMI（畫面／Softkey／Discrete／編譯 HMI）時，動手前記得讀 [V21/doc/OPENNESS_NOTES.md](../../../V21/doc/OPENNESS_NOTES.md) **§12** 與 [V21/doc/HOW-TO-DISCRETE.md](../../../V21/doc/HOW-TO-DISCRETE.md)，不要重試那幾條死路。V19 若測出不同行為，寫進 `V19/doc/`。
+改 Basic HMI（畫面／Softkey／Discrete／編譯 HMI）時，動手前記得讀 [V21/doc/OPENNESS_NOTES.md](../../../V21/doc/OPENNESS_NOTES.md) **§12** 與 [V21/doc/HOW-TO-DISCRETE.md](../../../V21/doc/HOW-TO-DISCRETE.md)，不要重試那幾條死路。圖在 `Project.Graphics`；Graphic list 只有名稱。要 Export list 就逐筆、先刪舊檔，不要批次。V19 若測出不同行為，寫進 `V19/doc/`。
 
 寫 LAD／SCL 時再讀對應樹的 `rules/tia-write-program.md`、`rules/tia-lad-spec.md`、`doc/LAD_PRACTICE.md`，並對照該樹 `Practice/` 範本。
 

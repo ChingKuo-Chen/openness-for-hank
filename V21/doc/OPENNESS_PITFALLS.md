@@ -324,7 +324,7 @@ CPU 1212C 用的是 V4+，需要 `CONNECT` 指向 `TCON_IP_v4`。`CONNECT_ID` / 
 
 ### 10. Basic HMI：不要批次 Export GraphicList；Softkey 不要走 composition.Import
 
-`GraphicList.Export` 批次在 Basic 常炸，會 **dispose `HmiTarget`**，後面全掛。  
+`GraphicList.Export` 批次在 Basic 常炸，會 **dispose `HmiTarget`**，後面全掛。要匯就逐筆、先刪舊檔。圖不在 list／畫面 XML，在 `Project.Graphics`。  
 Global Softkey 的匯入是 **`HmiTarget.ImportScreenGlobalElements`**，不是 `ScreenGlobalElements.Import`。  
 Discrete 沒有 Openness；xlsx zip 必須用 `/` 路徑，否則 `0032:000011` 且 log 空白。  
 細節 → [OPENNESS_NOTES.md §12](OPENNESS_NOTES.md)、[HOW-TO-DISCRETE.md](HOW-TO-DISCRETE.md)。

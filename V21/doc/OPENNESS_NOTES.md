@@ -233,6 +233,7 @@ PASS 時應看到：
 2. 要拿掉整筆 Recipe 定義 → **Portal GUI 刪除**。  
 3. 不要為消編譯錯去建舊前綴／Internal 短名廢物；PLC 顯示綁定走 Absolute（§10）。
 4. 編譯若只剩 Recipe 元素 Tag／Recipe 畫面按鈕（`RecipeView*`），與 Discrete／Softkey **分開算**。TIA 能開、Recipe 還要用 → **不要刪 Recipe 定義**。Openness 也刪不掉（本節）。
+5. `Screen.Export` **沒有** Recipe view。元素 Tag：Recipes 編輯器 Tag 欄＝HMI tag 名，用 tag 表前綴唯一對上；GUI 截斷到不唯一 → 不要猜。
 
 ---
 
@@ -257,7 +258,8 @@ PASS 時應看到：
 
 - **畫面／ActivateScreen** 可以改名（例 `P05_18B_*` → `P05_20B_*`）。  
 - **GraphicList／PictureList 實體名**若還叫 18B，不要跟畫面一起改字串，否則「graphics list invalid」。  
-- **不要批次 `GraphicList.Export`**：Basic 常炸，甚至 **dispose `HmiTarget`**，後面全部掛掉。需要時只改範本裡的 `PictureList` 連結名。
+- **不要批次 `GraphicList.Export`**：Basic 常炸，甚至 **dispose `HmiTarget`**，後面全部掛掉。要匯就**逐筆**（先 Text 再 Graphic）；目標檔已存在先刪，否則 Export FAIL。
+- Graphic list XML 只有 `<Picture><Name>…</Name>`，沒有像素。圖在 **`Project.Graphics`**（`MultiLingualGraphic`）。`Export` 寫 XML，旁邊吐 `Name files/DefaultImageStream.svg|png`。V17 Basic 已驗證；同一物件模型，不要從畫面 XML 找圖檔。
 
 ### Discrete alarms（沒有 Openness）
 
