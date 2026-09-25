@@ -9,8 +9,9 @@ $ErrorActionPreference = 'Stop'
 $grantSubKey = 'SOFTWARE\Siemens\Automation\Openness\AllowList'
 $grantLogPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'HmiExport\grant-allowlist.log'
 $grantLogDir = Split-Path -Parent $grantLogPath
+# New-Item -LiteralPath is PowerShell 7+; Windows PowerShell 5.1 needs -Path.
 if (-not (Test-Path -LiteralPath $grantLogDir)) {
-    New-Item -ItemType Directory -LiteralPath $grantLogDir -Force | Out-Null
+    New-Item -ItemType Directory -Path $grantLogDir -Force | Out-Null
 }
 $grantAccountName = $args[0]
 

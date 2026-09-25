@@ -24,6 +24,7 @@ Siemens.Engineering*.xml
 **/*.exported.xml
 **/import-batch.state.json
 **/TiaOpennessCheck.log
+**/grant-allowlist.log
 .env
 .env.*
 .local/
