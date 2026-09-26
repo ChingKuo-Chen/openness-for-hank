@@ -18,6 +18,11 @@ alwaysApply: true
 - XML `ID="18B"` 是 hex，不要整份字串取代。
 - `--import-scl` 先刪同名再 Generate。`--save` 才存；`--compile` 不會存。
 
+## 放行與新 Tag
+
+- 既有條件要放行：原接點留著，旁邊並一顆 `AlwaysTRUE`。
+- 新加的功能 Tag 用 M（`%M`），方便看出是後來加的。
+
 ## IO／參考
 
 - 加入專案／寫新機：先問 **2～3 個**參考 TIA 路徑。沒給 → 用該樹 `Practice/`。
